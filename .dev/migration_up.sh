@@ -5,7 +5,7 @@
 # Function to show usage
 show_usage() {
     echo "Usage: make migration_up DRIVER=<database_driver>"
-    echo "Example: make migration_up DRIVER=<database_driver>"
+    echo "Example: make migration_up DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
