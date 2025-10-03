@@ -1,14 +1,7 @@
 # Todo List
 
-Docker
-- Update Docker Compose
-
 Tracer
 - Monitor
-
-Make
-- Mock
-- Seeder
 
 CI/CD
 - Lint
@@ -25,6 +18,9 @@ Message Broker
 
 Authentication
 - Kratos
+
+Docker
+- Update Docker Compose
 
 Test
 - Migration MongoDB & MySQL
