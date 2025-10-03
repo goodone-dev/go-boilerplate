@@ -39,8 +39,23 @@ func main() {
 
 	// Open connections
 	postgresConn := postgres.Open()
+	defer func() {
+		postgresConn.Close()
+		log.Println("✅ Postgres connection closed.")
+	}()
+
 	redisClient := redis.NewClient(ctx)
+	defer func() {
+		redisClient.Close()
+		log.Println("✅ Redis connection closed.")
+	}()
+
+	// Initialize tracer
 	tracerProvider := jaeger.Start()
+	defer func() {
+		tracerProvider.Shutdown(ctx)
+		log.Println("✅ Jaeger tracer closed.")
+	}()
 
 	// Initialize repositories
 	customerBaseRepo := postgres.NewBaseRepo[customer.Customer](postgresConn)
@@ -95,11 +110,6 @@ func main() {
 	fmt.Println()
 	log.Println("💤 Shutting down server...")
 
-	// Close connections
-	postgresConn.Close()
-	redisClient.Close()
-	tracerProvider.Shutdown(ctx)
-
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
@@ -107,5 +117,5 @@ func main() {
 		log.Fatalf("❌ Server forced to shutdown: %v", err)
 	}
 
-	log.Println("✅ Server exiting")
+	log.Println("✅ Server shutdown gracefully.")
 }
