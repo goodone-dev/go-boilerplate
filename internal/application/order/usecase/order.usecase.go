@@ -40,6 +40,7 @@ func NewOrderUsecase(
 	}
 }
 
+// TODO: Use DTO for return response
 func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.Order, err error) {
 	ctx, span := tracer.StartSpan(ctx, req)
 	defer func() {
