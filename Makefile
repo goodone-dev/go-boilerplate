@@ -24,4 +24,4 @@ seed:
 
 .PHONY: run
 run:
-	@go run ./cmd/api/main.go || true
+	@go run ./cmd/api/main.go
