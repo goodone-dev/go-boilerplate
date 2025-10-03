@@ -7,6 +7,13 @@ import (
 )
 
 var ContextTimeout time.Duration
+var ApplicationConfig ApplicationConfigMap
+var RedisConfig RedisConfigMap
+var PostgresConfig PostgresConfigMap
+var MySQLConfig MySQLConfigMap
+var MongoConfig MongoConfigMap
+var JaegerConfig JaegerConfigMap
+var MailConfig MailConfigMap
 
 type ApplicationConfigMap struct {
 	Name string `mapstructure:"APP_NAME"`
@@ -15,8 +22,6 @@ type ApplicationConfigMap struct {
 	URL  string `mapstructure:"APP_URL"`
 }
 
-var ApplicationConfig ApplicationConfigMap
-
 type RedisConfigMap struct {
 	Host     string `mapstructure:"REDIS_HOST"`
 	Port     int    `mapstructure:"REDIS_PORT"`
@@ -24,8 +29,6 @@ type RedisConfigMap struct {
 	Password string `mapstructure:"REDIS_PASSWORD"`
 	DB       int    `mapstructure:"REDIS_DB"`
 }
-
-var RedisConfig RedisConfigMap
 
 type PostgresConfigMap struct {
 	MasterHost         string        `mapstructure:"POSTGRES_MASTER_HOST"`
@@ -50,8 +53,6 @@ type PostgresConfigMap struct {
 	ConnMaxLifetime    time.Duration `mapstructure:"POSTGRES_CONN_MAX_LIFETIME"`
 }
 
-var PostgresConfig PostgresConfigMap
-
 type MySQLConfigMap struct {
 	MasterHost         string        `mapstructure:"MYSQL_MASTER_HOST"`
 	MasterUsername     string        `mapstructure:"MYSQL_MASTER_USERNAME"`
@@ -70,8 +71,6 @@ type MySQLConfigMap struct {
 	MaxIdleConnections int           `mapstructure:"MYSQL_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"MYSQL_CONN_MAX_LIFETIME"`
 }
-
-var MySQLConfig MySQLConfigMap
 
 type MongoConfigMap struct {
 	MasterHost        string `mapstructure:"MONGO_MASTER_HOST"`
@@ -92,15 +91,11 @@ type MongoConfigMap struct {
 	ConnIdleTimeoutMS int    `mapstructure:"MONGO_CONN_IDLE_TIMEOUT_MS"`
 }
 
-var MongoConfig MongoConfigMap
-
 type JaegerConfigMap struct {
 	Host        string `mapstructure:"JAEGER_HOST"`
 	Port        int    `mapstructure:"JAEGER_PORT"`
 	ServiceName string `mapstructure:"JAEGER_SERVICE_NAME"`
 }
-
-var JaegerConfig JaegerConfigMap
 
 type MailConfigMap struct {
 	Host     string `mapstructure:"MAIL_HOST"`
@@ -109,8 +104,6 @@ type MailConfigMap struct {
 	Password string `mapstructure:"MAIL_PASSWORD"`
 	TLS      bool   `mapstructure:"MAIL_TLS"`
 }
-
-var MailConfig MailConfigMap
 
 func Load() (err error) {
 	viper.AddConfigPath("./")
