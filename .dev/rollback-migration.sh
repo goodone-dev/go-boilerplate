@@ -40,7 +40,7 @@ case $DB_DRIVER in
     postgres|postgresql) 
         MIGRATION_DIR="./migrations/postgres"
         # Check required environment variables
-        required_vars=("POSTGRES_MASTER_HOST" "POSTGRES_MASTER_USERNAME" "POSTGRES_MASTER_PASSWORD" "POSTGRES_MASTER_PORT" "POSTGRES_MASTER_SSL_MODE" "POSTGRES_DATABASE")
+        required_vars=("POSTGRES_HOST" "POSTGRES_USERNAME" "POSTGRES_PASSWORD" "POSTGRES_PORT" "POSTGRES_SSL_MODE" "POSTGRES_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
                 echo "Error: Required environment variable $var is not set"
@@ -48,12 +48,12 @@ case $DB_DRIVER in
             fi
         done
         # Construct database URL from environment variables
-        DB_URL="postgresql://${POSTGRES_MASTER_USERNAME}:${POSTGRES_MASTER_PASSWORD}@${POSTGRES_MASTER_HOST}:${POSTGRES_MASTER_PORT}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_MASTER_SSL_MODE}"
+        DB_URL="postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_SSL_MODE}"
         ;;
     mysql) 
         MIGRATION_DIR="./migrations/mysql"
         # Check required environment variables
-        required_vars=("MYSQL_MASTER_HOST" "MYSQL_MASTER_PORT" "MYSQL_MASTER_USERNAME" "MYSQL_MASTER_PASSWORD" "MYSQL_MASTER_SSL_MODE" "MYSQL_DATABASE")
+        required_vars=("MYSQL_HOST" "MYSQL_PORT" "MYSQL_USERNAME" "MYSQL_PASSWORD" "MYSQL_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
                 echo "Error: Required environment variable $var is not set"
@@ -61,12 +61,12 @@ case $DB_DRIVER in
             fi
         done
         # Construct database URL from environment variables
-        DB_URL="mysql://${MYSQL_MASTER_USERNAME}:${MYSQL_MASTER_PASSWORD}@tcp(${MYSQL_MASTER_HOST}:${MYSQL_MASTER_PORT})/${MYSQL_DATABASE}"
+        DB_URL="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}"
         ;;
     mongodb) 
         MIGRATION_DIR="./migrations/mongodb"
         # Check required environment variables
-        required_vars=("MONGODB_MASTER_HOST" "MONGODB_MASTER_PORT" "MONGODB_MASTER_USERNAME" "MONGODB_MASTER_PASSWORD" "MONGODB_MASTER_SSL_MODE" "MONGODB_DATABASE")
+        required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
                 echo "Error: Required environment variable $var is not set"
@@ -74,7 +74,7 @@ case $DB_DRIVER in
             fi
         done
         # Construct database URL from environment variables
-        DB_URL="mongodb://${MONGODB_MASTER_USERNAME}:${MONGODB_MASTER_PASSWORD}@${MONGODB_MASTER_HOST}:${MONGODB_MASTER_PORT}/${MONGODB_DATABASE}"
+        DB_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}"
         ;;
     *)
         echo "Error: Unsupported database driver: $DB_DRIVER"
