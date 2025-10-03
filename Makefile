@@ -9,3 +9,11 @@ migration_up:
 .PHONY: migration_down
 migration_down:
 	@.dev/migration_down.sh -d $(DRIVER)
+
+.PHONY: mock_config
+mock_config:
+	@bash .dev/mock_config.sh $(NAME)
+
+.PHONY: mock
+mock:
+	@mockery --log-level=ERROR

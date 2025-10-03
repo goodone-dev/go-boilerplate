@@ -1,0 +1,34 @@
+all: false
+dir: '{{.InterfaceDir}}'
+filename: mocks_test.go
+force-file-write: true
+formatter: goimports
+include-auto-generated: false
+log-level: info
+structname: '{{.InterfaceName}}{{.Mock}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/BagusAK95/go-skeleton/internal/domain/customer:
+    interfaces:
+      ICustomerRepository:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: customer.repository_mock.go
+          structname: "{{.InterfaceName}}Mock"
+  github.com/BagusAK95/go-skeleton/internal/domain/order:
+    interfaces:
+      IOrderRepository:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "order.repository_mock.go"
+
+  github.com/BagusAK95/go-skeleton/internal/infrastructure/cache:
+    interfaces:
+      ICache:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "cache_mock.go"
