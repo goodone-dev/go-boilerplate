@@ -8,17 +8,17 @@ import (
 	"github.com/BagusAK95/go-skeleton/internal/utils/tracer"
 )
 
-type mailUsecase struct {
+type MailUsecase struct {
 	mailSender mailsender.IMailSender
 }
 
 func NewMailUsecase(mailSender mailsender.IMailSender) mail.IMailUsecase {
-	return &mailUsecase{
+	return &MailUsecase{
 		mailSender: mailSender,
 	}
 }
 
-func (u *mailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
+func (u *MailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
 	ctx, span := tracer.StartSpan(ctx, req)
 	defer func() {
 		span.EndSpan(err)

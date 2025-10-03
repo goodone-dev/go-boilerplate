@@ -5,12 +5,12 @@ import (
 	database "github.com/BagusAK95/go-skeleton/internal/infrastructure/database/sql"
 )
 
-type employeeRepo struct {
+type EmployeeRepository struct {
 	database.IBaseRepository[employee.Employee]
 }
 
 func NewEmployeeRepo(baseRepo database.IBaseRepository[employee.Employee]) employee.IEmployeeRepository {
-	return &employeeRepo{
+	return &EmployeeRepository{
 		baseRepo,
 	}
 }
