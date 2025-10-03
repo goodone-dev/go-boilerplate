@@ -1,0 +1,33 @@
+package usecase
+
+import (
+	"context"
+
+	"github.com/BagusAK95/go-skeleton/internal/domain/mail"
+	mailsender "github.com/BagusAK95/go-skeleton/internal/infrastructure/mail"
+	"github.com/BagusAK95/go-skeleton/internal/utils/tracer"
+)
+
+type mailUsecase struct {
+	mailSender mailsender.IMailSender
+}
+
+func NewMailUsecase(mailSender mailsender.IMailSender) mail.IMailUsecase {
+	return &mailUsecase{
+		mailSender: mailSender,
+	}
+}
+
+func (u *mailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
+	ctx, span := tracer.StartSpan(ctx, req)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	err = u.mailSender.SendEmail(ctx, req.To, req.Subject, req.Template, req.Data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: goodmart-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: always
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    restart: always
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: :9411
+    ports:
+      - "16686:16686" # Web UI
+      - "4318:4318" # Exporter
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      APP_NAME: goodmart-api
+      APP_PORT: 8080
+      APP_ENV: local
+      APP_URL: http://localhost:8080
+      POSTGRES_MASTER_HOST: postgres
+      POSTGRES_MASTER_USERNAME: user
+      POSTGRES_MASTER_PASSWORD: password
+      POSTGRES_MASTER_PORT: 5432
+      POSTGRES_MASTER_SSL_MODE: disable
+      POSTGRES_SLAVE_HOST: db
+      POSTGRES_SLAVE_USERNAME: user
+      POSTGRES_SLAVE_PASSWORD: password
+      POSTGRES_SLAVE_PORT: 5432
+      POSTGRES_SLAVE_SSL_MODE: disable
+      POSTGRES_DATABASE: goodmart-db
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      MAIL_USERNAME: no-reply@goodmart.com
+      MAIL_PASSWORD: ''
+      MAIL_TLS: false
+      TRACER_HOST: jaeger
+      TRACER_PORT: 4318
+      TRACER_SERVICE_NAME: goodmart-api
+
+    depends_on:
+      - db
+      - mailpit
+      - jaeger
+
+volumes:
+  db-data:
