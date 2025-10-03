@@ -17,3 +17,7 @@ mock_config:
 .PHONY: mock
 mock:
 	@mockery --log-level=ERROR
+
+.PHONY: seed
+seed:
+	@.dev/seed.sh $(DRIVER)
