@@ -16,6 +16,8 @@ import (
 )
 
 func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.New()
 	router.Use(otelgin.Middleware(""))
 	router.Use(middleware.ErrorMiddleware())
