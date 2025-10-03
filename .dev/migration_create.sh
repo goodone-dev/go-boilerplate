@@ -4,8 +4,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: $0 -n <migration_name> -d <database_driver>"
-    echo "Example: $0 -n create_users_table -d postgres"
+    echo "Usage: make migration NAME=<migration_name> DRIVER=<database_driver>"
+    echo "Example: make migration NAME=create_users_table DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
@@ -20,14 +20,12 @@ while getopts ":n:d:h" opt; do
         n) MIGRATION_NAME="$OPTARG";;
         d) DB_DRIVER="$OPTARG";;
         h) show_usage;;
-        \?) echo "Invalid option -$OPTARG"; show_usage;;
-        :) echo "Option -$OPTARG requires an argument."; show_usage;;
     esac
 done
 
 # Validate required arguments
 if [ -z "$MIGRATION_NAME" ] || [ -z "$DB_DRIVER" ]; then
-    echo "Error: Both migration name (-n) and database driver (-d) are required"
+    echo "Error: Both migration name and database driver are required"
     show_usage
 fi
 

@@ -4,8 +4,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: $0 -d <database_driver>"
-    echo "Example: $0 -d postgres"
+    echo "Usage: make migration_up DRIVER=<database_driver>"
+    echo "Example: make migration_up DRIVER=<database_driver>"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
@@ -19,14 +19,12 @@ while getopts ":d:h" opt; do
     case $opt in
         d) DB_DRIVER="$OPTARG";;
         h) show_usage;;
-        \?) echo "Invalid option -$OPTARG"; show_usage;;
-        :) echo "Option -$OPTARG requires an argument."; show_usage;;
     esac
 done
 
 # Validate required arguments
 if [ -z "$DB_DRIVER" ]; then
-    echo "Error: Database driver (-d) is required"
+    echo "Error: Database driver is required"
     show_usage
 fi
 
