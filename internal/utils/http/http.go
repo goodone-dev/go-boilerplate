@@ -22,7 +22,7 @@ type customRequest struct {
 	breaker *gobreaker.CircuitBreaker[*resty.Response]
 }
 
-func HttpClient() *customHttp {
+func NewClient() *customHttp {
 	if httpClient != nil {
 		return &customHttp{
 			Request: customRequest{
