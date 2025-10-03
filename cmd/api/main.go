@@ -26,7 +26,6 @@ import (
 	"github.com/BagusAK95/go-skeleton/internal/infrastructure/tracer/jaeger"
 	buslistener "github.com/BagusAK95/go-skeleton/internal/presentation/messaging/bus"
 	"github.com/BagusAK95/go-skeleton/internal/presentation/rest/router"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -38,16 +37,12 @@ func main() {
 		log.Fatalf("❌ Could not load config: %v", err)
 	}
 
-	// Open connection
+	// Open connections
 	postgresConn := postgres.Open()
 	redisClient := redis.NewClient(ctx)
 	tracerProvider := jaeger.Start()
 
-	// Setup mail server
-	mailSender := mailsender.NewMailSender()
-	mailBus := bus.NewBus[mail.MailSendMessage]()
-
-	// Initialize repository
+	// Initialize repositories
 	customerBaseRepo := postgres.NewBaseRepo[customer.Customer](postgresConn)
 	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
 	productBaseRepo := postgres.NewBaseRepo[product.Product](postgresConn)
@@ -57,7 +52,13 @@ func main() {
 	orderItemBaseRepo := postgres.NewBaseRepo[order.OrderItem](postgresConn)
 	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
 
-	// Initialize usecase
+	// Initialize mail server
+	mailSender := mailsender.NewMailSender()
+
+	// Initialize message bus
+	mailBus := bus.NewBus[mail.MailSendMessage]()
+
+	// Initialize usecases
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
 	orderUsecase := orderuc.NewOrderUsecase(
 		customerRepo,
@@ -70,9 +71,7 @@ func main() {
 	// Initialize bus listener
 	buslistener.NewBusListener(mailBus, mailUsecase)
 
-	// Start server
-	gin.SetMode(gin.ReleaseMode)
-
+	// Initialize server
 	r := router.NewRouter(orderUsecase, redisClient)
 	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
 
@@ -96,12 +95,11 @@ func main() {
 	fmt.Println()
 	log.Println("💤 Shutting down server...")
 
-	// Close connection
+	// Close connections
 	postgresConn.Close()
 	redisClient.Close()
 	tracerProvider.Shutdown(ctx)
 
-	// Gracefull shutdown timeout
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
