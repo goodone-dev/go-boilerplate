@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/BagusAK95/go-skeleton/internal/infrastructure/cache"
-	"github.com/BagusAK95/go-skeleton/internal/utils/tracer"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/cache"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
 	"github.com/gin-gonic/gin"
 )
 

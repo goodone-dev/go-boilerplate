@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 
-	"github.com/BagusAK95/go-skeleton/internal/config"
-	"github.com/BagusAK95/go-skeleton/internal/utils/error"
+	"github.com/BagusAK95/go-boilerplate/internal/config"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/error"
 	"github.com/gin-gonic/gin"
 )
 

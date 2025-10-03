@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 
-	database "github.com/BagusAK95/go-skeleton/internal/infrastructure/database/sql"
-	"github.com/BagusAK95/go-skeleton/internal/utils/tracer"
+	database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"gorm.io/gorm"

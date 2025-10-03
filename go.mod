@@ -1,4 +1,4 @@
-module github.com/BagusAK95/go-skeleton
+module github.com/BagusAK95/go-boilerplate
 
 go 1.24.2
 

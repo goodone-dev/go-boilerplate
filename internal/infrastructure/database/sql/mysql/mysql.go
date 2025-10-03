@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/BagusAK95/go-skeleton/internal/config"
+	"github.com/BagusAK95/go-boilerplate/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

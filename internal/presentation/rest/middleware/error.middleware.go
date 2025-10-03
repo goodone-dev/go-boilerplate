@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/BagusAK95/go-skeleton/internal/utils/error"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/error"
 	"github.com/gin-gonic/gin"
 )
 

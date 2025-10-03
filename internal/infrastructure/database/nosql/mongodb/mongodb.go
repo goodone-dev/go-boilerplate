@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/BagusAK95/go-skeleton/internal/config"
+	"github.com/BagusAK95/go-boilerplate/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"

@@ -1,10 +1,10 @@
 package http
 
 import (
-	"github.com/BagusAK95/go-skeleton/internal/domain/order"
-	"github.com/BagusAK95/go-skeleton/internal/utils/error"
-	"github.com/BagusAK95/go-skeleton/internal/utils/success"
-	"github.com/BagusAK95/go-skeleton/internal/utils/validator"
+	"github.com/BagusAK95/go-boilerplate/internal/domain/order"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/error"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/success"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/validator"
 	"github.com/gin-gonic/gin"
 )
 

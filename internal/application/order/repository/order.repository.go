@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/BagusAK95/go-skeleton/internal/domain/order"
-	database "github.com/BagusAK95/go-skeleton/internal/infrastructure/database/sql"
+	"github.com/BagusAK95/go-boilerplate/internal/domain/order"
+	database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
 )
 
 type OrderRepository struct {

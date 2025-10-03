@@ -6,11 +6,11 @@ import (
 
 	"net/http/pprof"
 
-	orderHandler "github.com/BagusAK95/go-skeleton/internal/application/order/delivery/http"
-	"github.com/BagusAK95/go-skeleton/internal/config"
-	"github.com/BagusAK95/go-skeleton/internal/domain/order"
-	"github.com/BagusAK95/go-skeleton/internal/infrastructure/cache"
-	"github.com/BagusAK95/go-skeleton/internal/presentation/rest/middleware"
+	orderHandler "github.com/BagusAK95/go-boilerplate/internal/application/order/delivery/http"
+	"github.com/BagusAK95/go-boilerplate/internal/config"
+	"github.com/BagusAK95/go-boilerplate/internal/domain/order"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/cache"
+	"github.com/BagusAK95/go-boilerplate/internal/presentation/rest/middleware"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
