@@ -11,7 +11,6 @@ Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
     echo "  - mysql       : MySQL database"
     echo "  - mongodb     : MongoDB database"
-    echo "  - sqlite      : SQLite database"
     exit 1
 }
 
@@ -48,9 +47,6 @@ case $DB_DRIVER in
         ;;
     mongodb) 
         MIGRATION_DIR="./migrations/mongodb"
-        ;;
-    sqlite) 
-        MIGRATION_DIR="./migrations/sqlite"
         ;;
     *)
         echo "Error: Unsupported database driver: $DB_DRIVER"

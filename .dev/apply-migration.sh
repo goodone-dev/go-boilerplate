@@ -11,7 +11,6 @@ Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
     echo "  - mysql       : MySQL database"
     echo "  - mongodb     : MongoDB database"
-    echo "  - sqlite      : SQLite database"
     exit 1
 }
 
@@ -76,19 +75,6 @@ case $DB_DRIVER in
         done
         # Construct database URL from environment variables
         DB_URL="mongodb://${MONGODB_MASTER_USERNAME}:${MONGODB_MASTER_PASSWORD}@${MONGODB_MASTER_HOST}:${MONGODB_MASTER_PORT}/${MONGODB_DATABASE}"
-        ;;
-    sqlite) 
-        MIGRATION_DIR="./migrations/sqlite"
-        # Check required environment variables
-        required_vars=("SQLITE_DATABASE")
-        for var in "${required_vars[@]}"; do
-            if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
-                exit 1
-            fi
-        done
-        # Construct database URL from environment variables
-        DB_URL="sqlite3://${SQLITE_DATABASE}"
         ;;
     *)
         echo "Error: Unsupported database driver: $DB_DRIVER"
