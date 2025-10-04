@@ -3,7 +3,7 @@
 
 This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and production-grade foundation for your next web service. It embraces a clean, Domain-Driven Design (DDD) architecture to ensure maintainability and separation of concerns, empowering you to focus on delivering business value instead of wrestling with infrastructure setup.
 
-# 🗺️ Roadmap
+# 🚧 Roadmap
 Observability
 - [ ] Performance Monitoring
 
