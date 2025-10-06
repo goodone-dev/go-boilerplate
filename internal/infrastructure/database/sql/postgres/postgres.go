@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -45,15 +46,15 @@ func setConfig() postgresConfig {
 	}
 }
 
-type dbConnection struct {
+type postgresConnection struct {
 	Master *gorm.DB
 	Slave  *gorm.DB
 }
 
-func Open() dbConnection {
+func Open() postgresConnection {
 	pgConfig := setConfig()
 
-	return dbConnection{
+	return postgresConnection{
 		Master: open(pgConfig.Master),
 		Slave:  open(pgConfig.Slave),
 	}
@@ -87,16 +88,23 @@ func open(pgConfig postgres.Config) *gorm.DB {
 	return db
 }
 
-func (c dbConnection) Close() {
-	close(c.Master)
-	close(c.Slave)
-}
-
-func close(conn *gorm.DB) {
-	sqlDB, err := conn.DB()
-	if err != nil {
-		log.Fatalf("❌ Could not to get PostgresSQL connection: %v", err)
+func (c postgresConnection) Shutdown(ctx context.Context) error {
+	if err := close(c.Master); err != nil {
+		return err
 	}
 
-	sqlDB.Close()
+	if err := close(c.Slave); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func close(conn *gorm.DB) error {
+	sqlDB, err := conn.DB()
+	if err != nil {
+		return err
+	}
+
+	return sqlDB.Close()
 }

@@ -135,6 +135,6 @@ func (c *RedisClient) DecrBy(ctx context.Context, key string, value int64) (res 
 	return c.client.DecrBy(ctx, key, value).Result()
 }
 
-func (c *RedisClient) Close() (err error) {
+func (c *RedisClient) Shutdown(ctx context.Context) (err error) {
 	return c.client.Close()
 }

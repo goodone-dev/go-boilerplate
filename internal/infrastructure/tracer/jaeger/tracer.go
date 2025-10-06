@@ -15,13 +15,13 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-func Start() *trace.TracerProvider {
+func NewProvider(ctx context.Context) *trace.TracerProvider {
 	headers := map[string]string{
 		"content-type": "application/json",
 	}
 
 	exporter, err := otlptrace.New(
-		context.Background(),
+		ctx,
 		otlptracehttp.NewClient(
 			otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%d", config.JaegerConfig.Host, config.JaegerConfig.Port)),
 			otlptracehttp.WithHeaders(headers),

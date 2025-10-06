@@ -7,6 +7,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"reflect"
+	"regexp"
+	"strings"
+	"sync"
 	"syscall"
 
 	customerrepo "github.com/BagusAK95/go-boilerplate/internal/application/customer/repository"
@@ -31,33 +35,19 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Load .env config
+	// ========== Environment Setup ==========
 	err := config.Load()
 	if err != nil {
 		log.Fatalf("❌ Could not load config: %v", err)
 	}
 
-	// Open connections
+	// ========== Infrastructure ==========
 	postgresConn := postgres.Open()
-	defer func() {
-		postgresConn.Close()
-		log.Println("✅ Postgres connection closed.")
-	}()
-
 	redisClient := redis.NewClient(ctx)
-	defer func() {
-		redisClient.Close()
-		log.Println("✅ Redis connection closed.")
-	}()
+	tracerProvider := jaeger.NewProvider(ctx)
+	mailSender := mailsender.NewMailSender()
 
-	// Initialize tracer
-	tracerProvider := jaeger.Start()
-	defer func() {
-		tracerProvider.Shutdown(ctx)
-		log.Println("✅ Jaeger tracer closed.")
-	}()
-
-	// Initialize repositories
+	// ========== Repositories ==========
 	customerBaseRepo := postgres.NewBaseRepo[customer.Customer](postgresConn)
 	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
 	productBaseRepo := postgres.NewBaseRepo[product.Product](postgresConn)
@@ -67,13 +57,10 @@ func main() {
 	orderItemBaseRepo := postgres.NewBaseRepo[order.OrderItem](postgresConn)
 	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
 
-	// Initialize mail server
-	mailSender := mailsender.NewMailSender()
-
-	// Initialize message bus
+	// ========== Bus ==========
 	mailBus := bus.NewBus[mail.MailSendMessage]()
 
-	// Initialize usecases
+	// ========== Usecase ==========
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
 	orderUsecase := orderuc.NewOrderUsecase(
 		customerRepo,
@@ -83,10 +70,10 @@ func main() {
 		mailBus,
 	)
 
-	// Initialize bus listener
+	// ========== Bus Listener ==========
 	buslistener.NewBusListener(mailBus, mailUsecase)
 
-	// Initialize server
+	// ========== HTTP Server Setup ==========
 	r := router.NewRouter(orderUsecase, redisClient)
 	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
 
@@ -102,7 +89,7 @@ func main() {
 		}
 	}()
 
-	// Gracefull Shutdown
+	// ========== Graceful Shutdown ==========
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
@@ -118,4 +105,46 @@ func main() {
 	}
 
 	log.Println("✅ Server shutdown gracefully.")
+
+	infraShutdown(ctx, postgresConn, redisClient, tracerProvider)
+}
+
+type Infrastructure interface {
+	Shutdown(ctx context.Context) error
+}
+
+func infraShutdown(ctx context.Context, infras ...Infrastructure) {
+	var wg sync.WaitGroup
+
+	for _, infra := range infras {
+		wg.Add(1)
+
+		go func(c Infrastructure) {
+			defer wg.Done()
+
+			packageName := parsePackageName(c)
+
+			if err := c.Shutdown(ctx); err != nil {
+				log.Printf("❌ %s forced to shutdown: %v", packageName, err)
+				return
+			}
+
+			log.Printf("✅ %s shutdown gracefully.\n", packageName)
+		}(infra)
+	}
+
+	wg.Wait()
+}
+
+func parsePackageName(infra Infrastructure) string {
+	n := reflect.TypeOf(infra).String()
+	r := regexp.MustCompile(`\*?([^.]+)`)
+
+	matches := r.FindStringSubmatch(n)
+	if len(matches) > 1 {
+		name := matches[1]
+		return strings.ToUpper(string(name[0])) + name[1:]
+	}
+
+	return ""
 }

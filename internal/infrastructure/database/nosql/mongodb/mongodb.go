@@ -54,16 +54,15 @@ func setConfig() mongoConfig {
 	}
 }
 
-type dbConnection struct {
+type mongoConnection struct {
 	Master *mongo.Database
 	Slave  *mongo.Database
 }
 
-func Open() dbConnection {
-	ctx := context.Background()
+func Open(ctx context.Context) mongoConnection {
 	mongoConfig := setConfig()
 
-	return dbConnection{
+	return mongoConnection{
 		Master: open(ctx, mongoConfig.Master),
 		Slave:  open(ctx, mongoConfig.Slave),
 	}
@@ -92,15 +91,18 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 	return client.Database(config.MongoConfig.Database)
 }
 
-func (c dbConnection) Close() {
-	ctx := context.Background()
+func (c mongoConnection) Shutdown(ctx context.Context) error {
+	if err := close(ctx, c.Master); err != nil {
+		return err
+	}
 
-	close(ctx, c.Master)
-	close(ctx, c.Slave)
+	if err := close(ctx, c.Slave); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func close(ctx context.Context, db *mongo.Database) {
-	if err := db.Client().Disconnect(ctx); err != nil {
-		log.Fatalf("❌ Could not to close MongoDB connection: %v", err)
-	}
+func close(ctx context.Context, db *mongo.Database) error {
+	return db.Client().Disconnect(ctx)
 }

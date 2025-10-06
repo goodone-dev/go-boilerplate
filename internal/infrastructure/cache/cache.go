@@ -15,5 +15,5 @@ type ICache interface {
 	Decr(ctx context.Context, key string) (int64, error)
 	IncrBy(ctx context.Context, key string, value int64) (int64, error)
 	DecrBy(ctx context.Context, key string, value int64) (int64, error)
-	Close() error
+	Shutdown(ctx context.Context) error
 }

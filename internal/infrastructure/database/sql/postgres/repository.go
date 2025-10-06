@@ -16,7 +16,7 @@ type BaseRepo[M database.Entity] struct {
 	dbSlave  *gorm.DB
 }
 
-func NewBaseRepo[M database.Entity](dbConn dbConnection) database.IBaseRepository[M] {
+func NewBaseRepo[M database.Entity](dbConn postgresConnection) database.IBaseRepository[M] {
 	return &BaseRepo[M]{
 		dbMaster: dbConn.Master,
 		dbSlave:  dbConn.Slave,

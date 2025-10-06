@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -42,15 +43,15 @@ func setConfig() mysqlConfig {
 	}
 }
 
-type dbConnection struct {
+type mysqlConnection struct {
 	Master *gorm.DB
 	Slave  *gorm.DB
 }
 
-func Open() dbConnection {
+func Open() mysqlConnection {
 	mysqlConfig := setConfig()
 
-	return dbConnection{
+	return mysqlConnection{
 		Master: open(mysqlConfig.Master),
 		Slave:  open(mysqlConfig.Slave),
 	}
@@ -84,16 +85,23 @@ func open(mysqlConfig mysql.Config) *gorm.DB {
 	return db
 }
 
-func (c dbConnection) Close() {
-	close(c.Master)
-	close(c.Slave)
-}
-
-func close(conn *gorm.DB) {
-	sqlDB, err := conn.DB()
-	if err != nil {
-		log.Fatalf("❌ Could not to get MySQL connection: %v", err)
+func (c mysqlConnection) Shutdown(ctx context.Context) error {
+	if err := close(c.Master); err != nil {
+		return err
 	}
 
-	sqlDB.Close()
+	if err := close(c.Slave); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func close(conn *gorm.DB) error {
+	sqlDB, err := conn.DB()
+	if err != nil {
+		return err
+	}
+
+	return sqlDB.Close()
 }
