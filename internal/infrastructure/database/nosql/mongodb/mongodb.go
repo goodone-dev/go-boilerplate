@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/BagusAK95/go-boilerplate/internal/config"
+	"github.com/golang-migrate/migrate/v4"
+	migratemongo "github.com/golang-migrate/migrate/v4/database/mongodb"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -88,7 +91,27 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		log.Fatalf("❌ Could not to ping MongoDB database: %v", err)
 	}
 
-	return client.Database(config.MongoConfig.Database)
+	mongoDB := client.Database(config.MongoConfig.Database)
+	if !config.MongoConfig.AutoMigrate {
+		return mongoDB
+	}
+
+	migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("❌ Could not to migrate MongoDB:%v", err)
+	}
+
+	return mongoDB
 }
 
 func (c mongoConnection) Shutdown(ctx context.Context) error {

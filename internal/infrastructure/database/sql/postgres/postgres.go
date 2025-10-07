@@ -6,6 +6,9 @@ import (
 	"log"
 
 	"github.com/BagusAK95/go-boilerplate/internal/config"
+	"github.com/golang-migrate/migrate/v4"
+	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -83,6 +86,25 @@ func open(pgConfig postgres.Config) *gorm.DB {
 
 	if err = sqlDB.Ping(); err != nil {
 		log.Fatalf("❌ Could not to ping PostgresSQL database: %v", err)
+	}
+
+	if !config.PostgresConfig.AutoMigrate {
+		return db
+	}
+
+	migrateDriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for PostgresSQL:%v", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://migrations/postgres", "postgres", migrateDriver)
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for PostgresSQL:%v", err)
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("❌ Could not to migrate PostgresSQL:%v", err)
 	}
 
 	return db

@@ -2,7 +2,7 @@ services:
   postgres:
     networks:
       - backend
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: goodmart-db
       POSTGRES_USER: user
@@ -11,12 +11,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d goodmart-db -U user" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
 
   redis:
     networks:
       - backend
-    image: redis:7.2.11-alpine
+    image: redis:8-alpine
     ports:
       - "6379:6379"
     volumes:
@@ -87,6 +92,7 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_SSL_MODE: disable
       POSTGRES_DATABASE: goodmart-db
+      POSTGRES_AUTO_MIGRATE: true
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_TLS: false
@@ -100,7 +106,6 @@ services:
       JAEGER_HOST: jaeger
       JAEGER_PORT: 4318
       JAEGER_SERVICE_NAME: goodmart-api
-
     depends_on:
       - postgres
       - redis

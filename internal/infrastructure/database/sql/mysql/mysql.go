@@ -6,6 +6,10 @@ import (
 	"log"
 
 	"github.com/BagusAK95/go-boilerplate/internal/config"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
+	migratemysql "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -80,6 +84,25 @@ func open(mysqlConfig mysql.Config) *gorm.DB {
 
 	if err = sqlDB.Ping(); err != nil {
 		log.Fatalf("❌ Could not to ping MySQL database: %v", err)
+	}
+
+	if !config.MySQLConfig.AutoMigrate {
+		return db
+	}
+
+	migrateDriver, err := migratemysql.WithInstance(sqlDB, &migratemysql.Config{})
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for MySQL:%v", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://migrations/mysql", "mysql", migrateDriver)
+	if err != nil {
+		log.Fatalf("❌ Could not to create migrate instance for MySQL:%v", err)
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("❌ Could not to migrate MySQL:%v", err)
 	}
 
 	return db

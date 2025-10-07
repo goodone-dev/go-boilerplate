@@ -48,6 +48,7 @@ type PostgresConfigMap struct {
 	SSLMode            string        `mapstructure:"POSTGRES_SSL_MODE"`
 	Database           string        `mapstructure:"POSTGRES_DATABASE"`
 	Timezone           string        `mapstructure:"POSTGRES_TIMEZONE"`
+	AutoMigrate        bool          `mapstructure:"POSTGRES_AUTO_MIGRATE"`
 	MaxOpenConnections int           `mapstructure:"POSTGRES_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"POSTGRES_CONN_MAX_LIFETIME"`
@@ -67,6 +68,7 @@ type MySQLConfigMap struct {
 	Password           string        `mapstructure:"MYSQL_PASSWORD"`
 	Port               int           `mapstructure:"MYSQL_PORT"`
 	Database           string        `mapstructure:"MYSQL_DATABASE"`
+	AutoMigrate        bool          `mapstructure:"MYSQL_AUTO_MIGRATE"`
 	MaxOpenConnections int           `mapstructure:"MYSQL_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"MYSQL_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"MYSQL_CONN_MAX_LIFETIME"`
@@ -86,6 +88,7 @@ type MongoConfigMap struct {
 	Username          string `mapstructure:"MONGO_USERNAME"`
 	Password          string `mapstructure:"MONGO_PASSWORD"`
 	Database          string `mapstructure:"MONGO_DATABASE"`
+	AutoMigrate       bool   `mapstructure:"MONGO_AUTO_MIGRATE"`
 	MaxConnPoolSize   int    `mapstructure:"MONGO_MAX_CONN_POOL_SIZE"`
 	MinConnPoolSize   int    `mapstructure:"MONGO_MIN_CONN_POOL_SIZE"`
 	ConnIdleTimeoutMS int    `mapstructure:"MONGO_CONN_IDLE_TIMEOUT_MS"`
