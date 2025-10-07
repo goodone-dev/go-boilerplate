@@ -25,6 +25,9 @@ up:
 down:
 	@docker-compose down
 
+stop:
+	@docker-compose stop
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -41,9 +44,10 @@ help:
 	@echo ""
 	@echo "Docker targets:"
 	@echo "  up                                               	Start the application with docker-compose"
-	@echo "  down                                             	Stop the application with docker-compose"
+	@echo "  down                                             	Remove the application with docker-compose"
+	@echo "  stop                                             	Stop the application with docker-compose"
 
 .PHONY: help run \
 		migration migrate_up migrate_down seed \
 		mock mock_config \
-		up down
+		up down stop
