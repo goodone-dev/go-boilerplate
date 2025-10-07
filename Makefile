@@ -41,6 +41,7 @@ help:
 	@echo ""
 	@echo "Docker targets:"
 	@echo "  up                                               	Start the application with docker-compose"
+	@echo "  down                                             	Stop the application with docker-compose"
 
 .PHONY: help run \
 		migration migrate_up migrate_down seed \
