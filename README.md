@@ -22,6 +22,61 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 
+## 🚀 Quick Start
+
+### Prerequisites
+- [Go](https://golang.org/doc/install)
+- [Make](https://www.gnu.org/software/make/)
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/) (for Docker-based setup)
+
+### 1. Installation
+Clone the repository:
+```bash
+git clone https://github.com/BagusAK95/go-boilerplate.git
+cd go-boilerplate
+```
+
+### 2. Running the Application
+You can run the application in two ways:
+
+#### Option 1: With Docker (Recommended)
+This is the easiest way to get started, as it handles all services (database, cache, etc.) for you.
+
+1.  **Start the services**:
+    ```bash
+    make up
+    ```
+    This command builds and starts the application, database, and other services.
+
+The API will be accessible at `http://localhost:8080`.
+
+To stop all services, run `make down`.
+
+#### Option 2: Locally
+This method requires you to run the database and other services on your local machine.
+
+1. **Setup environment variables**:
+    ```bash
+    cp .env.example .env
+    ```
+    Update `.env` with your configuration. For local development, ensure it points to your local database and other services.
+
+2.  **Run database migrations**:
+    ```bash
+    make migrate_up DRIVER=postgres
+    ```
+
+3.  **(Optional) Seed the database**:
+    ```bash
+    make seed DRIVER=postgres
+    ```
+
+4.  **Run the application**:
+    ```bash
+    make run
+    ```
+    This command will start the Go application. The API will be accessible at `http://localhost:8080`.
+
 ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
 - [ ] **CI/CD Pipeline**: Automated checks for linting, test coverage, and security scanning.
@@ -31,7 +86,9 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - [ ] **Structured Logging**: Implementing a structured logger (e.g., Logrus).
 - [ ] **Request Sanitization**: Middleware to sanitize incoming request data.
 - [ ] **Worker Command**: Add worker for processing asynchronous task.
-Internal Test
+- [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
+
+## Internal Test
 - [ ] Migration MongoDB & MySQL
 - [ ] Seeder MongoDB & MySQL
 - [ ] Implementation MongoDB & MySQL
