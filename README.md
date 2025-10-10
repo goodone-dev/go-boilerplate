@@ -22,6 +22,66 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 
+## 📂 Project Structure
+
+This project is structured following the principles of **Clean Architecture**. The code is organized into distinct layers, promoting separation of concerns, testability, and maintainability. The dependencies flow inwards, from the outer layers (Infrastructure, Presentation) to the inner layers (Application, Domain).
+
+```
+.
+├── cmd/
+│   └── api/
+│       └── main.go             # Entry point of the application. Initializes and starts the server.
+├── internal/
+│   ├── application/            # Implements use cases by orchestrating domain logic.
+│   │   ├── <domain_name>/      # Groups application logic for a specific domain.
+│   │   │   ├── delivery/       # Adapters for handling incoming requests (e.g., HTTP, messaging).
+│   │   │   │   ├── http/       # HTTP handlers for the domain.
+│   │   │   │   └── messaging/  # Message handlers for the domain.
+│   │   │   ├── repository/     # Repository implementations for the domain.
+│   │   │   └── usecase/        # Business logic and use cases for the domain.
+│   │   └── ...
+│   ├── config/                 # Configuration loading and management.
+│   ├── domain/                 # Contains core entities and interfaces.
+│   │   ├── <domain_name>/      # Groups domain logic for a specific business entity.
+│   │   │   └── mocks/          # Mocks for domain interfaces.
+│   │   └── ...                 
+│   ├── infrastructure/         # Provides implementations for external services.
+│   │   ├── cache/              # Cache implementations (e.g., Redis).
+│   │   ├── database/           # Database implementations (PostgreSQL, MySQL, MongoDB).
+│   │   ├── integration/        # Clients for external APIs.
+│   │   ├── mail/               # Email sending implementation.
+│   │   ├── message/            # Message bus implementation.
+│   │   ├── tracer/             # Distributed tracing implementation (e.g., Jaeger).
+│   │   └── ...
+│   ├── presentation/           # Adapters for incoming requests.
+│   │   ├── rest/               # REST API handlers, router, and middleware.
+│   │   │   ├── middleware/     # REST API middleware.
+│   │   │   └── router/         # REST API router setup.
+│   │   ├── messaging/          # Message bus handlers.
+│   │   │   ├── middleware/     # Messaging middleware.
+│   │   │   └── listener/       # Message bus listener.
+│   │   └── ...
+│   └── utils/                  # Utility functions shared across the application.
+│       ├── error/              # Custom error types and handling.
+│       ├── html/               # HTML template rendering utilities.
+│       ├── http/               # HTTP client functions.
+│       ├── success/            # Standardized success responses.
+│       ├── tracer/             # Tracer helper functions.
+│       ├── validator/          # Request validation utilities.
+│       └── ...
+├── migrations/                 # SQL migration files for managing database schema changes.
+│   └── <database_name>/        # Migration files for a specific database.
+├── seeders/                    # SQL seed files for populating the database with initial data.
+│   └── <database_name>/        # Seeder files for a specific database.
+├── templates/                  # HTML templates for emails, PDFs, etc.
+│   ├── email/                  # Email templates.
+│   ├── pdf/                    # PDF templates.
+│   └── ...
+├── Makefile                    # Makefile with shortcuts for common development commands.
+├── docker-compose.yml          # Defines services for the local Docker environment.
+└── Dockerfile                  # Dockerfile for building the application image.
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
