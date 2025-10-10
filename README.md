@@ -170,11 +170,15 @@ This method requires you to run the database and other services on your local ma
 - [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
 - [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
 - [ ] **Live Reload**: Automatically restart the application when file changes are detected.
+- [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
+- [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
+- [ ] **CORS Handling**: Implement middleware for Cross-Origin Resource Sharing (CORS).
+- [ ] **Auto Generate Documentation**: Automatically generate API documentation.
 
-## 🧪 Internal Test
+<!-- ## 🧪 Internal Test
 - [ ] Migration MongoDB & MySQL
 - [ ] Seeder MongoDB & MySQL
-- [ ] Implementation MongoDB & MySQL
+- [ ] Implementation MongoDB & MySQL -->
 
 ## 🤝 Contributing
 1. Fork the repository
