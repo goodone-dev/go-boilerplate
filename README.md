@@ -9,6 +9,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
+- **Dependency Injection**: Switch between database or cache implementations without altering business logic.
 - **Distributed Tracing**: Integrated with Jaeger for distributed tracing, offering insights into request flows across services to simplify debugging and performance monitoring.
 - **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
