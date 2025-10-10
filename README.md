@@ -83,6 +83,8 @@ This project is structured following the principles of **Clean Architecture**. T
 └── Dockerfile                  # Dockerfile for building the application image.
 ```
 
+<!-- ## 🏗️ Architecture Diagram -->
+
 ## 🛠️ Tech Stack
 
 | Category         | Technologies                                                                                                  |
@@ -99,7 +101,7 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Circuit Breaker** | [Gobreaker](https://github.com/sony/gobreaker)                                                                 |
 | **Mocking** | [Mockery](https://github.com/vektra/mockery)                                                                 |
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
 - [Go](https://golang.org/doc/install)
@@ -154,6 +156,8 @@ This method requires you to run the database and other services on your local ma
     ```
     This command will start the Go application. The API will be accessible at `http://localhost:8080`.
 
+<!-- ## 🔧 Development -->
+
 ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
 - [ ] **CI/CD Pipeline**: Automated checks for linting, test coverage, and security scanning.
@@ -164,6 +168,8 @@ This method requires you to run the database and other services on your local ma
 - [ ] **Request Sanitization**: Middleware to sanitize incoming request data.
 - [ ] **Worker Command**: Add worker for processing asynchronous task.
 - [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
+- [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
+- [ ] **Live Reload**: Automatically restart the application when file changes are detected.
 
 ## 🧪 Internal Test
 - [ ] Migration MongoDB & MySQL
