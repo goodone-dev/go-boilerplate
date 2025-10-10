@@ -82,6 +82,22 @@ This project is structured following the principles of **Clean Architecture**. T
 └── Dockerfile                  # Dockerfile for building the application image.
 ```
 
+## 🛠️ Tech Stack
+
+| Category         | Technologies                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Framework**    | [Gin](https://github.com/gin-gonic/gin)                                                                         |
+| **Database**     | [GORM](https://gorm.io/) (PostgreSQL, MySQL), [Mongo-Driver](https://github.com/mongodb/mongo-go-driver) (MongoDB) |
+| **Cache**        | [Go-Redis](https://github.com/redis/go-redis)                                                                   |
+| **API Client**   | [Resty](https://github.com/go-resty/resty)                                                                      |
+| **Config**       | [Viper](https://github.com/spf13/viper)                                                                         |
+| **Validation**   | [Validator/v10](https://github.com/go-playground/validator)                                                      |
+| **Migration**    | [Golang-Migrate](https://github.com/golang-migrate/migrate)                                                     |
+| **Tracing**      | [OpenTelemetry](https://opentelemetry.io/)                                                                    |
+| **Email**        | [Gomail](https://github.com/go-gomail/gomail)                                                                   |
+| **Circuit Breaker** | [Gobreaker](https://github.com/sony/gobreaker)                                                                 |
+| **Mocking** | [Mockery](https://github.com/vektra/mockery)                                                                 |
+
 ## 🚀 Quick Start
 
 ### Prerequisites
