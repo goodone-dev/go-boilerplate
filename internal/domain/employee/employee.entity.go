@@ -6,10 +6,10 @@ import (
 )
 
 type Employee struct {
-	database.BaseEntity[uuid.UUID]
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	database.BaseEntity[uuid.UUID] `bson:",inline"`
+	Name                           string `json:"name" bson:"name"`
+	Email                          string `json:"email" bson:"email"`
+	Role                           string `json:"role" bson:"role"`
 }
 
 func (Employee) TableName() string {

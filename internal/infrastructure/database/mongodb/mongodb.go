@@ -8,13 +8,10 @@ import (
 	"time"
 
 	"github.com/BagusAK95/go-boilerplate/internal/config"
-	"github.com/golang-migrate/migrate/v4"
-	migratemongo "github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 type mongoConfig struct {
@@ -72,7 +69,8 @@ func Open(ctx context.Context) mongoConnection {
 }
 
 func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
-	opts.SetMonitor(otelmongo.NewMonitor())
+	// FIXME: mongodb monitor
+	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
 	opts.SetMaxPoolSize(uint64(config.MongoConfig.MaxConnPoolSize))
@@ -82,7 +80,7 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		UseLocalTimeZone: true,
 	})
 
-	client, err := mongo.Connect(ctx, opts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		log.Fatalf("❌ Could not to connect MongoDB connection: %v", err)
 	}
@@ -96,20 +94,21 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		return mongoDB
 	}
 
-	migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
-	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
-	}
+	// FIXME: mongodb migration
+	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
+	// if err != nil {
+	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// }
 
-	m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
-	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
-	}
+	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
+	// if err != nil {
+	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// }
 
-	err = m.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("❌ Could not to migrate MongoDB:%v", err)
-	}
+	// err = m.Up()
+	// if err != nil && err != migrate.ErrNoChange {
+	// 	log.Fatalf("❌ Could not to migrate MongoDB:%v", err)
+	// }
 
 	return mongoDB
 }

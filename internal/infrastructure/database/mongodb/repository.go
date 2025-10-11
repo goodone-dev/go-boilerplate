@@ -6,9 +6,8 @@ import (
 
 	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
 	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type BaseRepo[D any, I any, E database.Entity] struct {
@@ -57,7 +56,7 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
-	err = coll.FindOne(ctx, primitive.M{"_id": ID}).Decode(&res)
+	err = coll.FindOne(ctx, bson.M{"_id": ID}).Decode(&res)
 	return
 }
 
@@ -95,8 +94,11 @@ func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E,
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
 	result, err := coll.InsertOne(ctx, model)
+	if err != nil {
+		return
+	}
 
-	err = coll.FindOne(ctx, primitive.M{"_id": result.InsertedID}).Decode(&res)
+	err = coll.FindOne(ctx, bson.M{"_id": result.InsertedID}).Decode(&res)
 	return
 }
 
@@ -132,7 +134,7 @@ func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[st
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	err = coll.FindOneAndUpdate(ctx, primitive.M{"_id": ID}, payload).Decode(&res)
+	err = coll.FindOneAndUpdate(ctx, bson.M{"_id": ID}, payload).Decode(&res)
 	return
 }
 
@@ -144,7 +146,7 @@ func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload ma
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.UpdateMany(ctx, primitive.M{"_id": IDs}, payload)
+	_, err = coll.UpdateMany(ctx, bson.M{"_id": IDs}, payload)
 	return
 }
 
@@ -156,7 +158,7 @@ func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err e
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.DeleteOne(ctx, primitive.M{"_id": ID})
+	_, err = coll.DeleteOne(ctx, bson.M{"_id": ID})
 	return
 }
 
@@ -168,7 +170,7 @@ func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.DeleteOne(ctx, primitive.M{"_id": IDs})
+	_, err = coll.DeleteOne(ctx, bson.M{"_id": IDs})
 	return
 }
 

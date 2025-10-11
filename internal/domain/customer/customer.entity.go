@@ -6,9 +6,9 @@ import (
 )
 
 type Customer struct {
-	database.BaseEntity[uuid.UUID]
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	database.BaseEntity[uuid.UUID] `bson:",inline"`
+	Name                           string `json:"name" bson:"name"`
+	Email                          string `json:"email" bson:"email"`
 }
 
 func (Customer) TableName() string {
