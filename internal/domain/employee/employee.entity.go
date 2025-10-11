@@ -1,9 +1,12 @@
 package employee
 
-import database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+import (
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+)
 
 type Employee struct {
-	database.BaseEntity
+	database.BaseEntity[uuid.UUID]
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Role  string `json:"role"`

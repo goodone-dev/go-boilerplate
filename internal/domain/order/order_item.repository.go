@@ -1,7 +1,11 @@
 package order
 
-import database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+import (
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type IOrderItemRepository interface {
-	database.IBaseRepository[OrderItem]
+	database.IBaseRepository[gorm.DB, uuid.UUID, OrderItem]
 }

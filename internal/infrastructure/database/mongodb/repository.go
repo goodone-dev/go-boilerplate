@@ -1,0 +1,185 @@
+package mongodb
+
+import (
+	"context"
+	"errors"
+
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+type BaseRepo[D any, I any, E database.Entity] struct {
+	Entity   E
+	dbMaster *mongo.Database
+	dbSlave  *mongo.Database
+}
+
+func NewBaseRepo[D any, I any, E database.Entity](dbConn mongoConnection) database.IBaseRepository[D, I, E] {
+	return &BaseRepo[D, I, E]{
+		dbMaster: dbConn.Master,
+		dbSlave:  dbConn.Slave,
+	}
+}
+
+func (r *BaseRepo[D, I, E]) MasterDB() *D {
+	return any(r.dbMaster).(*D)
+}
+
+func (r *BaseRepo[D, I, E]) SlaveDB() *D {
+	return any(r.dbSlave).(*D)
+}
+
+func (r *BaseRepo[D, I, E]) Find(ctx context.Context, filter map[string]any) (res []E, err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbSlave.Collection(r.Entity.TableName())
+
+	cursor, err := coll.Find(ctx, filter)
+	if err != nil {
+		return
+	}
+
+	err = cursor.All(ctx, &res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbSlave.Collection(r.Entity.TableName())
+
+	err = coll.FindOne(ctx, primitive.M{"_id": ID}).Decode(&res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
+	return nil, errors.New("unsupported feature")
+}
+
+func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbSlave.Collection(r.Entity.TableName())
+
+	cursor, err := coll.Find(ctx, bson.M{"_id": bson.M{"$in": IDs}})
+	if err != nil {
+		return
+	}
+
+	err = cursor.All(ctx, &res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[string]any, page int, limit int) (res database.Pagination[E], err error) {
+	return res, errors.New("not implemented")
+}
+
+func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E, err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, model)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	result, err := coll.InsertOne(ctx, model)
+
+	err = coll.FindOne(ctx, primitive.M{"_id": result.InsertedID}).Decode(&res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, models []E, trx *D) (res []E, err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, models)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	docs := make([]any, 0, len(models))
+	for _, model := range models {
+		docs = append(docs, model)
+	}
+
+	result, err := coll.InsertMany(ctx, docs)
+
+	cursor, err := coll.Find(ctx, bson.M{"_id": bson.M{"$in": result.InsertedIDs}})
+	if err != nil {
+		return
+	}
+
+	err = cursor.All(ctx, &res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[string]any, trx *D) (res E, err error) {
+	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	err = coll.FindOneAndUpdate(ctx, primitive.M{"_id": ID}, payload).Decode(&res)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload map[string]any, trx *D) (err error) {
+	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	_, err = coll.UpdateMany(ctx, primitive.M{"_id": IDs}, payload)
+	return
+}
+
+func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
+	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	_, err = coll.DeleteOne(ctx, primitive.M{"_id": ID})
+	return
+}
+
+func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
+	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	_, err = coll.DeleteOne(ctx, primitive.M{"_id": IDs})
+	return
+}
+
+func (r *BaseRepo[D, I, E]) Begin(ctx context.Context) (*D, error) {
+	return nil, errors.New("unsupported feature")
+}
+
+func (r *BaseRepo[D, I, E]) Rollback(trx *D) *D {
+	return nil
+}
+
+func (r *BaseRepo[D, I, E]) Commit(trx *D) *D {
+	return nil
+}

@@ -1,9 +1,12 @@
 package product
 
-import database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+import (
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+)
 
 type Product struct {
-	database.BaseEntity
+	database.BaseEntity[uuid.UUID]
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`

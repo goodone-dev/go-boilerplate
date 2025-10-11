@@ -2,14 +2,16 @@ package repository
 
 import (
 	"github.com/BagusAK95/go-boilerplate/internal/domain/order"
-	database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type OrderItemRepository struct {
-	database.IBaseRepository[order.OrderItem]
+	database.IBaseRepository[gorm.DB, uuid.UUID, order.OrderItem]
 }
 
-func NewOrderItemRepo(baseRepo database.IBaseRepository[order.OrderItem]) order.IOrderItemRepository {
+func NewOrderItemRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, order.OrderItem]) order.IOrderItemRepository {
 	return &OrderItemRepository{
 		baseRepo,
 	}

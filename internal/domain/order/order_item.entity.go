@@ -1,12 +1,12 @@
 package order
 
 import (
-	database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
 	"github.com/google/uuid"
 )
 
 type OrderItem struct {
-	database.BaseEntity
+	database.BaseEntity[uuid.UUID]
 	OrderID     uuid.UUID `json:"order_id"`
 	ProductID   uuid.UUID `json:"product_id"`
 	ProductName string    `json:"product_name" gorm:"-"`

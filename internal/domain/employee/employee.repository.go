@@ -1,7 +1,11 @@
 package employee
 
-import database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+import (
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type IEmployeeRepository interface {
-	database.IBaseRepository[Employee]
+	database.IBaseRepository[gorm.DB, uuid.UUID, Employee]
 }

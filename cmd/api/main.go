@@ -24,12 +24,14 @@ import (
 	"github.com/BagusAK95/go-boilerplate/internal/domain/order"
 	"github.com/BagusAK95/go-boilerplate/internal/domain/product"
 	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/cache/redis"
-	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql/postgres"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/postgres"
 	mailsender "github.com/BagusAK95/go-boilerplate/internal/infrastructure/mail"
 	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/message/bus"
 	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/tracer/jaeger"
 	buslistener "github.com/BagusAK95/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/BagusAK95/go-boilerplate/internal/presentation/rest/router"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -48,13 +50,13 @@ func main() {
 	mailSender := mailsender.NewMailSender()
 
 	// ========== Repositories ==========
-	customerBaseRepo := postgres.NewBaseRepo[customer.Customer](postgresConn)
+	customerBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
 	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
-	productBaseRepo := postgres.NewBaseRepo[product.Product](postgresConn)
+	productBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, product.Product](postgresConn)
 	productRepo := productrepo.NewProductRepo(productBaseRepo)
-	orderBaseRepo := postgres.NewBaseRepo[order.Order](postgresConn)
+	orderBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.Order](postgresConn)
 	orderRepo := orderrepo.NewOrderRepo(orderBaseRepo)
-	orderItemBaseRepo := postgres.NewBaseRepo[order.OrderItem](postgresConn)
+	orderItemBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
 	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
 
 	// ========== Bus ==========

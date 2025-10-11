@@ -65,7 +65,7 @@ func Open() postgresConnection {
 
 func open(pgConfig postgres.Config) *gorm.DB {
 	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		log.Fatalf("❌ Could not to open PostgresSQL connection: %v", err)

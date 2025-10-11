@@ -47,10 +47,10 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		span.EndSpan(err, res)
 	}()
 
-	customer, err := u.customerRepo.GetByID(ctx, req.CustomerID)
+	customer, err := u.customerRepo.FindById(ctx, req.CustomerID)
 	if err != nil {
 		return nil, err
-	} else if customer.ID == uuid.Nil {
+	} else if customer == nil {
 		return nil, httperror.NewNotFoundError("customer not found")
 	}
 
@@ -60,7 +60,7 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 	}
 
 	// TODO: Lock products
-	products, err := u.productRepo.GetByIDs(ctx, productIDs)
+	products, err := u.productRepo.FindByIds(ctx, productIDs)
 	if err != nil {
 		return nil, err
 	} else if len(products) != len(req.OrderItems) {
@@ -87,21 +87,25 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		})
 	}
 
-	tx := u.orderRepo.Begin(ctx)
+	trx, err := u.orderRepo.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	defer func() {
 		if err != nil {
-			u.orderRepo.Rollback(tx)
+			u.orderRepo.Rollback(trx)
 			return
 		}
 
-		u.orderRepo.Commit(tx)
+		u.orderRepo.Commit(trx)
 	}()
 
-	createdOrder, err := u.orderRepo.CreateWithTx(ctx, order.Order{
+	createdOrder, err := u.orderRepo.Insert(ctx, order.Order{
 		CustomerID:  req.CustomerID,
 		TotalAmount: totalAmount,
 		Status:      "paid",
-	}, tx)
+	}, trx)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +114,7 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		orderItems[i].OrderID = createdOrder.ID
 	}
 
-	_, err = u.orderItemRepo.CreateBulkWithTx(ctx, orderItems, tx)
+	_, err = u.orderItemRepo.InsertMany(ctx, orderItems, trx)
 	if err != nil {
 		return nil, err
 	}

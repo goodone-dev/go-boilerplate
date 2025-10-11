@@ -1,7 +1,11 @@
 package customer
 
-import database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+import (
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type ICustomerRepository interface {
-	database.IBaseRepository[Customer]
+	database.IBaseRepository[gorm.DB, uuid.UUID, Customer]
 }

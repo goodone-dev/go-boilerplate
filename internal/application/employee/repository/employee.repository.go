@@ -2,14 +2,16 @@ package repository
 
 import (
 	"github.com/BagusAK95/go-boilerplate/internal/domain/employee"
-	database "github.com/BagusAK95/go-boilerplate/internal/infrastructure/database/sql"
+	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type EmployeeRepository struct {
-	database.IBaseRepository[employee.Employee]
+	database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]
 }
 
-func NewEmployeeRepo(baseRepo database.IBaseRepository[employee.Employee]) employee.IEmployeeRepository {
+func NewEmployeeRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]) employee.IEmployeeRepository {
 	return &EmployeeRepository{
 		baseRepo,
 	}

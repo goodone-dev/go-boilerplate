@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS orders (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_id UUID NOT NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(50) NOT NULL,
+    status VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ,
