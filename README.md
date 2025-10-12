@@ -192,6 +192,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 **Bagus Abdul Kurniawan**
-- Email: hi@goodone.id
+- Email: hello@goodone.dev
 - LinkedIn: [linkedin.com/in/bagusak95](https://linkedin.com/in/bagusak95)
-- GitHub: [github.com/goodone_dev](https://github.com/goodone_dev)
+- GitHub: [github.com/goodonedev](https://github.com/goodonedev)
