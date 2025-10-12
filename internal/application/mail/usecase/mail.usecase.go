@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/BagusAK95/go-boilerplate/internal/domain/mail"
-	mailsender "github.com/BagusAK95/go-boilerplate/internal/infrastructure/mail"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
+	"github.com/goodonedev/go-boilerplate/internal/domain/mail"
+	mailsender "github.com/goodonedev/go-boilerplate/internal/infrastructure/mail"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 )
 
 type MailUsecase struct {

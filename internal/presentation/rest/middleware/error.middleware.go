@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/BagusAK95/go-boilerplate/internal/utils/error"
 	"github.com/gin-gonic/gin"
+	"github.com/goodonedev/go-boilerplate/internal/utils/error"
 )
 
 func ErrorMiddleware() gin.HandlerFunc {

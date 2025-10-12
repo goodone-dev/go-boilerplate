@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/cache"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
 	"github.com/gin-gonic/gin"
+	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 )
 
 type responseWriter struct {

@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 
-	"github.com/BagusAK95/go-boilerplate/internal/config"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/error"
 	"github.com/gin-gonic/gin"
+	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodonedev/go-boilerplate/internal/utils/error"
 )
 
 func ContextMiddleware() gin.HandlerFunc {

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/BagusAK95/go-boilerplate/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/goodonedev/go-boilerplate/internal/config"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -65,7 +65,7 @@ func Open() postgresConnection {
 
 func open(pgConfig postgres.Config) *gorm.DB {
 	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
 		log.Fatalf("❌ Could not to open PostgresSQL connection: %v", err)

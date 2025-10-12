@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
+	"github.com/goodonedev/go-boilerplate/internal/infrastructure/database"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

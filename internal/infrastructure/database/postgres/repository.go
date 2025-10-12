@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 
-	"github.com/BagusAK95/go-boilerplate/internal/infrastructure/database"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/goodonedev/go-boilerplate/internal/infrastructure/database"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 	"gorm.io/gorm"
 )
 

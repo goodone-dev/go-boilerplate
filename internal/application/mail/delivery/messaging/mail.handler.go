@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/BagusAK95/go-boilerplate/internal/config"
-	"github.com/BagusAK95/go-boilerplate/internal/domain/mail"
+	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodonedev/go-boilerplate/internal/domain/mail"
 )
 
 type mailHandler struct {

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/BagusAK95/go-boilerplate/internal/utils/http"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
+	"github.com/goodonedev/go-boilerplate/internal/utils/http"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 )
 
 const url = "https://httpbin.org"

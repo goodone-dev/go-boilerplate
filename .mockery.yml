@@ -12,21 +12,21 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  github.com/BagusAK95/go-boilerplate/internal/domain/customer:
+  github.com/goodonedev/go-boilerplate/internal/domain/customer:
     interfaces:
       ICustomerRepository:
         config:
           dir: "{{.InterfaceDir}}/mocks"
           filename: customer.repository_mock.go
           structname: "{{.InterfaceName}}Mock"
-  github.com/BagusAK95/go-boilerplate/internal/domain/order:
+  github.com/goodonedev/go-boilerplate/internal/domain/order:
     interfaces:
       IOrderRepository:
         config:
           dir: "{{.InterfaceDir}}/mocks"
           filename: "order.repository_mock.go"
 
-  github.com/BagusAK95/go-boilerplate/internal/infrastructure/cache:
+  github.com/goodonedev/go-boilerplate/internal/infrastructure/cache:
     interfaces:
       ICache:
         config:

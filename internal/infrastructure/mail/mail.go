@@ -5,9 +5,9 @@ import (
 	"context"
 	"crypto/tls"
 
-	"github.com/BagusAK95/go-boilerplate/internal/config"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/html"
-	"github.com/BagusAK95/go-boilerplate/internal/utils/tracer"
+	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodonedev/go-boilerplate/internal/utils/html"
+	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 	"gopkg.in/gomail.v2"
 )
 
