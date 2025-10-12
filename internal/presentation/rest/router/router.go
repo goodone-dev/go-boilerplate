@@ -7,7 +7,7 @@ import (
 	"net/http/pprof"
 
 	"github.com/gin-gonic/gin"
-	orderHandler "github.com/goodonedev/go-boilerplate/internal/application/order/delivery/http"
+	orderhandler "github.com/goodonedev/go-boilerplate/internal/application/order/delivery/http"
 	"github.com/goodonedev/go-boilerplate/internal/config"
 	"github.com/goodonedev/go-boilerplate/internal/domain/order"
 	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
@@ -26,7 +26,7 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 	router.Use(gin.Recovery())
 
 	// Initialize handlers
-	orderHandler := orderHandler.NewOrderHandler(orderUsecase)
+	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
 
 	// Define routes
 	v1 := router.Group("/api/v1")

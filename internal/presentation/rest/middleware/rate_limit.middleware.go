@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
-	httError "github.com/goodonedev/go-boilerplate/internal/utils/error"
+	htterror "github.com/goodonedev/go-boilerplate/internal/utils/error"
 	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
 )
 
@@ -42,7 +42,7 @@ func RateLimitMiddleware(cache cache.ICache, limit int, duration time.Duration) 
 
 		countInt, _ := strconv.Atoi(countStr)
 		if countInt >= limit {
-			c.Error(httError.NewTooManyRequestError("too many request"))
+			c.Error(htterror.NewTooManyRequestError("too many request"))
 			c.Abort()
 			return
 		}
