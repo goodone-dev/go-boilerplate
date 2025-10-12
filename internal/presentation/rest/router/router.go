@@ -7,11 +7,11 @@ import (
 	"net/http/pprof"
 
 	"github.com/gin-gonic/gin"
-	orderhandler "github.com/goodonedev/go-boilerplate/internal/application/order/delivery/http"
-	"github.com/goodonedev/go-boilerplate/internal/config"
-	"github.com/goodonedev/go-boilerplate/internal/domain/order"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
-	"github.com/goodonedev/go-boilerplate/internal/presentation/rest/middleware"
+	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
+	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 

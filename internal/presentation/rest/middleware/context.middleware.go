@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goodonedev/go-boilerplate/internal/config"
-	"github.com/goodonedev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
 )
 
 func ContextMiddleware() gin.HandlerFunc {

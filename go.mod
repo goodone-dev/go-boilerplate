@@ -1,4 +1,4 @@
-module github.com/goodonedev/go-boilerplate
+module github.com/goodone-dev/go-boilerplate
 
 go 1.24.2
 

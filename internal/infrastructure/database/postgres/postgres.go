@@ -8,7 +8,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

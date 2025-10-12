@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/goodonedev/go-boilerplate/internal/domain/order"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/database"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

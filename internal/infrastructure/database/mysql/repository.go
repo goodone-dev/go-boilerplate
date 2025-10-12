@@ -4,8 +4,8 @@ import (
 	"context"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/database"
-	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 	"gorm.io/gorm"
 )
 

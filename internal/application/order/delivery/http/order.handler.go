@@ -2,10 +2,10 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/goodonedev/go-boilerplate/internal/domain/order"
-	"github.com/goodonedev/go-boilerplate/internal/utils/error"
-	"github.com/goodonedev/go-boilerplate/internal/utils/success"
-	"github.com/goodonedev/go-boilerplate/internal/utils/validator"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/success"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
 type OrderHandler struct {

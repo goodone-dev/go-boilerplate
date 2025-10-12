@@ -7,9 +7,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/goodonedev/go-boilerplate/internal/config"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
-	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 	"github.com/redis/go-redis/v9"
 )
 

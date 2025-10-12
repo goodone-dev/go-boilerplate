@@ -8,7 +8,7 @@ import (
 	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"

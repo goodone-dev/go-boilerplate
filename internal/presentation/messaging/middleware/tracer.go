@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 )
 
 func TracerMiddleware[T any](topic string, handler func(context.Context, T) error) func(T) {

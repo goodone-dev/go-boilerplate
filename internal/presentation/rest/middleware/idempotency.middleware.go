@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/cache"
-	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 )
 
 type responseWriter struct {

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/goodonedev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"

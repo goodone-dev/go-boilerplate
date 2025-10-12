@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goodonedev/go-boilerplate/internal/config"
-	"github.com/goodonedev/go-boilerplate/internal/domain/customer"
-	"github.com/goodonedev/go-boilerplate/internal/domain/mail"
-	"github.com/goodonedev/go-boilerplate/internal/domain/order"
-	"github.com/goodonedev/go-boilerplate/internal/domain/product"
-	"github.com/goodonedev/go-boilerplate/internal/infrastructure/message/bus"
-	httperror "github.com/goodonedev/go-boilerplate/internal/utils/error"
-	"github.com/goodonedev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 	"github.com/google/uuid"
 )
 
