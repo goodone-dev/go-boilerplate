@@ -16,7 +16,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
--  centralized_traffic_jam **Centralized Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
+- 🥅 **Centralized Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
 - 📧 **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
 - 🕒 **Asynchronous Processing**: Offloads long-running tasks to a message bus, ensuring non-blocking API responses.
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
