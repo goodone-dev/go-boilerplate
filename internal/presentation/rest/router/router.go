@@ -31,7 +31,7 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 	// Define routes
 	v1 := router.Group("/api/v1")
 	{
-		orders := v1.Group("/order")
+		orders := v1.Group("/orders")
 		{
 			orders.POST(
 				"",
