@@ -12,6 +12,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 💉 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
 - ιχ **Distributed Tracing**: Integrated with Jaeger for distributed tracing, offering insights into request flows across services to simplify debugging and performance monitoring.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
+- 🧼 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
 - ➡️ **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
@@ -165,7 +166,6 @@ This project is structured following the principles of **Clean Architecture**. T
 - [ ] **Authentication**: Implementing OAuth2 with Ory Kratos for identity and user management.
 - [ ] **Authorization**: Integration with Ory Keto for permission and access control.
 - [ ] **Structured Logging**: Implementing a structured logger (e.g., Logrus).
-- [ ] **Request Sanitization**: Middleware to sanitize incoming request data.
 - [ ] **Worker Command**: Add worker for processing asynchronous task.
 - [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
 - [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.

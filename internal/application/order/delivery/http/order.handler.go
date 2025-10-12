@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/sanitizer"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
@@ -24,6 +25,11 @@ func (h *OrderHandler) Create(c *gin.Context) {
 	var req order.CreateOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.Error(error.NewInternalServerError(err.Error()))
+		return
+	}
+
+	if err := sanitizer.Sanitize(req); err != nil {
+		c.Error(error.NewBadRequestError(err.Error()))
 		return
 	}
 
