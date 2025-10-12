@@ -23,6 +23,61 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 
+## 🚀 Getting Started
+
+### Prerequisites
+- [Go](https://golang.org/doc/install)
+- [Make](https://www.gnu.org/software/make/)
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/) (for Docker-based setup)
+
+### 1. Installation
+Clone the repository:
+```bash
+git clone https://github.com/goodone-dev/go-boilerplate.git
+cd go-boilerplate
+```
+
+### 2. Running the Application
+You can run the application in two ways:
+
+#### Option 1: With Docker (Recommended)
+This is the easiest way to get started, as it handles all services (database, cache, etc.) for you.
+
+1.  **Start the services**:
+    ```bash
+    make up
+    ```
+    This command builds and starts the application, database, and other services.
+
+The API will be accessible at `http://localhost:8080`.
+
+To stop all services, run `make down`.
+
+#### Option 2: Locally
+This method requires you to run the database and other services on your local machine.
+
+1. **Setup environment variables**:
+    ```bash
+    cp .env.example .env
+    ```
+    Update `.env` with your configuration. For local development, ensure it points to your local database and other services.
+
+2.  **Run database migrations**:
+    ```bash
+    make migrate_up DRIVER=postgres
+    ```
+
+3.  **(Optional) Seed the database**:
+    ```bash
+    make seed DRIVER=postgres
+    ```
+
+4.  **Run the application**:
+    ```bash
+    make run
+    ```
+    This command will start the Go application. The API will be accessible at `http://localhost:8080`.
+
 ## 📂 Project Structure
 
 This project is structured following the principles of **Clean Architecture**. The code is organized into distinct layers, promoting separation of concerns, testability, and maintainability. The dependencies flow inwards, from the outer layers (Infrastructure, Presentation) to the inner layers (Application, Domain).
@@ -85,6 +140,8 @@ This project is structured following the principles of **Clean Architecture**. T
 
 <!-- ## 🏗️ Architecture Diagram -->
 
+<!-- ## 🔧 Development -->
+
 ## 🛠️ Tech Stack
 
 | Category         | Technologies                                                                                                  |
@@ -100,63 +157,6 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Email**        | [Gomail](https://github.com/go-gomail/gomail)                                                                   |
 | **Circuit Breaker** | [Gobreaker](https://github.com/sony/gobreaker)                                                                 |
 | **Mocking** | [Mockery](https://github.com/vektra/mockery)                                                                 |
-
-## 🚀 Getting Started
-
-### Prerequisites
-- [Go](https://golang.org/doc/install)
-- [Make](https://www.gnu.org/software/make/)
-- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/) (for Docker-based setup)
-
-### 1. Installation
-Clone the repository:
-```bash
-git clone https://github.com/goodone-dev/go-boilerplate.git
-cd go-boilerplate
-```
-
-### 2. Running the Application
-You can run the application in two ways:
-
-#### Option 1: With Docker (Recommended)
-This is the easiest way to get started, as it handles all services (database, cache, etc.) for you.
-
-1.  **Start the services**:
-    ```bash
-    make up
-    ```
-    This command builds and starts the application, database, and other services.
-
-The API will be accessible at `http://localhost:8080`.
-
-To stop all services, run `make down`.
-
-#### Option 2: Locally
-This method requires you to run the database and other services on your local machine.
-
-1. **Setup environment variables**:
-    ```bash
-    cp .env.example .env
-    ```
-    Update `.env` with your configuration. For local development, ensure it points to your local database and other services.
-
-2.  **Run database migrations**:
-    ```bash
-    make migrate_up DRIVER=postgres
-    ```
-
-3.  **(Optional) Seed the database**:
-    ```bash
-    make seed DRIVER=postgres
-    ```
-
-4.  **Run the application**:
-    ```bash
-    make run
-    ```
-    This command will start the Go application. The API will be accessible at `http://localhost:8080`.
-
-<!-- ## 🔧 Development -->
 
 ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
