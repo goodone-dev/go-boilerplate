@@ -157,8 +157,8 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 	}
 
 	filter["deleted_at"] = nil
-	offset := uint64((page - 1) * size)
-	limit := uint64(size + 1)
+	limit := uint64(size) + uint64(1)
+	offset := (uint64(page) - uint64(1)) * uint64(size)
 
 	builder := sq.
 		Select("*").

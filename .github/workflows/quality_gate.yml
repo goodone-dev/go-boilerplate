@@ -64,3 +64,5 @@ jobs:
         uses: securego/gosec@master
         with:
           args: '-r ./...'
+
+# TODO: check unit test coverage
