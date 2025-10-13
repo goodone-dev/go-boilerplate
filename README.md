@@ -146,19 +146,19 @@ This project is structured following the principles of **Clean Architecture**. T
 
 ## 🛠️ Tech Stack
 
-| Category         | Technologies                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Framework**    | [Gin](https://github.com/gin-gonic/gin)                                                                         |
-| **Database**     | [GORM](https://gorm.io/) (PostgreSQL, MySQL), [Mongo-Driver](https://github.com/mongodb/mongo-go-driver) (MongoDB) |
-| **Cache**        | [Go-Redis](https://github.com/redis/go-redis)                                                                   |
-| **API Client**   | [Resty](https://github.com/go-resty/resty)                                                                      |
-| **Config**       | [Viper](https://github.com/spf13/viper)                                                                         |
-| **Validation**   | [Validator/v10](https://github.com/go-playground/validator)                                                      |
-| **Migration**    | [Golang-Migrate](https://github.com/golang-migrate/migrate)                                                     |
-| **Tracing**      | [OpenTelemetry](https://opentelemetry.io/)                                                                    |
-| **Email**        | [Gomail](https://github.com/go-gomail/gomail)                                                                   |
-| **Circuit Breaker** | [Gobreaker](https://github.com/sony/gobreaker)                                                                 |
-| **Mocking** | [Mockery](https://github.com/vektra/mockery)                                                                 |
+| Category              | Technologies                                                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------|
+| **Framework**         | [gin](https://github.com/gin-gonic/gin)                                                                               |
+| **Database**          | [gorm](https://gorm.io/) (PostgreSQL, MySQL), [mongo-driver](https://github.com/mongodb/mongo-go-driver) (MongoDB)    |
+| **Cache**             | [go-redis](https://github.com/redis/go-redis)                                                                         |
+| **API Client**        | [resty](https://github.com/go-resty/resty)                                                                            |
+| **Config**            | [viper](https://github.com/spf13/viper)                                                                               |
+| **Validation**        | [validator](https://github.com/go-playground/validator)                                                               |
+| **Migration**         | [golang-migrate](https://github.com/golang-migrate/migrate)                                                           |
+| **Tracing**           | [opentelemetry](https://opentelemetry.io/)                                                                            |
+| **Email**             | [gomail](https://github.com/go-gomail/gomail)                                                                         |
+| **Circuit Breaker**   | [gobreaker](https://github.com/sony/gobreaker)                                                                        |
+| **Mocking**           | [mockery](https://github.com/vektra/mockery)                                                                          |
 
 ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
