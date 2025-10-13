@@ -41,7 +41,7 @@ func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, da
 	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
 
 	if config.MailConfig.TLS {
-		d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+		d.TLSConfig = &tls.Config{ServerName: config.MailConfig.Host}
 	}
 
 	if err := d.DialAndSend(m); err != nil {

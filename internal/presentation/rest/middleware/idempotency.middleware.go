@@ -73,6 +73,10 @@ func IdempotencyMiddleware(cache cache.ICache, duration time.Duration) gin.Handl
 			return
 		}
 
-		blw.ResponseWriter.Write(blw.body.Bytes())
+		if _, err := blw.ResponseWriter.Write(blw.body.Bytes()); err != nil {
+			c.Error(err)
+			c.Abort()
+			return
+		}
 	}
 }

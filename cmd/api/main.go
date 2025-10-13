@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
@@ -80,8 +81,12 @@ func main() {
 	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
 
 	srv := &http.Server{
-		Addr:    addr,
-		Handler: r,
+		Addr:              addr,
+		Handler:           r,
+		ReadTimeout:       5 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	go func() {

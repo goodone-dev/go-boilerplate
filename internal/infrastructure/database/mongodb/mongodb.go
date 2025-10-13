@@ -73,12 +73,16 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
-	opts.SetMaxPoolSize(uint64(config.MongoConfig.MaxConnPoolSize))
-	opts.SetMinPoolSize(uint64(config.MongoConfig.MinConnPoolSize))
 	opts.SetMaxConnIdleTime(time.Duration(config.MongoConfig.ConnIdleTimeoutMS) * time.Millisecond)
 	opts.SetBSONOptions(&options.BSONOptions{
 		UseLocalTimeZone: true,
 	})
+	if config.MongoConfig.MaxConnPoolSize >= 0 {
+		opts.SetMaxPoolSize(uint64(config.MongoConfig.MaxConnPoolSize))
+	}
+	if config.MongoConfig.MinConnPoolSize >= 0 {
+		opts.SetMinPoolSize(uint64(config.MongoConfig.MinConnPoolSize))
+	}
 
 	client, err := mongo.Connect(opts)
 	if err != nil {
