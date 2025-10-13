@@ -3,9 +3,12 @@
 
 This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and production-grade foundation for your next web service. It embraces a clean, Domain-Driven Design (DDD) architecture to ensure maintainability and separation of concerns, empowering you to focus on delivering business value instead of wrestling with infrastructure setup.
 
+<!-- ## TODO: 💡 Motivation -->
+
 ## 🌟 Features
 - 🏗️ **Clean Architecture**: Separates concerns into distinct layers (domain, application, infrastructure, presentation) for a more organized, testable, and maintainable codebase.
 - 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework.
+- 🔄 **Live Reload**: Automatically restart the application when file changes are detected.
 - 🗃️ **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
@@ -169,7 +172,6 @@ This project is structured following the principles of **Clean Architecture**. T
 - [ ] **Worker Command**: Add worker for processing asynchronous task.
 - [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
 - [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
-- [ ] **Live Reload**: Automatically restart the application when file changes are detected.
 - [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
 - [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
 - [ ] **CORS Handling**: Implement middleware for Cross-Origin Resource Sharing (CORS).

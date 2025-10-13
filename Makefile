@@ -11,13 +11,16 @@ mock:
 	@mockery --log-level=ERROR
 
 mock_config:
-	@bash .dev/mock_config.sh $(NAME)
+	@.dev/mock_config.sh $(NAME)
 
 seed:
 	@.dev/seed.sh $(DRIVER)
 
 run:
-	@go run ./cmd/api/main.go
+	@.dev/run.sh
+
+watch:
+	@.dev/run.sh -w
 
 up:
 	@docker-compose up --build -d
@@ -38,8 +41,9 @@ help:
 	@echo "  seed DRIVER=<driver>                             	Seed the database"
 	@echo ""
 	@echo "Development targets:"
-	@echo "  run                                              	Run the application"
-	@echo "  mock                                             	Generate mocks"
+	@echo "  run                                               	Run the application"
+	@echo "  watch                                             	Run the application with live reloading"
+	@echo "  mock                                              	Generate mocks"
 	@echo "  mock_config NAME=<name>                          	Generate mock config"
 	@echo ""
 	@echo "Docker targets:"
@@ -47,7 +51,7 @@ help:
 	@echo "  down                                             	Remove the application with docker-compose"
 	@echo "  stop                                             	Stop the application with docker-compose"
 
-.PHONY: help run \
+.PHONY: help run watch \
 		migration migrate_up migrate_down seed \
 		mock mock_config \
 		up down stop
