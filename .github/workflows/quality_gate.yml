@@ -28,7 +28,7 @@ jobs:
         run: go build -v ./...
 
   lint_check:
-    name: Lint Check
+    name: Linter Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
