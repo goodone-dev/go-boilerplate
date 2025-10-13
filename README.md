@@ -140,9 +140,9 @@ This project is structured following the principles of **Clean Architecture**. T
 └── Dockerfile                  # Dockerfile for building the application image.
 ```
 
-<!-- ## 🏗️ Architecture Diagram -->
+<!-- ## TODO: 🏗️ Architecture Diagram -->
 
-<!-- ## 🔧 Development -->
+<!-- ## TODO: 🔧 Development -->
 
 ## 🛠️ Tech Stack
 
