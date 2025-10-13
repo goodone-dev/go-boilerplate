@@ -1,0 +1,66 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  GO_VERSION: '1.24.2'
+
+jobs:
+  build_check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: '0'
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+
+      - name: Build
+        run: go build -v ./...
+
+  lint_check:
+    name: Go Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: '0' # Number of commits to fetch. 0 indicates all history for all branches and tags.
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          only-new-issues: true # Show only new issues.
+
+  security_check:
+    name: Security Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: '0' # Number of commits to fetch. 0 indicates all history for all branches and tags.
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: '-r ./...'
