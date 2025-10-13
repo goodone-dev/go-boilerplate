@@ -28,6 +28,25 @@ services:
       - redis_data:/data
     restart: always
 
+  rabbitmq:
+    networks:
+      - backend
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
   mailpit:
     networks:
       - backend
@@ -108,9 +127,18 @@ services:
       JAEGER_HOST: jaeger
       JAEGER_PORT: 4318
       JAEGER_SERVICE_NAME: goodmart-api
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      RABBITMQ_VHOST: /
+      RABBITMQ_POOL_SIZE: 10
+      RABBITMQ_MAX_RETRY: 3
+      RABBITMQ_RETRY_DELAY: 5
     depends_on:
       - postgres
       - redis
+      - rabbitmq
       - mailpit
       - jaeger
 
@@ -120,3 +148,4 @@ networks:
 volumes:
   postgres-data:
   redis_data:
+  rabbitmq_data:
