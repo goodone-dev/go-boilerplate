@@ -23,6 +23,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
+- 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
 
 ## 🚀 Getting Started
 
@@ -161,7 +162,6 @@ This project is structured following the principles of **Clean Architecture**. T
 
 ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
-- [ ] **CI/CD Pipeline**: Automated checks for linting, test coverage, and security scanning.
 - [ ] **Message Broker Support**: Adding support for Kafka and RabbitMQ.
 - [ ] **Authentication**: Implementing OAuth2 with Ory Kratos for identity and user management.
 - [ ] **Authorization**: Integration with Ory Keto for permission and access control.

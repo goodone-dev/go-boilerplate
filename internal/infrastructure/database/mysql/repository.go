@@ -157,18 +157,13 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 	}
 
 	filter["deleted_at"] = nil
-
-	var limit, offset uint64
-	limit = uint64(size) + uint64(1)
-	offset = (uint64(page) - uint64(1)) * uint64(size)
-
 	builder := sq.
 		Select("*").
 		From(r.Entity.TableName()).
 		Where(filter).
 		OrderBy("id DESC").
-		Limit(limit).
-		Offset(offset)
+		Limit(uint64(size + 1)).
+		Offset(uint64((page - 1) * size))
 
 	qry, args, err := builder.ToSql()
 	if err != nil {
