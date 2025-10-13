@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Script to create database migration files using golang-migrate
+# Script to create database seeder files using golang-migrate
 
 # Function to show usage
 show_usage() {
-    echo "Usage: make migration NAME=<migration_name> DRIVER=<database_driver>"
-    echo "Example: make migration NAME=create_users_table DRIVER=postgres"
+    echo "Usage: make seeder NAME=<seeder_name> DRIVER=<database_driver>"
+    echo "Example: make seeder NAME=seed_users_table DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
@@ -17,34 +17,34 @@ Available database drivers:"
 # Parse command line arguments
 while getopts ":n:d:h" opt; do
     case $opt in
-        n) MIGRATION_NAME="$OPTARG";;
+        n) SEEDER_NAME="$OPTARG";;
         d) DB_DRIVER="$OPTARG";;
         h) show_usage;;
     esac
 done
 
 # Validate required arguments
-if [ -z "$MIGRATION_NAME" ] || [ -z "$DB_DRIVER" ]; then
-    echo "Error: Both migration name and database driver are required"
+if [ -z "$SEEDER_NAME" ] || [ -z "$DB_DRIVER" ]; then
+    echo "Error: Both seeder name and database driver are required"
     show_usage
 fi
 
-# Validate migration name (allow only lowercase letters, numbers, and underscores)
-if ! [[ $MIGRATION_NAME =~ ^[a-z0-9_]+$ ]]; then
-    echo "Error: Migration name can only contain lowercase letters, numbers, and underscores"
+# Validate seeder name (allow only lowercase letters, numbers, and underscores)
+if ! [[ $SEEDER_NAME =~ ^[a-z0-9_]+$ ]]; then
+    echo "Error: Seeder name can only contain lowercase letters, numbers, and underscores"
     exit 1
 fi
 
 # Validate database driver
 case $DB_DRIVER in
     postgres|postgresql) 
-        MIGRATION_DIR="./migrations/postgres"
+        SEEDER_DIR="./seeders/postgres"
         ;;
     mysql) 
-        MIGRATION_DIR="./migrations/mysql"
+        SEEDER_DIR="./seeders/mysql"
         ;;
     mongodb) 
-        MIGRATION_DIR="./migrations/mongodb"
+        SEEDER_DIR="./seeders/mongodb"
         ;;
     *)
         echo "Error: Unsupported database driver: $DB_DRIVER"
@@ -52,8 +52,8 @@ case $DB_DRIVER in
         ;;
 esac
 
-# Create migrations directory if it doesn't exist
-mkdir -p $MIGRATION_DIR
+# Create seeders directory if it doesn't exist
+mkdir -p $SEEDER_DIR
 
 # Check if golang-migrate is installed
 if ! command -v migrate &> /dev/null; then
@@ -85,13 +85,13 @@ if ! command -v migrate &> /dev/null; then
     fi
 fi
 
-# Create migration files
-echo "Creating migration files..."
-migrate create -ext sql -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
+# Create seeder files
+echo "Creating seeder files..."
+migrate create -ext sql -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
 
 if [ $? -eq 0 ]; then
-    echo "✅ Migration files created successfully in $MIGRATION_DIR directory"
+    echo "✅ Seeder files created successfully in $SEEDER_DIR directory"
 else
-    echo "❌ Failed to create migration files"
+    echo "❌ Failed to create seeder files"
     exit 1
 fi

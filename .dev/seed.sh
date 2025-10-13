@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# Load environment variables from .env file
-if [ -f .env ]; then
-    export $(cat .env | grep -v '#' | awk '/=/ {print $1}')
-fi
+# Script to apply database seeders using golang-migrate
 
-# Get the driver from the first argument
-DRIVER=$1
-
+# Function to show usage
 show_usage() {
     echo "Usage: make seed DRIVER=<database_driver>"
     echo "Example: make seed DRIVER=postgres"
@@ -19,66 +14,115 @@ Available database drivers:"
     exit 1
 }
 
-# Check if driver is provided
-if [ -z "$DRIVER" ]; then
-    echo "Error: Database driver are required"
+# Parse command line arguments
+while getopts ":d:h" opt; do
+    case $opt in
+        d) DB_DRIVER="$OPTARG";;
+        h) show_usage;;
+    esac
+done
+
+# Validate required arguments
+if [ -z "$DB_DRIVER" ]; then
+    echo "Error: Database driver is required"
     show_usage
+fi
+
+# Load environment variables if .env file exists
+if [ -f ".env" ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
+# Set database URL and seeder directory based on driver
+case $DB_DRIVER in
+    postgres|postgresql) 
+        SEEDER_DIR="./seeders/postgres"
+        # Check required environment variables
+        required_vars=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USERNAME" "POSTGRES_PASSWORD" "POSTGRES_SSL_MODE" "POSTGRES_DATABASE")
+        for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+                echo "Error: Required environment variable $var is not set"
+                exit 1
+            fi
+        done
+        # Construct database URL from environment variables
+        DB_URL="postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_SSL_MODE}"
+        ;;
+    mysql) 
+        SEEDER_DIR="./seeders/mysql"
+        # Check required environment variables
+        required_vars=("MYSQL_HOST" "MYSQL_PORT" "MYSQL_USERNAME" "MYSQL_PASSWORD" "MYSQL_DATABASE")
+        for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+                echo "Error: Required environment variable $var is not set"
+                exit 1
+            fi
+        done
+        # Construct database URL from environment variables
+        DB_URL="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}"
+        ;;
+    mongodb) 
+        SEEDER_DIR="./seeders/mongodb"
+        # Check required environment variables
+        required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")
+        for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+                echo "Error: Required environment variable $var is not set"
+                exit 1
+            fi
+        done
+        # Construct database URL from environment variables
+        DB_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}"
+        ;;
+    *)
+        echo "Error: Unsupported database driver: $DB_DRIVER"
+        show_usage
+        ;;
+esac
+
+# Check if seeder directory exists
+if [ ! -d "$SEEDER_DIR" ]; then
+    echo "Error: Seeder directory not found: $SEEDER_DIR"
     exit 1
 fi
 
-# Validate driver
-if [ "$DRIVER" = "postgres" ]; then
-    if ! command -v psql &> /dev/null
-    then
-        echo "psql could not be found, please install it first"
-        exit
-    fi
-elif [ "$DRIVER" = "mysql" ]; then
-    if ! command -v mysql &> /dev/null
-    then
-        echo "mysql could not be found, please install it first"
-        exit
-    fi
-elif [ "$DRIVER" = "mongo" ]; then
-    if ! command -v mongosh &> /dev/null
-    then
-        echo "mongosh could not be found, please install it first"
-        exit
+# Check if golang-migrate is installed
+if ! command -v migrate &> /dev/null; then
+    echo "Error: 'migrate' is not installed."
+    echo ""
+    echo "Would you like to install 'golang-migrate'? (y/n)"
+    read -r response
+    
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "Installing 'golang-migrate'..."
+        go install -tags "$DB_DRIVER" github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+        
+        if [ $? -eq 0 ]; then
+            echo ""
+            echo "✓ 'migrate' installed successfully!"
+            echo ""
+        else
+            echo ""
+            echo "✗ Failed to install 'migrate'. Please try installing manually:"
+            echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+            exit 1
+        fi
+    else
+        echo ""
+        echo "Installation cancelled. To install 'migrate' later, run:"
+        echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+        exit 1
     fi
 fi
 
-# Check if driver is postgres
-if [ "$DRIVER" = "postgres" ]; then
-    # Get all seeder files for postgres
-    SEEDER_FILES=$(ls seeders/postgres/*.sql)
+# Apply seeders
+echo "Applying seeders for $DB_DRIVER..."
+migrate -database "$DB_URL" -path "$SEEDER_DIR" up
 
-    # Loop through each seeder file and apply it
-    for f in $SEEDER_FILES
-    do
-        echo "Applying seeder $f"
-        PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USERNAME -d $POSTGRES_DATABASE < "$f"
-    done
-elif [ "$DRIVER" = "mysql" ]; then
-    # Get all seeder files for mysql
-    SEEDER_FILES=$(ls seeders/mysql/*.sql)
-
-    # Loop through each seeder file and apply it
-    for f in $SEEDER_FILES
-    do
-        echo "Applying seeder $f"
-        mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE < "$f"
-    done
-elif [ "$DRIVER" = "mongo" ]; then
-    # Get all seeder files for mongo
-    SEEDER_FILES=$(ls seeders/mongo/*.js)
-
-    # Loop through each seeder file and apply it
-    for f in $SEEDER_FILES
-    do
-        echo "Applying seeder $f"
-        mongosh --host $MONGO_HOST --port $MONGO_PORT --username $MONGO_USER --password $MONGO_PASSWORD --authenticationDatabase admin $MONGO_DATABASE < "$f"
-    done
+if [ $? -eq 0 ]; then
+    echo "✅ Seeders applied successfully"
 else
-    echo "Driver $DRIVER is not supported"
+    echo "❌ Failed to apply seeders"
     exit 1
 fi

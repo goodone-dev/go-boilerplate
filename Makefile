@@ -7,14 +7,17 @@ migrate_up:
 migrate_down:
 	@.dev/migrate_down.sh -d $(DRIVER)
 
-mock:
-	@mockery --log-level=ERROR
+mock_add:
+	@.dev/mock_add.sh -n $(NAME)
 
-mock_config:
-	@.dev/mock_config.sh $(NAME)
+mock:
+	@.dev/mock.sh
 
 seed:
-	@.dev/seed.sh $(DRIVER)
+	@.dev/seed.sh -d $(DRIVER)
+
+seeder:
+	@.dev/seeder.sh -n $(NAME) -d $(DRIVER)
 
 run:
 	@.dev/run.sh
@@ -38,13 +41,16 @@ help:
 	@echo "  migration NAME=<migration_name> DRIVER=<driver>    	Create a new migration file"
 	@echo "  migrate_up DRIVER=<driver>                       	Run all migrations"
 	@echo "  migrate_down DRIVER=<driver>                     	Rollback the last migration"
-	@echo "  seed DRIVER=<driver>                             	Seed the database"
+	@echo ""
+	@echo "Seeder targets:"
+	@echo "  seeder NAME=<seeder_name> DRIVER=<driver>        	Create a new seeder file"
+	@echo "  seed DRIVER=<driver>                             	Apply all seeders"
 	@echo ""
 	@echo "Development targets:"
 	@echo "  run                                               	Run the application"
 	@echo "  watch                                             	Run the application with live reloading"
 	@echo "  mock                                              	Generate mocks"
-	@echo "  mock_config NAME=<name>                          	Generate mock config"
+	@echo "  mock_add NAME=<interface_name>                     Add mock config"
 	@echo ""
 	@echo "Docker targets:"
 	@echo "  up                                               	Start the application with docker-compose"
@@ -52,6 +58,7 @@ help:
 	@echo "  stop                                             	Stop the application with docker-compose"
 
 .PHONY: help run watch \
-		migration migrate_up migrate_down seed \
-		mock mock_config \
+		migration migrate_up migrate_down \
+		seeder seed \
+		mock mock_add \
 		up down stop

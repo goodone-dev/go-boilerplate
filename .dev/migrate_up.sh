@@ -80,17 +80,40 @@ case $DB_DRIVER in
         ;;
 esac
 
-# Check if golang-migrate is installed
-if ! command -v migrate &> /dev/null; then
-    echo "Error: golang-migrate is not installed"
-    echo "Install it using: go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
-    exit 1
-fi
-
 # Check if migration directory exists
 if [ ! -d "$MIGRATION_DIR" ]; then
     echo "Error: Migration directory not found: $MIGRATION_DIR"
     exit 1
+fi
+
+# Check if golang-migrate is installed
+if ! command -v migrate &> /dev/null; then
+    echo "Error: 'migrate' is not installed."
+    echo ""
+    echo "Would you like to install 'golang-migrate'? (y/n)"
+    read -r response
+    
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "Installing 'golang-migrate'..."
+        go install -tags "$DB_DRIVER" github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+        
+        if [ $? -eq 0 ]; then
+            echo ""
+            echo "✓ 'migrate' installed successfully!"
+            echo ""
+        else
+            echo ""
+            echo "✗ Failed to install 'migrate'. Please try installing manually:"
+            echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+            exit 1
+        fi
+    else
+        echo ""
+        echo "Installation cancelled. To install 'migrate' later, run:"
+        echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+        exit 1
+    fi
 fi
 
 # Apply migrations
