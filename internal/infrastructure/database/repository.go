@@ -19,7 +19,7 @@ type IBaseRepository[D any, I any, E Entity] interface {
 
 	// Common Query
 	Find(ctx context.Context, filter map[string]any) ([]E, error)
-	FindWithPagination(ctx context.Context, filter map[string]any, page int, limit int) (res Pagination[E], err error)
+	FindWithPagination(ctx context.Context, filter map[string]any, page int, size int) (res Pagination[E], err error)
 	FindById(ctx context.Context, ID I) (*E, error)
 	FindByIdAndLock(ctx context.Context, ID I, trx *D) (*E, error)
 	FindByIds(ctx context.Context, IDs []I) ([]E, error)

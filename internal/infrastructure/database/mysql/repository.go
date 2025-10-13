@@ -143,8 +143,8 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[string]any, page int, limit int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, page, limit)
+func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[string]any, page int, size int) (res database.Pagination[E], err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, page, size)
 	defer func() {
 		span.EndSpan(err, res)
 	}()
@@ -152,20 +152,21 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 	if page <= 0 {
 		page = 1
 	}
-	if limit <= 0 {
-		limit = 10
+	if size <= 0 {
+		size = 10
 	}
 
-	offset := (page - 1) * limit
 	filter["deleted_at"] = nil
+	offset := uint64((page - 1) * size)
+	limit := uint64(size + 1)
 
 	builder := sq.
 		Select("*").
 		From(r.Entity.TableName()).
 		Where(filter).
 		OrderBy("id DESC").
-		Limit(uint64(limit + 1)).
-		Offset(uint64(offset))
+		Limit(limit).
+		Offset(offset)
 
 	qry, args, err := builder.ToSql()
 	if err != nil {
@@ -178,9 +179,9 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 		return
 	}
 
-	if len(models) > limit {
+	if len(models) > size {
 		res.HasNext = true
-		models = models[:limit]
+		models = models[:size]
 	}
 
 	if page > 1 {
