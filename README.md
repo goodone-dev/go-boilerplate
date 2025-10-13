@@ -170,7 +170,6 @@ This project is structured following the principles of **Clean Architecture**. T
 - [ ] **Authorization**: Integration with Ory Keto for permission and access control.
 - [ ] **Structured Logging**: Implementing a structured logger (e.g., Logrus).
 - [ ] **Worker Command**: Add worker for processing asynchronous task.
-- [ ] **Makefile Dependency Check**: Automatically prompt to install missing tools when running a make command.
 - [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
 - [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
 - [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
