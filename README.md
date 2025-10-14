@@ -29,7 +29,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
 
 <details>
-<summary><b>## 🚧 Roadmap</b></summary>
+<summary><b>🚧 Roadmap</b></summary>
 
 - Unit Test
     - Test all usecase
