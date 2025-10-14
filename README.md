@@ -28,6 +28,60 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 - 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
 
+<details>
+<summary><b>## 🚧 Roadmap</b></summary>
+- Unit Test
+    - Test all usecase
+    - CI/CD Pipeline
+    - Min 80% Code Coverage (configured with gocover)
+- Authentication & Authorization
+    - Authentication Middleware
+    - Add role-based access control (RBAC)
+    - Ory Kratos/Keto Integration
+- CORS middleware
+- Sanitize Error Message (need to test)
+- HTTP Security Middleware
+    - `X-Content-Type-Options: nosniff`
+    - `X-Frame-Options: DENY`
+    - `X-XSS-Protection: 1; mode=block`
+    - `Strict-Transport-Security` (HSTS)
+    - `Content-Security-Policy`
+- Secrets Management
+    - Use Vault
+- Input Validation
+    - Path traversal protection for file operations
+    - Request size limits
+    - Content-Type validation
+- Database Connection Security
+    - Add connection encryption for production
+    - Implement connection pooling limits (partially done ✅)
+    - Add prepared statement caching
+- Structured Logging
+    - `zerolog` Integration
+    - Log levels (DEBUG, INFO, WARN, ERROR)
+    - Include request IDs in all logs
+    - Log Aggregation (e.g., ELK Stack)
+- API Documentation
+    - Add swaggo/swag for auto-generated API docs
+- Health Check Endpoints
+    - `/health` - Basic liveness probe
+    - `/health/ready` - Readiness probe (check DB, Redis, etc.)
+    - `/metrics` - Prometheus metrics endpoint
+- Graceful Degradation
+    - Implement fallback mechanisms when external services fail
+    - Add retry logic with exponential backoff
+    - Circuit breaker is present ✅ but not used in code
+- Background Job Processing
+    - Implement RabbitMQ/Kafka as mentioned in roadmap
+    - Add worker command for processing async jobs
+    - Implement job retry and dead-letter queues
+- Caching Strategy
+    - Query result caching
+    - HTTP response caching
+    - Cache invalidation strategies
+    - Cache warming on startup
+</details>
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -163,7 +217,7 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Circuit Breaker**   | [gobreaker](https://github.com/sony/gobreaker)                                                                        |
 | **Mocking**           | [mockery](https://github.com/vektra/mockery)                                                                          |
 
-## 🚧 Roadmap
+<!-- ## 🚧 Roadmap
 - [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
 - [ ] **Message Broker Support**: Adding support for Kafka and RabbitMQ.
 - [ ] **Authentication**: Implementing OAuth2 with Ory Kratos for identity and user management.
@@ -174,12 +228,7 @@ This project is structured following the principles of **Clean Architecture**. T
 - [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
 - [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
 - [ ] **CORS Handling**: Implement middleware for Cross-Origin Resource Sharing (CORS).
-- [ ] **Auto Generate Documentation**: Automatically generate API documentation.
-
-<!-- ## 🧪 Internal Test
-- [ ] Migration MongoDB & MySQL
-- [ ] Seeder MongoDB & MySQL
-- [ ] Implementation MongoDB & MySQL -->
+- [ ] **Auto Generate Documentation**: Automatically generate API documentation. -->
 
 ## 🤝 Contributing
 1. Fork the repository
