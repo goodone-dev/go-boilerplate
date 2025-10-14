@@ -30,6 +30,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 
 <details>
 <summary><b>## 🚧 Roadmap</b></summary>
+
 - Unit Test
     - Test all usecase
     - CI/CD Pipeline
@@ -80,6 +81,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - HTTP response caching
     - Cache invalidation strategies
     - Cache warming on startup
+
 </details>
 
 ## 🚀 Getting Started
