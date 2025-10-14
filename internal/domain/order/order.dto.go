@@ -9,5 +9,5 @@ type CreateOrderRequest struct {
 
 type OrderItemRequest struct {
 	ProductID uuid.UUID `json:"product_id" validate:"required"`
-	Quantity  int       `json:"quantity" validate:"required,min=1"`
+	Quantity  int       `json:"quantity" san:"min=1"`
 }

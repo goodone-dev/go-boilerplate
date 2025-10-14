@@ -7,7 +7,7 @@ import (
 // Docs: https://github.com/go-sanitize/sanitize
 var customSanitizer *sanitize.Sanitizer
 
-func Sanitize(obj any) (err error) {
+func Sanitize[S any](obj S) (err error) {
 	if customSanitizer == nil {
 		customSanitizer, err = sanitize.New()
 		if err != nil {
