@@ -6,6 +6,7 @@ import (
 
 	"net/http/pprof"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
@@ -20,6 +21,9 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 
 	// Initialize router
 	router := gin.New()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: config.CorsAllowOrigins,
+	}))
 	router.Use(otelgin.Middleware(""))
 	router.Use(middleware.ErrorMiddleware())
 	router.Use(middleware.ContextMiddleware())

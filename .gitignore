@@ -19,5 +19,8 @@ vendor
 # Config file
 .env
 
-# Binaries
-main
+# Binary files
+/bin
+
+# Temporary files
+/tmp

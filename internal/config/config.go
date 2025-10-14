@@ -1,12 +1,14 @@
 package config
 
 import (
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
 var ContextTimeout time.Duration
+var CorsAllowOrigins []string
 var ApplicationConfig ApplicationConfigMap
 var RedisConfig RedisConfigMap
 var PostgresConfig PostgresConfigMap
@@ -144,6 +146,7 @@ func Load() (err error) {
 	}
 
 	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
+	CorsAllowOrigins = strings.Split(viper.GetString("CORS_ALLOW_ORIGINS"), ",")
 
 	return
 }
@@ -163,4 +166,6 @@ func setDefaultConfig() {
 	viper.SetDefault("MONGO_MIN_CONN_POOL_SIZE", 2)
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
+
+	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 }
