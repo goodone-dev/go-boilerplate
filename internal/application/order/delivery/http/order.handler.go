@@ -24,12 +24,12 @@ func (h *OrderHandler) Create(c *gin.Context) {
 
 	var req order.CreateOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(error.NewInternalServerError(err.Error()))
+		c.Error(error.NewInternalServerError("failed to bind request body", err.Error()))
 		return
 	}
 
 	if err := sanitizer.Sanitize(req); err != nil {
-		c.Error(error.NewBadRequestError(err.Error()))
+		c.Error(error.NewInternalServerError("failed to sanitize request body", err.Error()))
 		return
 	}
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
 )
 
@@ -16,7 +17,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 
 			if e, ok := err.(*error.CustomError); ok {
 				res := gin.H{"message": e.Message}
-				if len(e.Errors) > 0 {
+				if len(e.Errors) > 0 && config.ApplicationConfig.Env != "production" {
 					res["errors"] = e.Errors
 				}
 				c.JSON(e.Status, res)
