@@ -7,10 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"reflect"
-	"regexp"
-	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -113,45 +109,5 @@ func main() {
 
 	log.Println("✅ Server shutdown gracefully.")
 
-	infraShutdown(ctx, postgresConn, redisClient, tracerProvider)
-}
-
-type Infrastructure interface {
-	Shutdown(ctx context.Context) error
-}
-
-func infraShutdown(ctx context.Context, infras ...Infrastructure) {
-	var wg sync.WaitGroup
-
-	for _, infra := range infras {
-		wg.Add(1)
-
-		go func(c Infrastructure) {
-			defer wg.Done()
-
-			packageName := parsePackageName(c)
-
-			if err := c.Shutdown(ctx); err != nil {
-				log.Printf("❌ %s forced to shutdown: %v", packageName, err)
-				return
-			}
-
-			log.Printf("✅ %s shutdown gracefully.\n", packageName)
-		}(infra)
-	}
-
-	wg.Wait()
-}
-
-func parsePackageName(infra Infrastructure) string {
-	n := reflect.TypeOf(infra).String()
-	r := regexp.MustCompile(`\*?([^.]+)`)
-
-	matches := r.FindStringSubmatch(n)
-	if len(matches) > 1 {
-		name := matches[1]
-		return strings.ToUpper(string(name[0])) + name[1:]
-	}
-
-	return ""
+	gracefulShutdown(ctx, postgresConn, redisClient, tracerProvider)
 }
