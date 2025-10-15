@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type Service interface {
 	Shutdown(ctx context.Context) error
 }
 
-func gracefulShutdown(ctx context.Context, services ...Service) {
+func GracefulShutdown(ctx context.Context, services ...Service) {
 	var wg sync.WaitGroup
 
 	for _, service := range services {

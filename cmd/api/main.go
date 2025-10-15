@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
@@ -109,5 +110,5 @@ func main() {
 
 	log.Println("✅ Server shutdown gracefully.")
 
-	gracefulShutdown(ctx, postgresConn, redisClient, tracerProvider)
+	utils.GracefulShutdown(ctx, postgresConn, redisClient, tracerProvider)
 }
