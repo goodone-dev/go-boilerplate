@@ -17,6 +17,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
 - 🔗 **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
+- 🌐 **CORS Middleware**: Adds CORS support to the application to allow cross-origin requests.
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
@@ -39,7 +40,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - Authentication Middleware
     - Add role-based access control (RBAC)
     - Ory Kratos/Keto Integration
-- CORS middleware
 - Sanitize Error Message (need to test)
 - HTTP Security Middleware
     - `X-Content-Type-Options: nosniff`
