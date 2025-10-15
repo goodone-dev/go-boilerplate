@@ -20,10 +20,10 @@ var MailConfig MailConfigMap
 type Environment string
 
 const (
-	LocalEnv Environment = "local"
-	DevEnv   Environment = "development"
-	StagEnv  Environment = "staging"
-	ProdEnv  Environment = "production"
+	EnvLocal Environment = "local"
+	EnvDev   Environment = "development"
+	EnvStag  Environment = "staging"
+	EnvProd  Environment = "production"
 )
 
 type ApplicationConfigMap struct {
