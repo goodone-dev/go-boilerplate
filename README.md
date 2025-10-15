@@ -14,6 +14,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
 - 💉 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
 - 🔍 **Distributed Tracing**: Integrated with Jaeger for distributed tracing, offering insights into request flows across services to simplify debugging and performance monitoring.
+- 🏁 **Health Check**: `/health` endpoint for liveness and readiness probes.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
 - 🔗 **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
@@ -21,7 +22,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
-- ⚠️ **Centralized Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
+- ⚠️ **Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
 - 📧 **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
 - 🕒 **Asynchronous Processing**: Offloads long-running tasks to a message bus, ensuring non-blocking API responses.
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
@@ -32,23 +33,13 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 <details>
 <summary><b>🚧 Roadmap</b></summary>
 
-- Unit Test
-    - Test all usecase
-    - CI/CD Pipeline
-    - Min 80% Code Coverage (configured with gocover)
-- Authentication & Authorization
-    - Authentication Middleware
-    - Add role-based access control (RBAC)
-    - Ory Kratos/Keto Integration
-- Sanitize Error Message (need to test)
+<!-- TODO Implementation: -->
 - HTTP Security Middleware
     - `X-Content-Type-Options: nosniff`
     - `X-Frame-Options: DENY`
     - `X-XSS-Protection: 1; mode=block`
     - `Strict-Transport-Security` (HSTS)
     - `Content-Security-Policy`
-- Secrets Management
-    - Use Vault
 - Input Validation
     - Path traversal protection for file operations
     - Request size limits
@@ -62,20 +53,30 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - Log levels (DEBUG, INFO, WARN, ERROR)
     - Include request IDs in all logs
     - Log Aggregation (e.g., ELK Stack)
-- API Documentation
-    - Add swaggo/swag for auto-generated API docs
-- Health Check Endpoints
-    - `/health` - Basic liveness probe
-    - `/health/ready` - Readiness probe (check DB, Redis, etc.)
+- Metric Endpoints
     - `/metrics` - Prometheus metrics endpoint
 - Graceful Degradation
     - Implement fallback mechanisms when external services fail
     - Add retry logic with exponential backoff
     - Circuit breaker is present ✅ but not used in code
+
+<!-- Heavy Implementation: -->
+- Unit Test
+    - Test all usecase
+    - CI/CD Pipeline
+    - Min 80% Code Coverage (configured with gocover)
+- Authentication & Authorization
+    - Authentication Middleware
+    - Add role-based access control (RBAC)
+    - Ory Kratos & Keto Integration
 - Background Job Processing
-    - Implement RabbitMQ/Kafka as mentioned in roadmap
+    - Implement RabbitMQ & Kafka
     - Add worker command for processing async jobs
     - Implement job retry and dead-letter queues
+- Secrets Management
+    - Use Vault (Production)
+- API Documentation
+    - Add swaggo/swag for auto-generated API docs
 - Caching Strategy
     - Query result caching
     - HTTP response caching
