@@ -17,11 +17,20 @@ var MongoConfig MongoConfigMap
 var JaegerConfig JaegerConfigMap
 var MailConfig MailConfigMap
 
+type Environment string
+
+const (
+	LocalEnv Environment = "local"
+	DevEnv   Environment = "development"
+	StagEnv  Environment = "staging"
+	ProdEnv  Environment = "production"
+)
+
 type ApplicationConfigMap struct {
-	Name string `mapstructure:"APP_NAME"`
-	Env  string `mapstructure:"APP_ENV"`
-	Port int    `mapstructure:"APP_PORT"`
-	URL  string `mapstructure:"APP_URL"`
+	Name string      `mapstructure:"APP_NAME"`
+	Env  Environment `mapstructure:"APP_ENV"`
+	Port int         `mapstructure:"APP_PORT"`
+	URL  string      `mapstructure:"APP_URL"`
 }
 
 type RedisConfigMap struct {

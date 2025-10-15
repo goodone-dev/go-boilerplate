@@ -46,7 +46,7 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 		}
 	}
 
-	if config.ApplicationConfig.Env == "production" {
+	if config.ApplicationConfig.Env == config.ProdEnv {
 		return router
 	}
 
