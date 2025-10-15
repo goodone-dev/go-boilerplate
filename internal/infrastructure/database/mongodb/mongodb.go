@@ -63,12 +63,12 @@ func Open(ctx context.Context) mongoConnection {
 	mongoConfig := setConfig()
 
 	return mongoConnection{
-		Master: open(ctx, mongoConfig.Master),
-		Slave:  open(ctx, mongoConfig.Slave),
+		Master: open(ctx, mongoConfig.Master, readpref.Primary()),
+		Slave:  open(ctx, mongoConfig.Slave, readpref.Secondary()),
 	}
 }
 
-func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
+func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPref) *mongo.Database {
 	// FIXME: mongodb monitor
 	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
@@ -89,7 +89,7 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		log.Fatalf("❌ Could not to connect MongoDB connection: %v", err)
 	}
 
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+	if err := client.Ping(ctx, rp); err != nil {
 		log.Fatalf("❌ Could not to ping MongoDB database: %v", err)
 	}
 
@@ -131,4 +131,16 @@ func (c mongoConnection) Shutdown(ctx context.Context) error {
 
 func close(ctx context.Context, db *mongo.Database) error {
 	return db.Client().Disconnect(ctx)
+}
+
+func (c mongoConnection) Ping(ctx context.Context) error {
+	if err := c.Master.Client().Ping(ctx, readpref.Primary()); err != nil {
+		return err
+	}
+
+	if err := c.Slave.Client().Ping(ctx, readpref.Secondary()); err != nil {
+		return err
+	}
+
+	return nil
 }

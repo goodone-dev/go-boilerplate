@@ -1,25 +1,23 @@
 package router
 
 import (
-	"log"
-	"time"
-
 	"net/http/pprof"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/http"
 	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
-	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.Engine {
+func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderhandler.OrderHandler, cacheClient cache.ICache) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
-	// Initialize router
+	// ========== Initialize Router ==========
 	router := gin.New()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: config.CorsAllowOrigins,
@@ -29,10 +27,22 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 	router.Use(middleware.ContextMiddleware())
 	router.Use(gin.Recovery())
 
-	// Initialize handlers
-	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
+	// ========== Define Routes ==========
+	health := router.Group("/health")
+	{
+		health.GET("", healthHandler.HealthCheck)
+		health.GET("/ready", healthHandler.HealthReadyCheck)
+	}
 
-	// Define routes
+	debug := router.Group("/debug/pprof")
+	{
+		debug.GET("/goroutine", gin.WrapF(pprof.Index))
+		debug.GET("/profile", gin.WrapF(pprof.Profile))
+		debug.GET("/cmdline", gin.WrapF(pprof.Cmdline))
+		debug.GET("/symbol", gin.WrapF(pprof.Symbol))
+		debug.GET("/trace", gin.WrapF(pprof.Trace))
+	}
+
 	v1 := router.Group("/api/v1")
 	{
 		orders := v1.Group("/orders")
@@ -44,21 +54,6 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 				orderHandler.Create,
 			)
 		}
-	}
-
-	if config.ApplicationConfig.Env == config.ProdEnv {
-		return router
-	}
-
-	// Enabling pprof for profiling
-	log.Printf("🔎 Enabling pprof for profiling")
-	debug := router.Group("/debug/pprof")
-	{
-		debug.GET("/goroutine", gin.WrapF(pprof.Index))
-		debug.GET("/profile", gin.WrapF(pprof.Profile))
-		debug.GET("/cmdline", gin.WrapF(pprof.Cmdline))
-		debug.GET("/symbol", gin.WrapF(pprof.Symbol))
-		debug.GET("/trace", gin.WrapF(pprof.Trace))
 	}
 
 	return router

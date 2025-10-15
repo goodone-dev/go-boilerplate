@@ -130,3 +130,21 @@ func close(conn *gorm.DB) error {
 
 	return sqlDB.Close()
 }
+
+func (c postgresConnection) Ping(ctx context.Context) error {
+	masterDB, err := c.Master.DB()
+	if err != nil {
+		return err
+	} else if err := masterDB.Ping(); err != nil {
+		return err
+	}
+
+	slaveDB, err := c.Slave.DB()
+	if err != nil {
+		return err
+	} else if err := slaveDB.Ping(); err != nil {
+		return err
+	}
+
+	return nil
+}

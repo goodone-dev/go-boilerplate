@@ -12,7 +12,9 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/http"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
+	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
 	orderuc "github.com/goodone-dev/go-boilerplate/internal/application/order/usecase"
 	productrepo "github.com/goodone-dev/go-boilerplate/internal/application/product/repository"
@@ -70,11 +72,15 @@ func main() {
 		mailBus,
 	)
 
+	// ========== HTTP Handlers ==========
+	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient)
+	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
+
 	// ========== Bus Listener ==========
 	buslistener.NewBusListener(mailBus, mailUsecase)
 
 	// ========== HTTP Server Setup ==========
-	r := router.NewRouter(orderUsecase, redisClient)
+	r := router.NewRouter(healthHandler, orderHandler, redisClient)
 	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
 
 	srv := &http.Server{
