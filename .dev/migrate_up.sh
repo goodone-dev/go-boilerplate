@@ -121,8 +121,8 @@ echo "Applying migrations for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$MIGRATION_DIR" up
 
 if [ $? -eq 0 ]; then
-    echo "✅ Migrations applied successfully"
+    echo "Migrations applied successfully"
 else
-    echo "❌ Failed to apply migrations"
+    echo "Failed to apply migrations"
     exit 1
 fi

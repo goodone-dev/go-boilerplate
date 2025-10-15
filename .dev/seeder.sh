@@ -90,8 +90,8 @@ echo "Creating seeder files..."
 migrate create -ext sql -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
 
 if [ $? -eq 0 ]; then
-    echo "✅ Seeder files created successfully in $SEEDER_DIR directory"
+    echo "Seeder files created successfully in $SEEDER_DIR directory"
 else
-    echo "❌ Failed to create seeder files"
+    echo "Failed to create seeder files"
     exit 1
 fi

@@ -90,8 +90,8 @@ echo "Creating migration files..."
 migrate create -ext sql -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
 
 if [ $? -eq 0 ]; then
-    echo "✅ Migration files created successfully in $MIGRATION_DIR directory"
+    echo "Migration files created successfully in $MIGRATION_DIR directory"
 else
-    echo "❌ Failed to create migration files"
+    echo "Failed to create migration files"
     exit 1
 fi

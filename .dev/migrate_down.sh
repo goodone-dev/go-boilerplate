@@ -121,8 +121,8 @@ echo "Rolling back migrations for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$MIGRATION_DIR" down 1
 
 if [ $? -eq 0 ]; then
-    echo "✅ Migrations rolled back successfully"
+    echo "Migrations rolled back successfully"
 else
-    echo "❌ Failed to roll back migrations"
+    echo "Failed to roll back migrations"
     exit 1
 fi

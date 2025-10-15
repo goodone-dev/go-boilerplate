@@ -121,8 +121,8 @@ echo "Applying seeders for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$SEEDER_DIR" up
 
 if [ $? -eq 0 ]; then
-    echo "✅ Seeders applied successfully"
+    echo "Seeders applied successfully"
 else
-    echo "❌ Failed to apply seeders"
+    echo "Failed to apply seeders"
     exit 1
 fi
