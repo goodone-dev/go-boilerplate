@@ -7,7 +7,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 
 ## 🌟 Features
 - 🏗️ **Clean Architecture**: Separates concerns into distinct layers (domain, application, infrastructure, presentation) for a more organized, testable, and maintainable codebase.
-- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework.
+- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework. Includes CORS and Secure middleware.
 - 🔄 **Live Reload**: Automatically restart the application when file changes are detected.
 - 🗃️ **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
@@ -18,7 +18,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
 - 🔗 **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
-- 🌐 **CORS Middleware**: Adds CORS support to the application to allow cross-origin requests.
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
@@ -34,12 +33,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 <summary><b>🚧 Roadmap</b></summary>
 
 <!-- TODO Implementation: -->
-- HTTP Security Middleware
-    - `X-Content-Type-Options: nosniff`
-    - `X-Frame-Options: DENY`
-    - `X-XSS-Protection: 1; mode=block`
-    - `Strict-Transport-Security` (HSTS)
-    - `Content-Security-Policy`
 - Input Validation
     - Path traversal protection for file operations
     - Request size limits
