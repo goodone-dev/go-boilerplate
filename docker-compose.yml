@@ -16,7 +16,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: always
 
   redis:
     networks:
@@ -26,7 +25,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    restart: always
 
   mailpit:
     networks:
@@ -35,45 +33,20 @@ services:
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
-    restart: always
 
-  jaeger:
-    networks:
-      backend:
-        # This is the host name used in Prometheus scrape configuration.
-        aliases: [ spm_metrics_source ]
-    image: jaegertracing/jaeger:2.11.0
-    environment:
-      COLLECTOR_ZIPKIN_HOST_PORT: :9411
-    ports:
-      - "16686:16686" # Web UI
-      - "4318:4318" # Exporter
-      - "8888:8888"
-      - "8889:8889" # Metric
-    volumes:
-      - "./jaeger.yaml:/etc/jaeger/config.yml"
-    command: ["--config", "/etc/jaeger/config.yml"]
-    restart: always
-
-  microsim:
+  grafana:
     networks:
       - backend
-    image: yurishkuro/microsim:v0.5.0
-    command: "-d 24h -s 500ms"
-    environment:
-      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4318/v1/traces
-    depends_on:
-      - jaeger
-
-  prometheus:
-    networks:
-      - backend
-    image: prom/prometheus:v3.6.0
-    volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    image: grafana/otel-lgtm:0.11.11
     ports:
-      - "9090:9090"
-    restart: always
+      - "4317:4317"
+      - "4318:4318"
+      - "3000:3000"
+    healthcheck:
+      test: curl --silent --fail localhost:3000 || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   app:
     networks:
@@ -105,14 +78,12 @@ services:
       MAIL_USERNAME: no-reply@goodmart.com
       MAIL_PASSWORD: ''
       MAIL_TLS: false
-      JAEGER_HOST: jaeger
-      JAEGER_PORT: 4318
-      JAEGER_SERVICE_NAME: goodmart-api
+      TRACER_EXPORTER_HOST: grafana
+      TRACER_EXPORTER_PORT: 4318
     depends_on:
       - postgres
       - redis
       - mailpit
-      - jaeger
 
 networks:
   backend:

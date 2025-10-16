@@ -5,7 +5,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"gorm.io/gorm"
 )
 

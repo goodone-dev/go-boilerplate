@@ -14,7 +14,7 @@ var RedisConfig RedisConfigMap
 var PostgresConfig PostgresConfigMap
 var MySQLConfig MySQLConfigMap
 var MongoConfig MongoConfigMap
-var JaegerConfig JaegerConfigMap
+var TracerConfig TracerConfigMap
 var MailConfig MailConfigMap
 
 type Environment string
@@ -105,10 +105,9 @@ type MongoConfigMap struct {
 	ConnIdleTimeoutMS int    `mapstructure:"MONGO_CONN_IDLE_TIMEOUT_MS"`
 }
 
-type JaegerConfigMap struct {
-	Host        string `mapstructure:"JAEGER_HOST"`
-	Port        int    `mapstructure:"JAEGER_PORT"`
-	ServiceName string `mapstructure:"JAEGER_SERVICE_NAME"`
+type TracerConfigMap struct {
+	Host string `mapstructure:"TRACER_EXPORTER_HOST"`
+	Port int    `mapstructure:"TRACER_EXPORTER_PORT"`
 }
 
 type MailConfigMap struct {
@@ -141,7 +140,7 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&MailConfig); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&JaegerConfig); err != nil {
+	if err = viper.Unmarshal(&TracerConfig); err != nil {
 		return
 	}
 	if err = viper.Unmarshal(&RedisConfig); err != nil {

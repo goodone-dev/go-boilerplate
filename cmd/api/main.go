@@ -27,7 +27,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database/postgres"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer/jaeger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"
 	"github.com/google/uuid"
@@ -43,13 +43,13 @@ func main() {
 		log.Fatalf("❌ Could not load config: %v", err)
 	}
 
-	// ========== Infrastructure ==========
+	// ========== Infrastructure Setup ==========
+	tracerProvider := tracer.NewProvider(ctx)
 	postgresConn := postgres.Open()
 	redisClient := redis.NewClient(ctx)
-	tracerProvider := jaeger.NewProvider(ctx)
 	mailSender := mailsender.NewMailSender()
 
-	// ========== Repositories ==========
+	// ========== Repositories Setup ==========
 	customerBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
 	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
 	productBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, product.Product](postgresConn)
@@ -59,10 +59,10 @@ func main() {
 	orderItemBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
 	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
 
-	// ========== Bus ==========
+	// ========== Bus Setup ==========
 	mailBus := bus.NewBus[mail.MailSendMessage]()
 
-	// ========== Usecase ==========
+	// ========== Usecase Setup ==========
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
 	orderUsecase := orderuc.NewOrderUsecase(
 		customerRepo,
@@ -72,11 +72,11 @@ func main() {
 		mailBus,
 	)
 
-	// ========== HTTP Handlers ==========
+	// ========== HTTP Handler Setup ==========
 	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient)
 	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
 
-	// ========== Bus Listener ==========
+	// ========== Bus Listener Setup ==========
 	buslistener.NewBusListener(mailBus, mailUsecase)
 
 	// ========== HTTP Server Setup ==========

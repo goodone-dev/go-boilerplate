@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
 	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/http"
 	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
@@ -23,7 +22,7 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: config.CorsAllowOrigins,
 	}))
-	router.Use(secure.New(secure.DefaultConfig()))
+	// router.Use(secure.New(secure.DefaultConfig()))
 
 	router.Use(otelgin.Middleware(""))
 	router.Use(middleware.ErrorMiddleware())

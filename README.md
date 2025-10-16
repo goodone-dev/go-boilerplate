@@ -13,7 +13,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
 - 💉 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
-- 🔍 **Distributed Tracing**: Integrated with Jaeger for distributed tracing, offering insights into request flows across services to simplify debugging and performance monitoring.
+- 📊 **Observability**: Observability features include distributed tracing, metrics, and logging.
 - 🏁 **Health Check**: `/health` endpoint for liveness and readiness probes.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
@@ -162,7 +162,7 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   ├── integration/        # Clients for external APIs.
 │   │   ├── mail/               # Email sending implementation.
 │   │   ├── message/            # Message bus implementation.
-│   │   ├── tracer/             # Distributed tracing implementation (e.g., Jaeger).
+│   │   ├── tracer/             # Distributed tracing implementation (e.g., Grafana).
 │   │   └── ...
 │   ├── presentation/           # Adapters for incoming requests.
 │   │   ├── rest/               # REST API handlers, router, and middleware.
@@ -177,7 +177,6 @@ This project is structured following the principles of **Clean Architecture**. T
 │       ├── html/               # HTML template rendering utilities.
 │       ├── http/               # HTTP client functions.
 │       ├── success/            # Standardized success responses.
-│       ├── tracer/             # Tracer helper functions.
 │       ├── validator/          # Request validation utilities.
 │       └── ...
 ├── migrations/                 # SQL migration files for managing database schema changes.
@@ -208,7 +207,7 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Config**            | [viper](https://github.com/spf13/viper)                                                                               |
 | **Validation**        | [validator](https://github.com/go-playground/validator)                                                               |
 | **Migration**         | [golang-migrate](https://github.com/golang-migrate/migrate)                                                           |
-| **Tracing**           | [opentelemetry](https://opentelemetry.io/)                                                                            |
+| **Observability**     | [opentelemetry](https://opentelemetry.io/)                                                                            |
 | **Email**             | [gomail](https://github.com/go-gomail/gomail)                                                                         |
 | **Circuit Breaker**   | [gobreaker](https://github.com/sony/gobreaker)                                                                        |
 | **Mocking**           | [mockery](https://github.com/vektra/mockery)                                                                          |

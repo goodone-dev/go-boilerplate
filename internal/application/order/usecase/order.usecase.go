@@ -11,8 +11,8 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/error"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 	"github.com/google/uuid"
 )
 

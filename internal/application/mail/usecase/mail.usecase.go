@@ -5,7 +5,7 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 )
 
 type MailUsecase struct {

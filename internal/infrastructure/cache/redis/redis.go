@@ -9,7 +9,7 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"github.com/redis/go-redis/v9"
 )
 
