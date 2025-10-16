@@ -1,7 +1,5 @@
 services:
   postgres:
-    networks:
-      - backend
     image: postgres:18-alpine
     environment:
       POSTGRES_DB: goodmart-db
@@ -10,7 +8,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d goodmart-db -U user" ]
       interval: 5s
@@ -18,8 +16,6 @@ services:
       retries: 5
 
   redis:
-    networks:
-      - backend
     image: redis:8-alpine
     ports:
       - "6379:6379"
@@ -27,16 +23,12 @@ services:
       - redis_data:/data
 
   mailpit:
-    networks:
-      - backend
     image: axllent/mailpit:v1.27.9
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
 
   grafana:
-    networks:
-      - backend
     image: grafana/otel-lgtm:0.11.11
     ports:
       - "4317:4317"
@@ -49,8 +41,6 @@ services:
       retries: 5
 
   app:
-    networks:
-      - backend
     build:
       context: .
       dockerfile: Dockerfile
@@ -81,13 +71,11 @@ services:
       TRACER_EXPORTER_HOST: grafana
       TRACER_EXPORTER_PORT: 4318
     depends_on:
+      - grafana
       - postgres
       - redis
       - mailpit
 
-networks:
-  backend:
-
 volumes:
-  postgres-data:
+  postgres_data:
   redis_data:
