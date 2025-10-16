@@ -39,7 +39,7 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 		),
 	)
 	if err != nil {
-		log.Fatalf("❌ Could not to create Jaeger tracer: %v", err)
+		log.Fatalf("❌ Could not to create tracer exporter: %v", err)
 	}
 
 	traceProvider := trace.NewTracerProvider(

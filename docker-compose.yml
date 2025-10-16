@@ -34,6 +34,8 @@ services:
       - "4317:4317"
       - "4318:4318"
       - "3000:3000"
+    environment:
+      ENABLE_LOGS_ALL: true
     healthcheck:
       test: curl --silent --fail localhost:3000 || exit 1
       interval: 5s

@@ -45,9 +45,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - `zerolog` Integration
     - Log levels (DEBUG, INFO, WARN, ERROR)
     - Include request IDs in all logs
-    - Log Aggregation (e.g., ELK Stack)
-- Metric Endpoints
-    - `/metrics` - Prometheus metrics endpoint
 - Graceful Degradation
     - Implement fallback mechanisms when external services fail
     - Add retry logic with exponential backoff
