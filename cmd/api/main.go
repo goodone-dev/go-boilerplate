@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -25,12 +24,14 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache/redis"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database/postgres"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -40,12 +41,15 @@ func main() {
 	// ========== Environment Setup ==========
 	err := config.Load()
 	if err != nil {
-		log.Fatalf("❌ Could not load config: %v", err)
+		log.Fatal().Err(err).Msg("failed to load configuration")
 	}
 
-	// ========== Infrastructure Setup ==========
+	// ========== Observability Setup ==========
+	loggerProvider := logger.NewProvider(ctx)
 	tracerProvider := tracer.NewProvider(ctx)
-	postgresConn := postgres.Open()
+
+	// ========== Infrastructure Setup ==========
+	postgresConn := postgres.Open(ctx)
 	redisClient := redis.NewClient(ctx)
 	mailSender := mailsender.NewMailSender()
 
@@ -93,9 +97,9 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("🚀 Starting server on %s\n", addr)
+		logger.Infof(ctx, "starting server on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("❌ Could not to start server: %v", err)
+			logger.Fatal(ctx, err, "failed to start server")
 		}
 	}()
 
@@ -105,16 +109,16 @@ func main() {
 
 	<-quit
 	fmt.Println()
-	log.Println("💤 Shutting down server...")
+	logger.Info(ctx, "initiating server shutdown...")
 
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("❌ Server forced to shutdown: %v", err)
+		logger.Fatal(ctx, err, "server forced to shutdown due to error")
 	}
 
-	log.Println("✅ Server shutdown gracefully.")
+	logger.Info(ctx, "server shutdown gracefully")
 
-	utils.GracefulShutdown(ctx, postgresConn, redisClient, tracerProvider)
+	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient)
 }

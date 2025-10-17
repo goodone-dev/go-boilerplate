@@ -3,12 +3,12 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -86,11 +86,11 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 
 	client, err := mongo.Connect(opts)
 	if err != nil {
-		log.Fatalf("❌ Could not to connect MongoDB connection: %v", err)
+		logger.Fatal(ctx, err, "failed to establish mongodb connection")
 	}
 
 	if err := client.Ping(ctx, rp); err != nil {
-		log.Fatalf("❌ Could not to ping MongoDB database: %v", err)
+		logger.Fatal(ctx, err, "mongodb connection test failed")
 	}
 
 	mongoDB := client.Database(config.MongoConfig.Database)
@@ -101,17 +101,17 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	// FIXME: mongodb migration
 	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
 	// if err != nil {
-	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "could not to create migrate instance for mongodb")
 	// }
 
 	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
 	// if err != nil {
-	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "could not to create migrate instance for mongodb")
 	// }
 
 	// err = m.Up()
 	// if err != nil && err != migrate.ErrNoChange {
-	// 	log.Fatalf("❌ Could not to migrate MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "could not to migrate mongodb")
 	// }
 
 	return mongoDB

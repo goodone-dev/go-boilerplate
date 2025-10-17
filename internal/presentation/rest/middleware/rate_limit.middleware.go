@@ -42,7 +42,7 @@ func RateLimitMiddleware(cache cache.ICache, limit int, duration time.Duration) 
 
 		countInt, _ := strconv.Atoi(countStr)
 		if countInt >= limit {
-			c.Error(htterror.NewTooManyRequestError("too many request"))
+			c.Error(htterror.NewTooManyRequestError("rate limit exceeded, please try again later"))
 			c.Abort()
 			return
 		}

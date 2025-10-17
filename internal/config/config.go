@@ -15,6 +15,7 @@ var PostgresConfig PostgresConfigMap
 var MySQLConfig MySQLConfigMap
 var MongoConfig MongoConfigMap
 var TracerConfig TracerConfigMap
+var LoggerConfig LoggerConfigMap
 var MailConfig MailConfigMap
 
 type Environment string
@@ -110,6 +111,11 @@ type TracerConfigMap struct {
 	Port int    `mapstructure:"TRACER_EXPORTER_PORT"`
 }
 
+type LoggerConfigMap struct {
+	Host string `mapstructure:"LOGGER_EXPORTER_HOST"`
+	Port int    `mapstructure:"LOGGER_EXPORTER_PORT"`
+}
+
 type MailConfigMap struct {
 	Host     string `mapstructure:"MAIL_HOST"`
 	Port     int    `mapstructure:"MAIL_PORT"`
@@ -150,6 +156,9 @@ func Load() (err error) {
 		return
 	}
 	if err = viper.Unmarshal(&MongoConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&LoggerConfig); err != nil {
 		return
 	}
 

@@ -28,9 +28,9 @@ func ContextMiddleware() gin.HandlerFunc {
 			if !c.Writer.Written() {
 				switch ctx.Err() {
 				case context.Canceled:
-					c.Error(error.NewRequestTimeoutError("request canceled by user"))
+					c.Error(error.NewRequestTimeoutError("your request was canceled before completion"))
 				case context.DeadlineExceeded:
-					c.Error(error.NewRequestTimeoutError("request timed out"))
+					c.Error(error.NewRequestTimeoutError("request took too long to process, please try again"))
 				}
 				c.Abort()
 			}
