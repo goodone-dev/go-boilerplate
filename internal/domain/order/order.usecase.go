@@ -5,5 +5,5 @@ import (
 )
 
 type IOrderUsecase interface {
-	Create(ctx context.Context, req CreateOrderRequest) (*Order, error)
+	Create(ctx context.Context, req CreateOrderRequest) (*CreateOrderResponse, error)
 }

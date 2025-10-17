@@ -40,8 +40,7 @@ func NewOrderUsecase(
 	}
 }
 
-// TODO: Use DTO for return response
-func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.Order, err error) {
+func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
 	ctx, span := tracer.StartSpan(ctx, req)
 	defer func() {
 		span.EndSpan(err, res)
@@ -132,5 +131,10 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		},
 	})
 
-	return &createdOrder, nil
+	return &order.CreateOrderResponse{
+		ID:          createdOrder.ID,
+		CustomerID:  createdOrder.CustomerID,
+		TotalAmount: createdOrder.TotalAmount,
+		Status:      createdOrder.Status,
+	}, nil
 }
