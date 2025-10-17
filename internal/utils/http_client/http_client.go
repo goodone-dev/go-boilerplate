@@ -1,71 +1,63 @@
-package http
+package httpclient
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"runtime"
+	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/breaker"
 	"github.com/sony/gobreaker/v2"
 )
 
-var httpClient *resty.Client
-var breakerMap map[string]*gobreaker.CircuitBreaker[*resty.Response] = make(map[string]*gobreaker.CircuitBreaker[*resty.Response])
+var httpClient = resty.New().
+	SetDebug(false).
+	SetRetryCount(1).
+	SetRetryWaitTime(1 * time.Second).
+	AddRetryCondition(
+		func(r *resty.Response, err error) bool {
+			return r.StatusCode() >= 500 && r.StatusCode() <= 599
+		},
+	)
 
-type customHttp struct {
-	Request customRequest
+var breakerMap = make(map[string]*gobreaker.CircuitBreaker[*resty.Response])
+
+type customHttpClient struct {
+	Request customHttpRequest
 }
 
-type customRequest struct {
+type customHttpRequest struct {
 	*resty.Request
 	breaker *gobreaker.CircuitBreaker[*resty.Response]
 }
 
-func NewClient() *customHttp {
-	if httpClient != nil {
-		return &customHttp{
-			Request: customRequest{
-				Request: httpClient.NewRequest(),
-			},
-		}
-	}
-
-	httpClient = resty.New()
-	httpClient.SetDebug(false)
-	// httpClient.SetRetryCount(1)
-	// httpClient.SetRetryWaitTime(1 * time.Second)
-	// httpClient.AddRetryCondition(
-	// 	func(r *resty.Response, err error) bool {
-	// 		return r.StatusCode() >= 500 && r.StatusCode() <= 599
-	// 	},
-	// )
-
-	return &customHttp{
-		Request: customRequest{
+func NewHttpClient() *customHttpClient {
+	return &customHttpClient{
+		Request: customHttpRequest{
 			Request: httpClient.NewRequest(),
 		},
 	}
 }
 
-func (c *customHttp) WithBreaker() (*customHttp, error) {
+func (c *customHttpClient) WithBreaker() (*customHttpClient, error) {
 	pc, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pc).Name()
 	methodName := parseMethodName(funcName)
 
 	if _, ok := breakerMap[methodName]; !ok {
-		breakerMap[methodName] = createBreaker(methodName)
+		breakerMap[methodName] = breaker.NewHttpBreaker(methodName)
 	}
 
 	c.Request.breaker = breakerMap[methodName]
 	if c.Request.breaker.State() == gobreaker.StateOpen {
-		return nil, errors.New("circuit breaker is open")
+		return nil, fmt.Errorf("circuit breaker is open for %s", methodName)
 	}
 
 	return c, nil
 }
 
-func (r *customRequest) Get(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Get(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.get(url)
 	}
@@ -81,20 +73,20 @@ func (r *customRequest) Get(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) get(url string) (*resty.Response, error) {
+func (r *customHttpRequest) get(url string) (*resty.Response, error) {
 	res, err := r.Request.Get(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Post(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Post(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.post(url)
 	}
@@ -110,20 +102,20 @@ func (r *customRequest) Post(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) post(url string) (*resty.Response, error) {
+func (r *customHttpRequest) post(url string) (*resty.Response, error) {
 	res, err := r.Request.Post(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Put(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Put(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.put(url)
 	}
@@ -139,20 +131,20 @@ func (r *customRequest) Put(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) put(url string) (*resty.Response, error) {
+func (r *customHttpRequest) put(url string) (*resty.Response, error) {
 	res, err := r.Request.Put(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Patch(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Patch(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.patch(url)
 	}
@@ -168,20 +160,20 @@ func (r *customRequest) Patch(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) patch(url string) (*resty.Response, error) {
+func (r *customHttpRequest) patch(url string) (*resty.Response, error) {
 	res, err := r.Request.Patch(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Delete(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Delete(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.delete(url)
 	}
@@ -197,20 +189,20 @@ func (r *customRequest) Delete(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) delete(url string) (*resty.Response, error) {
+func (r *customHttpRequest) delete(url string) (*resty.Response, error) {
 	res, err := r.Request.Delete(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Head(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Head(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.head(url)
 	}
@@ -226,20 +218,20 @@ func (r *customRequest) Head(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) head(url string) (*resty.Response, error) {
+func (r *customHttpRequest) head(url string) (*resty.Response, error) {
 	res, err := r.Request.Head(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
 }
 
-func (r *customRequest) Options(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Options(url string) (*resty.Response, error) {
 	if r.breaker == nil {
 		return r.options(url)
 	}
@@ -255,28 +247,17 @@ func (r *customRequest) Options(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customRequest) options(url string) (*resty.Response, error) {
+func (r *customHttpRequest) options(url string) (*resty.Response, error) {
 	res, err := r.Request.Options(url)
 	if err != nil {
 		return nil, err
 	}
 
 	if res.IsError() {
-		return nil, fmt.Errorf("request failed with status: %s", res.Status())
+		return nil, fmt.Errorf("failed to request %s %s: %s", r.Method, url, res.Error())
 	}
 
 	return res, nil
-}
-
-func createBreaker(name string) *gobreaker.CircuitBreaker[*resty.Response] {
-	var setting gobreaker.Settings
-	setting.Name = name
-	setting.ReadyToTrip = func(counts gobreaker.Counts) bool {
-		failureRatio := float64(counts.TotalFailures) / float64(counts.Requests)
-		return counts.Requests >= 3 && failureRatio >= 0.5
-	}
-
-	return gobreaker.NewCircuitBreaker[*resty.Response](setting)
 }
 
 func parseMethodName(funcName string) string {

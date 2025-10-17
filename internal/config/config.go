@@ -169,7 +169,7 @@ func Load() (err error) {
 }
 
 func setDefaultConfig() {
-	viper.SetDefault("CONTEXT_TIMEOUT", 5)
+	viper.SetDefault("CONTEXT_TIMEOUT", 10)
 
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)

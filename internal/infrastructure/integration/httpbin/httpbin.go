@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/http"
+	httpclient "github.com/goodone-dev/go-boilerplate/internal/utils/http_client"
 )
 
 const url = "https://httpbin.org"
@@ -28,7 +28,7 @@ func (*HttpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err er
 		span.EndSpan(err, body)
 	}()
 
-	http, err := http.NewClient().WithBreaker()
+	http, err := httpclient.NewHttpClient().WithBreaker()
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (*HttpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err 
 		span.EndSpan(err, body)
 	}()
 
-	http, err := http.NewClient().WithBreaker()
+	http, err := httpclient.NewHttpClient().WithBreaker()
 	if err != nil {
 		return nil, err
 	}
