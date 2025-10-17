@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"github.com/redis/go-redis/v9"
 )
@@ -35,7 +35,7 @@ func createClient(ctx context.Context) (client *redis.Client) {
 
 	client = redis.NewClient(options)
 	if _, err := client.Ping(ctx).Result(); err != nil {
-		log.Fatalf("❌ Could not connect to Redis: %v", err)
+		logger.Fatal(ctx, err, "failed to establish redis connection")
 	}
 
 	return client

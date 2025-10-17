@@ -2,11 +2,11 @@ package utils
 
 import (
 	"context"
-	"log"
 	"reflect"
 	"regexp"
-	"strings"
 	"sync"
+
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 )
 
 type Service interface {
@@ -25,11 +25,11 @@ func GracefulShutdown(ctx context.Context, services ...Service) {
 			packageName := parsePackageName(s)
 
 			if err := s.Shutdown(ctx); err != nil {
-				log.Printf("❌ %s forced to shutdown: %v", packageName, err)
+				logger.Errorf(ctx, err, "%s forced to shutdown due to error", packageName)
 				return
 			}
 
-			log.Printf("✅ %s shutdown gracefully.\n", packageName)
+			logger.Infof(ctx, "%s shutdown gracefully", packageName)
 		}(service)
 	}
 
@@ -42,8 +42,7 @@ func parsePackageName(service Service) string {
 
 	matches := r.FindStringSubmatch(n)
 	if len(matches) > 1 {
-		name := matches[1]
-		return strings.ToUpper(string(name[0])) + name[1:]
+		return matches[1]
 	}
 
 	return ""

@@ -72,6 +72,8 @@ services:
       MAIL_TLS: false
       TRACER_EXPORTER_HOST: grafana
       TRACER_EXPORTER_PORT: 4318
+      LOGGER_EXPORTER_HOST: grafana
+      LOGGER_EXPORTER_PORT: 4318
     depends_on:
       - grafana
       - postgres

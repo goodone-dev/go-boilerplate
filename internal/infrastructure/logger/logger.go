@@ -2,63 +2,41 @@ package logger
 
 import (
 	"context"
-	"os"
+	"fmt"
 
-	"github.com/rs/zerolog"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	otellog "go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-var slogger = otelslog.NewLogger("demo")
-var logger = zerolog.New(os.Stderr).
-	With().
-	Timestamp().
-	Logger().
-	Output(zerolog.ConsoleWriter{Out: os.Stderr})
+var oLogger otellog.Logger
 
-func Trace(ctx context.Context, msg string, args ...any) {
-	slogger.DebugContext(ctx, msg, args...)
-	printLog(logger.Trace(), msg, args...)
-}
-
-func Debug(ctx context.Context, msg string, args ...any) {
-	slogger.DebugContext(ctx, msg, args...)
-	printLog(logger.Debug(), msg, args...)
-}
-
-func Info(ctx context.Context, msg string, args ...any) {
-	slogger.InfoContext(ctx, msg, args...)
-	printLog(logger.Info(), msg, args...)
-}
-
-func Warn(ctx context.Context, msg string, args ...any) {
-	slogger.WarnContext(ctx, msg, args...)
-	printLog(logger.Warn(), msg, args...)
-}
-
-func Error(ctx context.Context, msg string, err error, args ...any) {
-	slogger.ErrorContext(ctx, msg, args...)
-	printLog(logger.Error().Err(err), msg, args...)
-}
-
-func Fatal(ctx context.Context, msg string, err error, args ...any) {
-	slogger.ErrorContext(ctx, msg, args...)
-	printLog(logger.Fatal().Err(err), msg, args...)
-}
-
-func Panic(ctx context.Context, msg string, err error, args ...any) {
-	slogger.ErrorContext(ctx, msg, args...)
-	printLog(logger.Panic().Err(err), msg, args...)
-}
-
-func printLog(log *zerolog.Event, msg string, args ...any) {
-	if len(args) > 0 {
-		arr := zerolog.Arr()
-		for _, arg := range args {
-			arr.Interface(arg)
-		}
-
-		log.Array("args", arr)
+func NewProvider(ctx context.Context) *log.LoggerProvider {
+	logExporter, err := otlploghttp.New(ctx,
+		otlploghttp.WithEndpoint(fmt.Sprintf("%s:%d", config.LoggerConfig.Host, config.LoggerConfig.Port)),
+		otlploghttp.WithInsecure(),
+	)
+	if err != nil {
+		return nil
 	}
 
-	log.Msg(msg)
+	loggerProvider := log.NewLoggerProvider(
+		log.WithProcessor(
+			log.NewBatchProcessor(logExporter),
+		),
+		log.WithResource(
+			resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String(config.ApplicationConfig.Name),
+				semconv.ServiceInstanceIDKey.String(config.ApplicationConfig.URL),
+			),
+		),
+	)
+
+	oLogger = loggerProvider.Logger("")
+
+	return loggerProvider
 }

@@ -2,10 +2,10 @@ package messaging
 
 import (
 	"context"
-	"log"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 )
 
 type mailHandler struct {
@@ -22,15 +22,15 @@ func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err e
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
-	log.Printf("✉️ Receiving mail.send message: %s", msg.To)
+	logger.Infof(ctx, "processing email send request to: %s", msg.To)
 
 	err = h.usecase.Send(ctx, msg)
 	if err != nil {
-		log.Printf("❌ Could not to send email: %v", err)
+		logger.Errorf(ctx, err, "failed to send email to: %s", msg.To)
 		return
 	}
 
-	log.Printf("✅ Email sent to %s", msg.To)
+	logger.Infof(ctx, "successfully sent email to: %s", msg.To)
 
 	return
 }

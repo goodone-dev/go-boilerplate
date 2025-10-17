@@ -3,31 +3,19 @@ package tracer
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
-	"github.com/go-logr/stdr"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 func NewProvider(ctx context.Context) *trace.TracerProvider {
-	logger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile))
-	otel.SetLogger(logger)
-
-	propagator := propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	)
-	otel.SetTextMapPropagator(propagator)
-
 	traceExporter, err := otlptrace.New(
 		ctx,
 		otlptracehttp.NewClient(
@@ -39,7 +27,7 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 		),
 	)
 	if err != nil {
-		log.Fatalf("❌ Could not to create tracer exporter: %v", err)
+		logger.Fatal(ctx, err, "could not to create tracer exporter")
 	}
 
 	traceProvider := trace.NewTracerProvider(
@@ -47,7 +35,6 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 			traceExporter,
 			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
 			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
-			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
 		),
 		trace.WithResource(
 			resource.NewWithAttributes(
@@ -57,6 +44,8 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 			),
 		),
 	)
+
+	otel.SetTracerProvider(traceProvider)
 
 	return traceProvider
 }
