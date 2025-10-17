@@ -13,7 +13,7 @@ type OrderItemRequest struct {
 }
 
 type CreateOrderResponse struct {
-	ID          uuid.UUID `json:"order_id"`
+	ID          uuid.UUID `json:"id"`
 	CustomerID  uuid.UUID `json:"customer_id" `
 	TotalAmount float64   `json:"total_amount"`
 	Status      string    `json:"status" `
