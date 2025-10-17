@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/rs/zerolog"
 	otellog "go.opentelemetry.io/otel/log"
 )
@@ -95,6 +96,10 @@ func Fatalf(ctx context.Context, err error, format string, args ...any) {
 }
 
 func recordLog(ctx context.Context, severity otellog.Severity, msg string) {
+	if !config.LoggerConfig.Enabled {
+		return
+	}
+
 	record := otellog.Record{}
 	record.SetSeverity(severity)
 	record.SetSeverityText(severity.String())

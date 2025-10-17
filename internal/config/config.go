@@ -107,13 +107,15 @@ type MongoConfigMap struct {
 }
 
 type TracerConfigMap struct {
-	Host string `mapstructure:"TRACER_EXPORTER_HOST"`
-	Port int    `mapstructure:"TRACER_EXPORTER_PORT"`
+	Enabled bool   `mapstructure:"TRACER_ENABLED"`
+	Host    string `mapstructure:"TRACER_EXPORTER_HOST"`
+	Port    int    `mapstructure:"TRACER_EXPORTER_PORT"`
 }
 
 type LoggerConfigMap struct {
-	Host string `mapstructure:"LOGGER_EXPORTER_HOST"`
-	Port int    `mapstructure:"LOGGER_EXPORTER_PORT"`
+	Enabled bool   `mapstructure:"LOGGER_ENABLED"`
+	Host    string `mapstructure:"LOGGER_EXPORTER_HOST"`
+	Port    int    `mapstructure:"LOGGER_EXPORTER_PORT"`
 }
 
 type MailConfigMap struct {

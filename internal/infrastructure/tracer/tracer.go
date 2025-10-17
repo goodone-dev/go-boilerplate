@@ -16,6 +16,10 @@ import (
 )
 
 func NewProvider(ctx context.Context) *trace.TracerProvider {
+	if !config.TracerConfig.Enabled {
+		return nil
+	}
+
 	traceExporter, err := otlptrace.New(
 		ctx,
 		otlptracehttp.NewClient(

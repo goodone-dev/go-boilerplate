@@ -15,6 +15,10 @@ import (
 var oLogger otellog.Logger
 
 func NewProvider(ctx context.Context) *log.LoggerProvider {
+	if !config.LoggerConfig.Enabled {
+		return nil
+	}
+
 	logExporter, err := otlploghttp.New(ctx,
 		otlploghttp.WithEndpoint(fmt.Sprintf("%s:%d", config.LoggerConfig.Host, config.LoggerConfig.Port)),
 		otlploghttp.WithInsecure(),

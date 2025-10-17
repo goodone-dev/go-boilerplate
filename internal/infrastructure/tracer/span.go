@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -54,6 +55,10 @@ func StartSpan(ctx context.Context, params ...any) (context.Context, customTrace
 }
 
 func startSpan(ctx context.Context, spanName string, funcName string, params ...any) (context.Context, customTracerSpan) {
+	if !config.TracerConfig.Enabled {
+		return ctx, customTracerSpan{}
+	}
+
 	ctx, span := otel.Tracer("").Start(ctx, spanName)
 
 	span.SetAttributes(
@@ -71,6 +76,10 @@ func startSpan(ctx context.Context, spanName string, funcName string, params ...
 }
 
 func (s customTracerSpan) EndSpan(err error, returns ...any) {
+	if !config.TracerConfig.Enabled {
+		return
+	}
+
 	if err != nil {
 		s.RecordError(err)
 		s.SetStatus(codes.Error, err.Error())
