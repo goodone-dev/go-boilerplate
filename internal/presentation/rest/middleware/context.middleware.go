@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
 func ContextMiddleware() gin.HandlerFunc {

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
-	htterror "github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	htterror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
 func RateLimitMiddleware(cache cache.ICache, limit int, duration time.Duration) gin.HandlerFunc {

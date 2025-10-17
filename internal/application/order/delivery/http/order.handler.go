@@ -3,9 +3,9 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/sanitizer"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
