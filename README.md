@@ -7,7 +7,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 
 ## 🌟 Features
 - 🏗️ **Clean Architecture**: Separates concerns into distinct layers (domain, application, infrastructure, presentation) for a more organized, testable, and maintainable codebase.
-- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework. Includes CORS and Secure middleware.
+- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework. Includes CORS and HTTP Security middleware.
 - 🔄 **Live Reload**: Automatically restart the application when file changes are detected.
 - 🗃️ **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
@@ -28,52 +28,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 - 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
-
-<details>
-<summary><b>🚧 Roadmap</b></summary>
-
-<!-- TODO Implementation: -->
-- Input Validation
-    - Path traversal protection for file operations
-    - Request size limits
-    - Content-Type validation
-- Database Connection Security
-    - Add connection encryption for production
-    - Implement connection pooling limits (partially done ✅)
-    - Add prepared statement caching
-- Structured Logging
-    - `zerolog` Integration
-    - Log levels (DEBUG, INFO, WARN, ERROR)
-    - Include request IDs in all logs
-- Graceful Degradation
-    - Implement fallback mechanisms when external services fail
-    - Add retry logic with exponential backoff
-    - Circuit breaker is present ✅ but not used in code
-
-<!-- Heavy Implementation: -->
-- Unit Test
-    - Test all usecase
-    - CI/CD Pipeline
-    - Min 80% Code Coverage (configured with gocover)
-- Authentication & Authorization
-    - Authentication Middleware
-    - Add role-based access control (RBAC)
-    - Ory Kratos & Keto Integration
-- Background Job Processing
-    - Implement RabbitMQ & Kafka
-    - Add worker command for processing async jobs
-    - Implement job retry and dead-letter queues
-- Secrets Management
-    - Use Vault (Production)
-- API Documentation
-    - Add swaggo/swag for auto-generated API docs
-- Caching Strategy
-    - Query result caching
-    - HTTP response caching
-    - Cache invalidation strategies
-    - Cache warming on startup
-
-</details>
 
 ## 🚀 Getting Started
 
