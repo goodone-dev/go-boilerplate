@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -35,7 +36,7 @@ func IdempotencyMiddleware(cache cache.ICache, duration time.Duration) gin.Handl
 			return
 		}
 
-		key := "idempotency:" + idempotencyKey
+		key := fmt.Sprintf("idempotency:%s:%s %s", idempotencyKey, c.Request.Method, c.Request.URL.Path)
 
 		bodyStr, err := cache.Get(ctx, key)
 		if err != nil {

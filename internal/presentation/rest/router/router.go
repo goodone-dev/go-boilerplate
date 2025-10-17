@@ -51,7 +51,7 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 		{
 			orders.POST(
 				"",
-				middleware.RateLimitMiddleware(cacheClient, 1, 1*time.Second),
+				middleware.SingleLimiterMiddleware(cacheClient, 60, 1*time.Minute),
 				middleware.IdempotencyMiddleware(cacheClient, 5*time.Minute),
 				orderHandler.Create,
 			)
