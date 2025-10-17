@@ -17,7 +17,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 			err := c.Errors.Last().Err
 
 			if e, ok := err.(*error.CustomError); ok {
-				logger.Errorf(c.Request.Context(), e, "%s %s failed: %s", c.Request.Method, c.Request.URL.Path, e.Message)
+				logger.Errorf(c.Request.Context(), e, "failed to process %s %s: %s", c.Request.Method, c.Request.URL.Path, e.Message)
 
 				res := gin.H{"message": e.Message}
 				if len(e.Errors) > 0 && config.ApplicationConfig.Env != config.EnvProd {
@@ -26,7 +26,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 
 				c.JSON(e.Status, res)
 			} else {
-				logger.Errorf(c.Request.Context(), err, "%s %s failed: an unexpected error occurred", c.Request.Method, c.Request.URL.Path)
+				logger.Errorf(c.Request.Context(), err, "failed to process %s %s: an unexpected error occurred", c.Request.Method, c.Request.URL.Path)
 
 				res := gin.H{"message": "an unexpected error occurred"}
 				if config.ApplicationConfig.Env != config.EnvProd {

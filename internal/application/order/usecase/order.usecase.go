@@ -51,7 +51,7 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 	if err != nil {
 		return nil, err
 	} else if customer == nil {
-		return nil, httperror.NewNotFoundError("customer not found")
+		return nil, httperror.NewNotFoundError("customer with the provided ID was not found")
 	}
 
 	var productIDs []uuid.UUID
@@ -64,7 +64,7 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 	if err != nil {
 		return nil, err
 	} else if len(products) != len(req.OrderItems) {
-		return nil, httperror.NewNotFoundError("one or more products not found")
+		return nil, httperror.NewNotFoundError("one or more requested products could not be found")
 	}
 
 	productMap := make(map[uuid.UUID]product.Product)
