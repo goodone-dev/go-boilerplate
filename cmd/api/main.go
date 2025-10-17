@@ -31,7 +31,6 @@ import (
 	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +40,7 @@ func main() {
 	// ========== Environment Setup ==========
 	err := config.Load()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load configuration")
+		panic(err)
 	}
 
 	// ========== Observability Setup ==========
