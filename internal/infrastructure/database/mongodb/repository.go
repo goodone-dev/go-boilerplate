@@ -61,7 +61,7 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 }
 
 func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
-	return nil, errors.New("unsupported feature")
+	return nil, errors.New("locking not supported")
 }
 
 func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
@@ -175,7 +175,7 @@ func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 }
 
 func (r *BaseRepo[D, I, E]) Begin(ctx context.Context) (*D, error) {
-	return nil, errors.New("unsupported feature")
+	return nil, errors.New("transaction not supported")
 }
 
 func (r *BaseRepo[D, I, E]) Rollback(trx *D) *D {

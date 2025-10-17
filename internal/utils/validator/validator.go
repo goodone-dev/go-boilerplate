@@ -23,7 +23,7 @@ func NewValidator() error {
 	vl := validator.New()
 	tr, ok := un.GetTranslator("en")
 	if !ok {
-		return fmt.Errorf("translator not found for 'en'")
+		return fmt.Errorf("english translator not found in universal translator")
 	}
 
 	err := translations.RegisterDefaultTranslations(vl, tr)
