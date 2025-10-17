@@ -1,11 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
-	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 	"github.com/spf13/viper"
 )
 
@@ -30,10 +28,10 @@ const (
 )
 
 type ApplicationConfigMap struct {
-	Name string      `mapstructure:"APP_NAME" validate:"required"`
-	Env  Environment `mapstructure:"APP_ENV" validate:"required"`
-	Port int         `mapstructure:"APP_PORT" validate:"required"`
-	URL  string      `mapstructure:"APP_URL" validate:"required"`
+	Name string      `mapstructure:"APP_NAME"`
+	Env  Environment `mapstructure:"APP_ENV"`
+	Port int         `mapstructure:"APP_PORT"`
+	URL  string      `mapstructure:"APP_URL"`
 }
 
 type RedisConfigMap struct {
@@ -144,10 +142,6 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&ApplicationConfig); err != nil {
 		return
 	}
-	if errs := validator.Validate(ApplicationConfig); errs != nil {
-		return fmt.Errorf("invalid application configuration: %v", errs[0])
-	}
-
 	if err = viper.Unmarshal(&PostgresConfig); err != nil {
 		return
 	}
@@ -177,7 +171,9 @@ func Load() (err error) {
 }
 
 func setDefaultConfig() {
+	viper.SetDefault("APP_PORT", 8080)
 	viper.SetDefault("CONTEXT_TIMEOUT", 10)
+	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)
@@ -191,6 +187,4 @@ func setDefaultConfig() {
 	viper.SetDefault("MONGO_MIN_CONN_POOL_SIZE", 2)
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
-
-	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 }
