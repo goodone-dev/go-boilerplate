@@ -172,7 +172,7 @@ func Load() (err error) {
 
 func setDefaultConfig() {
 	viper.SetDefault("APP_PORT", 8080)
-	viper.SetDefault("CONTEXT_TIMEOUT", 10)
+	viper.SetDefault("CONTEXT_TIMEOUT", 5)
 	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
