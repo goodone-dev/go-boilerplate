@@ -28,6 +28,14 @@ func NewForbiddenError(message string, errors ...string) error {
 	}
 }
 
+func NewUnauthorizedError(message string, errors ...string) error {
+	return &CustomError{
+		Status:  http.StatusUnauthorized,
+		Message: message,
+		Errors:  errors,
+	}
+}
+
 func NewNotFoundError(message string, errors ...string) error {
 	return &CustomError{
 		Status:  http.StatusNotFound,
