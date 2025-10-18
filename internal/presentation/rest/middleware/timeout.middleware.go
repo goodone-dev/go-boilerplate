@@ -17,8 +17,8 @@ func TimeoutMiddleware() gin.HandlerFunc {
 
 		done := make(chan struct{})
 		go func() {
+			defer close(done)
 			c.Next()
-			close(done)
 		}()
 
 		select {
