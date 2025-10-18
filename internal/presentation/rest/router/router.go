@@ -19,14 +19,15 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 
 	// ========== Initialize Router ==========
 	router := gin.New()
+	router.Use(otelgin.Middleware(""))
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: config.CorsAllowOrigins,
 	}))
 	// router.Use(secure.New(secure.DefaultConfig()))
 
-	router.Use(otelgin.Middleware(""))
 	router.Use(middleware.ErrorMiddleware())
-	router.Use(middleware.ContextMiddleware())
+	router.Use(middleware.TimeoutMiddleware())
+	router.Use(middleware.ResponseMiddleware())
 	router.Use(gin.Recovery())
 
 	// ========== Define Routes ==========

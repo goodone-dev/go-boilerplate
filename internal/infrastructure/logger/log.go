@@ -9,6 +9,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/rs/zerolog"
 	otellog "go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var zOutput = zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
@@ -18,84 +19,91 @@ var zLogger = zerolog.New(zOutput).
 	Logger()
 
 func Trace(ctx context.Context, msg string) {
-	zLogger.Trace().Msg(msg)
+	log := zLogger.Trace()
 
-	recordLog(ctx, otellog.SeverityTrace, msg)
+	recordLog(ctx, log, otellog.SeverityTrace, msg)
 }
 
 func Tracef(ctx context.Context, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Trace().Msg(msg)
+	log := zLogger.Trace()
 
-	recordLog(ctx, otellog.SeverityTrace, msg)
+	recordLog(ctx, log, otellog.SeverityTrace, msg)
 }
 
 func Debug(ctx context.Context, msg string) {
-	zLogger.Debug().Msg(msg)
+	log := zLogger.Debug()
 
-	recordLog(ctx, otellog.SeverityDebug, msg)
+	recordLog(ctx, log, otellog.SeverityDebug, msg)
 }
 
 func Debugf(ctx context.Context, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Debug().Msg(msg)
+	log := zLogger.Debug()
 
-	recordLog(ctx, otellog.SeverityDebug, msg)
+	recordLog(ctx, log, otellog.SeverityDebug, msg)
 }
 
 func Info(ctx context.Context, msg string) {
-	zLogger.Info().Msg(msg)
+	log := zLogger.Info()
 
-	recordLog(ctx, otellog.SeverityInfo, msg)
+	recordLog(ctx, log, otellog.SeverityInfo, msg)
 }
 
 func Infof(ctx context.Context, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Info().Msg(msg)
+	log := zLogger.Info()
 
-	recordLog(ctx, otellog.SeverityInfo, msg)
+	recordLog(ctx, log, otellog.SeverityInfo, msg)
 }
 
 func Warn(ctx context.Context, msg string) {
-	zLogger.Warn().Msg(msg)
+	log := zLogger.Warn()
 
-	recordLog(ctx, otellog.SeverityWarn, msg)
+	recordLog(ctx, log, otellog.SeverityWarn, msg)
 }
 
 func Warnf(ctx context.Context, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Warn().Msg(msg)
+	log := zLogger.Warn()
 
-	recordLog(ctx, otellog.SeverityWarn, msg)
+	recordLog(ctx, log, otellog.SeverityWarn, msg)
 }
 
 func Error(ctx context.Context, err error, msg string) {
-	zLogger.Error().Err(err).Msg(msg)
+	log := zLogger.Error().Err(err)
 
-	recordLog(ctx, otellog.SeverityError, msg)
+	recordLog(ctx, log, otellog.SeverityError, msg)
 }
 
 func Errorf(ctx context.Context, err error, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Error().Err(err).Msg(msg)
+	log := zLogger.Error().Err(err)
 
-	recordLog(ctx, otellog.SeverityError, msg)
+	recordLog(ctx, log, otellog.SeverityError, msg)
 }
 
 func Fatal(ctx context.Context, err error, msg string) {
-	zLogger.Fatal().Err(err).Msg(msg)
+	log := zLogger.Fatal().Err(err)
 
-	recordLog(ctx, otellog.SeverityFatal, msg)
+	recordLog(ctx, log, otellog.SeverityFatal, msg)
 }
 
 func Fatalf(ctx context.Context, err error, format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
-	zLogger.Fatal().Err(err).Msg(msg)
+	log := zLogger.Fatal().Err(err)
 
-	recordLog(ctx, otellog.SeverityFatal, msg)
+	recordLog(ctx, log, otellog.SeverityFatal, msg)
 }
 
-func recordLog(ctx context.Context, severity otellog.Severity, msg string) {
+func recordLog(ctx context.Context, log *zerolog.Event, severity otellog.Severity, msg string) {
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().HasTraceID() {
+		log.Str("request_id", span.SpanContext().TraceID().String())
+	}
+
+	log.Msg(msg)
+
 	if !config.LoggerConfig.Enabled {
 		return
 	}
