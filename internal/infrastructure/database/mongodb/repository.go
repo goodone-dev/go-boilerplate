@@ -40,6 +40,7 @@ func (r *BaseRepo[D, I, E]) Find(ctx context.Context, filter map[string]any) (re
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
+	filter["deleted_at"] = nil
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
 		return
@@ -57,7 +58,7 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
-	err = coll.FindOne(ctx, bson.M{"_id": ID}).Decode(&res)
+	err = coll.FindOne(ctx, bson.M{"_id": ID, "deleted_at": nil}).Decode(&res)
 	return
 }
 
@@ -73,7 +74,7 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
-	cursor, err := coll.Find(ctx, bson.M{"_id": bson.M{"$in": IDs}})
+	cursor, err := coll.Find(ctx, bson.M{"_id": bson.M{"$in": IDs}, "deleted_at": nil})
 	if err != nil {
 		return
 	}
