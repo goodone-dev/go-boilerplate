@@ -25,7 +25,7 @@ func createClient(ctx context.Context) (client *redis.Client) {
 
 	if config.RedisConfig.TLS {
 		options.TLSConfig = &tls.Config{
-			MinVersion: tls.VersionTLS12,
+			MinVersion: tls.VersionTLS13,
 		}
 	}
 

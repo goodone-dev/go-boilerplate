@@ -43,7 +43,7 @@ func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, da
 	if config.MailConfig.TLS {
 		d.TLSConfig = &tls.Config{
 			ServerName: config.MailConfig.Host,
-			MinVersion: tls.VersionTLS12,
+			MinVersion: tls.VersionTLS13,
 		}
 	}
 
