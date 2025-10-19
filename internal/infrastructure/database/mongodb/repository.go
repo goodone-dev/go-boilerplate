@@ -8,6 +8,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type BaseRepo[D any, I any, E database.Entity] struct {
@@ -81,8 +82,42 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[string]any, page int, limit int) (res database.Pagination[E], err error) {
-	return res, errors.New("not implemented")
+func (r *BaseRepo[D, I, E]) OffsetPagination(ctx context.Context, filter map[string]any, sort []string, page int, size int) (res database.Pagination[E], err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, page, size)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbSlave.Collection(r.Entity.TableName())
+
+	count, err := coll.CountDocuments(ctx, filter)
+	if err != nil {
+		return
+	}
+
+	opt := options.Find().
+		SetSort(sort).
+		SetLimit(int64(size)).
+		SetSkip(int64((page - 1) * size))
+
+	filter["deleted_at"] = nil
+
+	cursor, err := coll.Find(ctx, filter, opt)
+	if err != nil {
+		return
+	}
+
+	err = cursor.All(ctx, &res.Data)
+	if err != nil {
+		return
+	}
+
+	res.Metadata.Total = int(count)
+	res.Metadata.Pages = (int(count) + size - 1) / size
+	res.Metadata.Page = page
+	res.Metadata.Size = size
+
+	return
 }
 
 func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E, err error) {

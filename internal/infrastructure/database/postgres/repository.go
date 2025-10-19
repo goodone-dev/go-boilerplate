@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"math"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
@@ -143,8 +144,8 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[string]any, page int, size int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, page, size)
+func (r *BaseRepo[D, I, E]) OffsetPagination(ctx context.Context, filter map[string]any, sort []string, page int, size int) (res database.Pagination[E], err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, page, size)
 	defer func() {
 		span.EndSpan(err, res)
 	}()
@@ -157,15 +158,32 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 	}
 
 	filter["deleted_at"] = nil
+
 	builder := sq.
+		Select("COUNT(*)").
+		From(r.Entity.TableName()).
+		Where(filter)
+
+	qry, args, err := builder.ToSql()
+	if err != nil {
+		return
+	}
+
+	var total int
+	err = r.dbSlave.WithContext(ctx).Raw(qry, args...).Scan(&total).Error
+	if err != nil {
+		return
+	}
+
+	builder = sq.
 		Select("*").
 		From(r.Entity.TableName()).
 		Where(filter).
-		OrderBy("id DESC").
-		Limit(uint64(size + 1)).
+		OrderBy(sort...). // sort=author:asc,title:desc
+		Limit(uint64(size)).
 		Offset(uint64((page - 1) * size))
 
-	qry, args, err := builder.ToSql()
+	qry, args, err = builder.ToSql()
 	if err != nil {
 		return
 	}
@@ -176,16 +194,11 @@ func (r *BaseRepo[D, I, E]) FindWithPagination(ctx context.Context, filter map[s
 		return
 	}
 
-	if len(models) > size {
-		res.HasNext = true
-		models = models[:size]
-	}
-
-	if page > 1 {
-		res.HasPrev = true
-	}
-
 	res.Data = models
+	res.Metadata.Total = total
+	res.Metadata.Pages = int(math.Ceil(float64(total) / float64(size)))
+	res.Metadata.Page = page
+	res.Metadata.Size = size
 
 	return
 }
