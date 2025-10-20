@@ -1,12 +1,13 @@
 package validator
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/go-playground/locales/en"
 	universal "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 )
 
 type CustomValidator struct {
@@ -14,39 +15,32 @@ type CustomValidator struct {
 	translator universal.Translator
 }
 
-var customValidator *CustomValidator
-
-func NewValidator() error {
+func NewValidator() *CustomValidator {
 	en := en.New()
 	un := universal.New(en, en)
 
 	vl := validator.New()
 	tr, ok := un.GetTranslator("en")
 	if !ok {
-		return fmt.Errorf("english translator not found in universal translator")
+		logger.Fatal(context.Background(), nil, "failed to get translator")
+		return nil
 	}
 
 	err := translations.RegisterDefaultTranslations(vl, tr)
 	if err != nil {
-		return err
+		logger.Fatal(context.Background(), err, "failed to register default translations")
+		return nil
 	}
 
-	customValidator = &CustomValidator{
+	return &CustomValidator{
 		validator:  vl,
 		translator: tr,
 	}
-
-	return nil
 }
 
-func Validate(obj any) []string {
-	if customValidator == nil {
-		err := NewValidator()
-		if err != nil {
-			return []string{err.Error()}
-		}
-	}
+var customValidator = NewValidator()
 
+func Validate(obj any) []string {
 	if err := customValidator.validator.Struct(obj); err != nil {
 		errors := []string{}
 		for _, err := range err.(validator.ValidationErrors) {

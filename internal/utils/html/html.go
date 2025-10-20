@@ -1,37 +1,32 @@
 package html
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 )
 
-var customTemplate *template.Template
-
-func NewTemplate() error {
+func NewTemplate() *template.Template {
 	tmpl, err := template.New("baseTemplate").Funcs(template.FuncMap{
 		"FormatNumber": formatNumber,
 		"FormatDate":   formatDate,
 	}).ParseGlob("./templates/**/*.html")
 	if err != nil {
-		return err
+		logger.Fatal(context.Background(), err, "failed to parse template")
+		return nil
 	}
 
-	customTemplate = tmpl
-
-	return nil
+	return tmpl
 }
 
-func ExecuteTemplate(wr io.Writer, file string, data any) (err error) {
-	if customTemplate == nil {
-		err = NewTemplate()
-		if err != nil {
-			return
-		}
-	}
+var customTemplate = NewTemplate()
 
+func ExecuteTemplate(wr io.Writer, file string, data any) (err error) {
 	err = customTemplate.ExecuteTemplate(wr, file, data)
 	if err != nil {
 		return

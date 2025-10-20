@@ -1,19 +1,25 @@
 package sanitizer
 
 import (
+	"context"
+
 	"github.com/go-sanitize/sanitize"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 )
 
 // Docs: https://github.com/go-sanitize/sanitize
-var customSanitizer *sanitize.Sanitizer
-
-func Sanitize[S any](obj S) (err error) {
-	if customSanitizer == nil {
-		customSanitizer, err = sanitize.New()
-		if err != nil {
-			return err
-		}
+func NewSanitizer() *sanitize.Sanitizer {
+	s, err := sanitize.New()
+	if err != nil {
+		logger.Fatal(context.Background(), err, "failed to create sanitizer")
+		return nil
 	}
 
+	return s
+}
+
+var customSanitizer = NewSanitizer()
+
+func Sanitize[S any](obj S) (err error) {
 	return customSanitizer.Sanitize(&obj)
 }
