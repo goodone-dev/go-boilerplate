@@ -251,9 +251,16 @@ func (r *BaseRepo[D, I, E]) Update(ctx context.Context, model E, trx *D) (err er
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	data, _ := json.Marshal(model)
+	data, err := json.Marshal(model)
+	if err != nil {
+		return
+	}
+
 	var req database.BaseEntity[I]
-	json.Unmarshal(data, &req)
+	err = json.Unmarshal(data, &req)
+	if err != nil {
+		return
+	}
 
 	_, err = coll.UpdateOne(ctx, bson.M{"_id": req.ID}, bson.M{"$set": model})
 	if err != nil {
