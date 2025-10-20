@@ -2,7 +2,10 @@ package mongodb
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"math"
+	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
@@ -32,7 +35,7 @@ func (r *BaseRepo[D, I, E]) SlaveDB() *D {
 	return any(r.dbSlave).(*D)
 }
 
-func (r *BaseRepo[D, I, E]) Find(ctx context.Context, filter map[string]any) (res []E, err error) {
+func (r *BaseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
 	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter)
 	defer func() {
 		span.EndSpan(err, res)
@@ -41,12 +44,17 @@ func (r *BaseRepo[D, I, E]) Find(ctx context.Context, filter map[string]any) (re
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
 	filter["deleted_at"] = nil
+
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
 		return
 	}
 
 	err = cursor.All(ctx, &res)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -59,6 +67,10 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
 	err = coll.FindOne(ctx, bson.M{"_id": ID, "deleted_at": nil}).Decode(&res)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -80,28 +92,38 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 	}
 
 	err = cursor.All(ctx, &res)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
-func (r *BaseRepo[D, I, E]) OffsetPagination(ctx context.Context, filter map[string]any, sort []string, page int, size int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, page, size)
+func (r *BaseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, size, page)
 	defer func() {
 		span.EndSpan(err, res)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
 
+	filter["deleted_at"] = nil
 	count, err := coll.CountDocuments(ctx, filter)
 	if err != nil {
 		return
+	}
+
+	if size <= 0 {
+		size = 10
+	}
+	if page <= 0 {
+		page = 1
 	}
 
 	opt := options.Find().
 		SetSort(sort).
 		SetLimit(int64(size)).
 		SetSkip(int64((page - 1) * size))
-
-	filter["deleted_at"] = nil
 
 	cursor, err := coll.Find(ctx, filter, opt)
 	if err != nil {
@@ -113,10 +135,63 @@ func (r *BaseRepo[D, I, E]) OffsetPagination(ctx context.Context, filter map[str
 		return
 	}
 
-	res.Metadata.Total = int(count)
-	res.Metadata.Pages = (int(count) + size - 1) / size
-	res.Metadata.Page = page
-	res.Metadata.Size = size
+	var pages int
+	if count > 0 {
+		pages = int(math.Ceil(float64(count) / float64(size)))
+	}
+
+	res.Metadata.Total = &count
+	res.Metadata.Pages = &pages
+	res.Metadata.Page = &page
+	res.Metadata.Size = &size
+
+	return
+}
+
+func (r *BaseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, size, next)
+	defer func() {
+		span.EndSpan(err, res)
+	}()
+
+	coll := r.dbSlave.Collection(r.Entity.TableName())
+
+	filter["deleted_at"] = nil
+	if next != nil {
+		filter["id > ?"] = *next
+	}
+
+	count, err := coll.CountDocuments(ctx, filter)
+	if err != nil {
+		return
+	}
+
+	if size <= 0 {
+		size = 10
+	}
+
+	opt := options.Find().
+		SetSort(sort).
+		SetLimit(int64(size))
+
+	cursor, err := coll.Find(ctx, filter, opt)
+	if err != nil {
+		return
+	}
+
+	err = cursor.All(ctx, &res.Data)
+	if err != nil {
+		return
+	}
+
+	var pages int
+	if count > 0 {
+		pages = int(math.Ceil(float64(count) / float64(size)))
+	}
+
+	res.Metadata.Total = &count
+	res.Metadata.Pages = &pages
+	res.Metadata.Size = &size
 
 	return
 }
@@ -135,6 +210,10 @@ func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E,
 	}
 
 	err = coll.FindOne(ctx, bson.M{"_id": result.InsertedID}).Decode(&res)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -146,12 +225,10 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, models []E, trx *D) 
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	docs := make([]any, 0, len(models))
-	for _, model := range models {
-		docs = append(docs, model)
+	result, err := coll.InsertMany(ctx, models)
+	if err != nil {
+		return
 	}
-
-	result, err := coll.InsertMany(ctx, docs)
 
 	cursor, err := coll.Find(ctx, bson.M{"_id": bson.M{"$in": result.InsertedIDs}})
 	if err != nil {
@@ -159,55 +236,127 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, models []E, trx *D) 
 	}
 
 	err = cursor.All(ctx, &res)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (r *BaseRepo[D, I, E]) Update(ctx context.Context, model E, trx *D) (err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, model)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	data, _ := json.Marshal(model)
+	var req database.BaseEntity[I]
+	json.Unmarshal(data, &req)
+
+	_, err = coll.UpdateOne(ctx, bson.M{"_id": req.ID}, bson.M{"$set": model})
+	if err != nil {
+		return
+	}
+
 	return
 }
 
 func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[string]any, trx *D) (res E, err error) {
-	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
 	defer func() {
 		span.EndSpan(err, res)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	err = coll.FindOneAndUpdate(ctx, bson.M{"_id": ID}, payload).Decode(&res)
+	err = coll.FindOneAndUpdate(ctx, bson.M{"_id": ID}, bson.M{"$set": payload}).Decode(&res)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
 func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload map[string]any, trx *D) (err error) {
-	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, payload)
 	defer func() {
 		span.EndSpan(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.UpdateMany(ctx, bson.M{"_id": IDs}, payload)
-	return
+	_, err = coll.UpdateMany(ctx, bson.M{"_id": bson.M{"$in": IDs}}, bson.M{"$set": payload})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *BaseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, payload map[string]any, trx *D) (err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, payload)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	_, err = coll.UpdateMany(ctx, filter, bson.M{"$set": payload})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
-	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
 	defer func() {
 		span.EndSpan(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.DeleteOne(ctx, bson.M{"_id": ID})
-	return
+	_, err = coll.UpdateOne(ctx, bson.M{"_id": ID}, bson.M{"$set": bson.M{"deleted_at": time.Now()}})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
-	_, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
 	defer func() {
 		span.EndSpan(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	_, err = coll.DeleteOne(ctx, bson.M{"_id": IDs})
-	return
+	_, err = coll.UpdateMany(ctx, bson.M{"_id": bson.M{"$in": IDs}}, bson.M{"$set": bson.M{"deleted_at": time.Now()}})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *BaseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
+	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter)
+	defer func() {
+		span.EndSpan(err)
+	}()
+
+	coll := r.dbMaster.Collection(r.Entity.TableName())
+
+	_, err = coll.UpdateMany(ctx, filter, bson.M{"$set": bson.M{"deleted_at": time.Now()}})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *BaseRepo[D, I, E]) Begin(ctx context.Context) (*D, error) {
