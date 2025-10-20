@@ -4,8 +4,6 @@ import (
 	"context"
 )
 
-const InsertBatchSize = 100
-
 type Pagination[E Entity] struct {
 	Data       []E                   `json:"data"`
 	Metadata   *PaginationMetadata   `json:"metadata,omitempty"`

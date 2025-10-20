@@ -8,6 +8,7 @@ import (
 )
 
 var ContextTimeout time.Duration
+var InsertBatchSize int // TODO: Move to common database config
 var CorsAllowOrigins []string
 var ApplicationConfig ApplicationConfigMap
 var RedisConfig RedisConfigMap
@@ -166,6 +167,7 @@ func Load() (err error) {
 
 	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
 	CorsAllowOrigins = strings.Split(viper.GetString("CORS_ALLOW_ORIGINS"), ",")
+	InsertBatchSize = viper.GetInt("INSERT_BATCH_SIZE")
 
 	return
 }
@@ -174,6 +176,7 @@ func setDefaultConfig() {
 	viper.SetDefault("APP_PORT", 8080)
 	viper.SetDefault("CONTEXT_TIMEOUT", 5)
 	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
+	viper.SetDefault("INSERT_BATCH_SIZE", 100)
 
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)

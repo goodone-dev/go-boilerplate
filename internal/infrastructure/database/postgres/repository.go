@@ -5,6 +5,7 @@ import (
 	"math"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"gorm.io/gorm"
@@ -302,7 +303,7 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (re
 		db = trx
 	}
 
-	err = db.WithContext(ctx).CreateInBatches(req, database.InsertBatchSize).Error
+	err = db.WithContext(ctx).CreateInBatches(req, config.InsertBatchSize).Error
 	if err != nil {
 		return req, err
 	}
