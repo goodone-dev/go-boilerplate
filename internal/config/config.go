@@ -1,7 +1,6 @@
 package config
 
 import (
-	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -9,7 +8,7 @@ import (
 
 var ContextTimeout time.Duration
 var InsertBatchSize int // TODO: Move to common database config
-var CorsAllowOrigins []string
+var CorsConfig CorsConfigMap
 var ApplicationConfig ApplicationConfigMap
 var RedisConfig RedisConfigMap
 var PostgresConfig PostgresConfigMap
@@ -127,6 +126,11 @@ type MailConfigMap struct {
 	TLS      bool   `mapstructure:"MAIL_TLS"`
 }
 
+type CorsConfigMap struct {
+	AllowOrigins []string `mapstructure:"CORS_ALLOW_ORIGINS"`
+	AllowMethods []string `mapstructure:"CORS_ALLOW_METHODS"`
+}
+
 func Load() (err error) {
 	viper.AddConfigPath("./")
 	viper.SetConfigName(".env")
@@ -164,9 +168,11 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&LoggerConfig); err != nil {
 		return
 	}
+	if err = viper.Unmarshal(&CorsConfig); err != nil {
+		return
+	}
 
 	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
-	CorsAllowOrigins = strings.Split(viper.GetString("CORS_ALLOW_ORIGINS"), ",")
 	InsertBatchSize = viper.GetInt("INSERT_BATCH_SIZE")
 
 	return
@@ -175,8 +181,10 @@ func Load() (err error) {
 func setDefaultConfig() {
 	viper.SetDefault("APP_PORT", 8080)
 	viper.SetDefault("CONTEXT_TIMEOUT", 5)
-	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 	viper.SetDefault("INSERT_BATCH_SIZE", 100)
+
+	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
+	viper.SetDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
 
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)
