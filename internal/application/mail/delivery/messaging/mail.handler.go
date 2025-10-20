@@ -2,10 +2,14 @@ package messaging
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"strings"
 
-	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
 type mailHandler struct {
@@ -19,10 +23,17 @@ func NewMailHandler(usecase mail.IMailUsecase) *mailHandler {
 }
 
 func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
-	defer cancel()
+	ctx, span := tracer.StartSpan(ctx, msg)
+	defer func() {
+		span.EndSpan(err)
+	}()
 
 	logger.Infof(ctx, "processing email send request to: %s", msg.To)
+
+	if errs := validator.Validate(msg); errs != nil {
+		logger.Errorf(ctx, errors.New(strings.Join(errs, ", ")), "failed to validate email send request to: %s", msg.To)
+		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
+	}
 
 	err = h.usecase.Send(ctx, msg)
 	if err != nil {
