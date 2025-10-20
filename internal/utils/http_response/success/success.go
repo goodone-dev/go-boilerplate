@@ -7,9 +7,8 @@ import (
 )
 
 type customSuccess struct {
-	Message    string `json:"message"`
-	Data       any    `json:"data,omitempty"`
-	Pagination any    `json:"pagination,omitempty"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
 func Send(c *gin.Context, data any) {
