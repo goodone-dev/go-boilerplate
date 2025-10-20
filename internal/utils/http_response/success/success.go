@@ -13,7 +13,7 @@ type customSuccess struct {
 
 func Send(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, customSuccess{
-		Message: "successfully",
+		Message: "success",
 		Data:    data,
 	})
 }
