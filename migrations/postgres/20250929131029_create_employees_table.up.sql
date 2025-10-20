@@ -7,3 +7,7 @@ CREATE TABLE IF NOT EXISTS employees (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+
+CREATE INDEX idx_employees_name ON employees (name);
+CREATE INDEX idx_employees_email ON employees (email);
+CREATE INDEX idx_employees_role ON employees (role);
