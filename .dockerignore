@@ -26,5 +26,12 @@ log/
 .DS_Store
 Thumbs.db
 
-# Environment variables
-.env
+# Version control
+.git/
+.gitignore
+
+# Test files
+*_test.go
+
+# Documentation
+*.md
