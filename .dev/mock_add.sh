@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script to add mock configuration for an interface using mockery
+
 show_usage() {
     echo "Usage: make mock_add NAME=<interface_name>"
     echo "Example: make mock_add NAME=ICustomerRepository"
@@ -17,7 +19,7 @@ done
 
 # Validate required arguments
 if [ -z "$INTERFACE_NAME" ]; then
-    echo "Error: Interface name are required"
+    echo "❌ Error: Interface name is required"
     show_usage
 fi
 
@@ -29,7 +31,7 @@ FILE_PATH=$(grep -rl "type ${INTERFACE_NAME} interface" internal | head -n 1)
 
 if [ -z "$FILE_PATH" ];
 then
-    echo "Interface ${INTERFACE_NAME} not found in internal."
+    echo "🔍 Interface ${INTERFACE_NAME} not found in internal directory"
     exit 1
 fi
 
@@ -45,7 +47,7 @@ then
     if grep -A 1 "  ${PACKAGE_PATH}:" .mockery.yml | grep -q "    interfaces:" && \
        grep -A 5 "    interfaces:" .mockery.yml | grep -q "      ${INTERFACE_NAME}:";
     then
-        echo "Interface ${INTERFACE_NAME} is already configured in .mockery.yml."
+        echo "🚫 Interface ${INTERFACE_NAME} is already configured in .mockery.yml."
         exit 0
     fi
 fi
@@ -63,4 +65,4 @@ then
 fi
 
 echo -e "\n$YAML_CONFIG" >> .mockery.yml
-echo "Added mock configuration for ${INTERFACE_NAME} to .mockery.yml."
+echo "✅ Added mock configuration for ${INTERFACE_NAME} to .mockery.yml."

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script to run the application
+
 # Check if --watch argument is provided
 WATCH_MODE=false
 for arg in "$@"; do
@@ -13,9 +15,9 @@ if [ "$WATCH_MODE" = true ]; then
     # Check if 'air' is installed, and install it if not
     $(dirname "$0")/ensure_air.sh
 
-    echo "Starting application with live reloading..."
+    echo "🚀 Starting application with live reloading..."
     air -c .air.toml
 else
-    echo "Starting application..."
+    echo "🚀 Starting application..."
     go run ./cmd/api/main.go
 fi

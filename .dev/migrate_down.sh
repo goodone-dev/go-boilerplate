@@ -24,7 +24,7 @@ done
 
 # Validate required arguments
 if [ -z "$DB_DRIVER" ]; then
-    echo "Error: Database driver is required"
+    echo "❌ Error: Database driver is required"
     show_usage
 fi
 
@@ -41,7 +41,7 @@ case $DB_DRIVER in
         required_vars=("POSTGRES_HOST" "POSTGRES_USERNAME" "POSTGRES_PASSWORD" "POSTGRES_PORT" "POSTGRES_SSL_MODE" "POSTGRES_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -54,7 +54,7 @@ case $DB_DRIVER in
         required_vars=("MYSQL_HOST" "MYSQL_PORT" "MYSQL_USERNAME" "MYSQL_PASSWORD" "MYSQL_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -67,7 +67,7 @@ case $DB_DRIVER in
         required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -75,14 +75,14 @@ case $DB_DRIVER in
         DB_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}"
         ;;
     *)
-        echo "Error: Unsupported database driver: $DB_DRIVER"
+        echo "❌ Error: Unsupported database driver: $DB_DRIVER"
         show_usage
         ;;
 esac
 
 # Check if migration directory exists
 if [ ! -d "$MIGRATION_DIR" ]; then
-    echo "Error: Migration directory not found: $MIGRATION_DIR"
+    echo "❌ Error: Migration directory not found: $MIGRATION_DIR"
     exit 1
 fi
 
@@ -90,12 +90,12 @@ fi
 $(dirname "$0")/ensure_migrate.sh
 
 # Rollback migrations
-echo "Rolling back migrations for $DB_DRIVER..."
+echo "⏮️ Rolling back all migrations for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$MIGRATION_DIR" down 1
 
 if [ $? -eq 0 ]; then
-    echo "Migrations rolled back successfully"
+    echo "✅ Migrations rolled back successfully!"
 else
-    echo "Failed to roll back migrations"
+    echo "❌ Error: Failed to rollback migrations"
     exit 1
 fi

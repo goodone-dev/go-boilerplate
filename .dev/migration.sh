@@ -25,13 +25,13 @@ done
 
 # Validate required arguments
 if [ -z "$MIGRATION_NAME" ] || [ -z "$DB_DRIVER" ]; then
-    echo "Error: Both migration name and database driver are required"
+    echo "❌ Error: Both migration name and database driver are required"
     show_usage
 fi
 
 # Validate migration name (allow only lowercase letters, numbers, and underscores)
 if ! [[ $MIGRATION_NAME =~ ^[a-z0-9_]+$ ]]; then
-    echo "Error: Migration name can only contain lowercase letters, numbers, and underscores"
+    echo "❌ Error: Migration name can only contain lowercase letters, numbers, and underscores"
     exit 1
 fi
 
@@ -47,7 +47,7 @@ case $DB_DRIVER in
         MIGRATION_DIR="./migrations/mongodb"
         ;;
     *)
-        echo "Error: Unsupported database driver: $DB_DRIVER"
+        echo "❌ Error: Unsupported database driver: $DB_DRIVER"
         show_usage
         ;;
 esac
@@ -59,12 +59,12 @@ mkdir -p $MIGRATION_DIR
 $(dirname "$0")/ensure_migrate.sh
 
 # Create migration files
-echo "Creating migration files..."
+echo "📝 Creating migration files for $MIGRATION_NAME..."
 migrate create -ext sql -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
 
 if [ $? -eq 0 ]; then
-    echo "Migration files created successfully in $MIGRATION_DIR directory"
+    echo "✅ Migration files created successfully!"
 else
-    echo "Failed to create migration files"
+    echo "❌ Error: Failed to create migration files"
     exit 1
 fi

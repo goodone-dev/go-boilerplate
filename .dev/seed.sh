@@ -24,7 +24,7 @@ done
 
 # Validate required arguments
 if [ -z "$DB_DRIVER" ]; then
-    echo "Error: Database driver is required"
+    echo "❌ Error: Database driver is required"
     show_usage
 fi
 
@@ -41,7 +41,7 @@ case $DB_DRIVER in
         required_vars=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USERNAME" "POSTGRES_PASSWORD" "POSTGRES_SSL_MODE" "POSTGRES_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -54,7 +54,7 @@ case $DB_DRIVER in
         required_vars=("MYSQL_HOST" "MYSQL_PORT" "MYSQL_USERNAME" "MYSQL_PASSWORD" "MYSQL_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -67,7 +67,7 @@ case $DB_DRIVER in
         required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
-                echo "Error: Required environment variable $var is not set"
+                echo "❌ Error: Required environment variable $var is not set"
                 exit 1
             fi
         done
@@ -75,7 +75,7 @@ case $DB_DRIVER in
         DB_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}"
         ;;
     *)
-        echo "Error: Unsupported database driver: $DB_DRIVER"
+        echo "❌ Error: Unsupported database driver: $DB_DRIVER"
         show_usage
         ;;
 esac
@@ -90,12 +90,12 @@ fi
 $(dirname "$0")/ensure_migrate.sh
 
 # Apply seeders
-echo "Applying seeders for $DB_DRIVER..."
+echo "🌱 Applying seeders for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$SEEDER_DIR" up
 
 if [ $? -eq 0 ]; then
-    echo "Seeders applied successfully"
+    echo "✅ Seeders applied successfully!"
 else
-    echo "Failed to apply seeders"
+    echo "❌ Error: Failed to apply seeders"
     exit 1
 fi

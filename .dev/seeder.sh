@@ -25,13 +25,13 @@ done
 
 # Validate required arguments
 if [ -z "$SEEDER_NAME" ] || [ -z "$DB_DRIVER" ]; then
-    echo "Error: Both seeder name and database driver are required"
+    echo "❌ Error: Both seeder name and database driver are required"
     show_usage
 fi
 
 # Validate seeder name (allow only lowercase letters, numbers, and underscores)
 if ! [[ $SEEDER_NAME =~ ^[a-z0-9_]+$ ]]; then
-    echo "Error: Seeder name can only contain lowercase letters, numbers, and underscores"
+    echo "❌ Error: Seeder name can only contain lowercase letters, numbers, and underscores"
     exit 1
 fi
 
@@ -47,7 +47,7 @@ case $DB_DRIVER in
         SEEDER_DIR="./seeders/mongodb"
         ;;
     *)
-        echo "Error: Unsupported database driver: $DB_DRIVER"
+        echo "❌ Error: Unsupported database driver: $DB_DRIVER"
         show_usage
         ;;
 esac
@@ -59,12 +59,12 @@ mkdir -p $SEEDER_DIR
 $(dirname "$0")/ensure_migrate.sh
 
 # Create seeder files
-echo "Creating seeder files..."
+echo "🌱 Creating seeder files for $SEEDER_NAME..."
 migrate create -ext sql -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
 
 if [ $? -eq 0 ]; then
-    echo "Seeder files created successfully in $SEEDER_DIR directory"
+    echo "✅ Seeder files created successfully!"
 else
-    echo "Failed to create seeder files"
+    echo "❌ Error: Failed to create seeder files"
     exit 1
 fi
