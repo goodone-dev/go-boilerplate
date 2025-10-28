@@ -34,7 +34,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 <details>
 <summary>🚧 Roadmap</summary>
 
-### 🔴 Critical Issues
+#### 🔴 Critical Issues
 - Unit Tests
     - Add unit test implementation
     - Minimum 80% test coverage
@@ -49,7 +49,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - Context Timeout
     - Automatic cancellation of all in-flight requests when timeout is reached
 
-### 🟡 Security Improvements
+#### 🟡 Security Improvements
 - HTTP Security Headers
     - `X-Content-Type-Options: nosniff`
     - `X-Frame-Options: DENY`
@@ -70,7 +70,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - Trace Spans Leak Sensitive Data
     - Redact sensitive fields before logging
 
-### 🟢 Feature Enhancements
+#### 🟢 Feature Enhancements
 - API Documentation
     - Add swaggo/swag for auto-generated API docs
 - Background Job Processing
@@ -90,7 +90,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - SMTP Connection
     - Add SMTP connection pool
 
-### 🟣 Observability & Monitoring
+#### 🟣 Observability & Monitoring
 - Metrics Collection
     - Add custom business metrics
     - Add Prometheus error counters by type/endpoint
@@ -100,7 +100,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - Define SLIs/SLOs
     - Create runbooks for common alerts
 
-### 🟤 DevOps & Deployment
+#### 🟤 DevOps & Deployment
 - Kubernetes Manifests
     - Deployment, Service, Ingress
     - ConfigMaps and Secrets
@@ -111,7 +111,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - CI/CD Enhancements
     - Add dependency vulnerability scanning
 
-### 🔶 Developer Experience
+#### 🔶 Developer Experience
 - Code Generation
     - Create CLI tool for scaffolding
 - Pre-commit Hooks
