@@ -40,6 +40,7 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 		health.GET("/ready", healthHandler.HealthReadyCheck)
 	}
 
+	// TODO: Add authentication
 	debug := router.Group("/debug/pprof")
 	{
 		debug.GET("/goroutine", gin.WrapF(pprof.Index))
