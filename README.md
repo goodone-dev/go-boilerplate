@@ -31,6 +31,105 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 - 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
 
+<details>
+<summary>🚧 Roadmap</summary>
+
+### 🔴 Critical Issues
+- Unit Tests
+    - Add unit test implementation
+    - Minimum 80% test coverage
+    - Add test coverage to CI/CD pipeline
+- Authentication & Authorization
+    - Add JWT authentication middleware
+    - Add role-based access control (RBAC)
+    - Integrating Ory Kratos/Keto
+    - Set Idempotency & Limiter middleware key by User ID
+- Database Migration & Seeding
+    - Handling migration and seeder errors
+- Context Timeout
+    - Automatic cancellation of all in-flight requests when timeout is reached
+
+### 🟡 Security Improvements
+- HTTP Security Headers
+    - `X-Content-Type-Options: nosniff`
+    - `X-Frame-Options: DENY`
+    - `X-XSS-Protection: 1; mode=block`
+    - `Strict-Transport-Security` (HSTS)
+    - `Content-Security-Policy`
+- Secrets Management
+    - Use HashiCorp Vault, AWS Secrets Manager, or similar
+    - Add secrets rotation mechanism
+    - Document secure deployment practices
+- Input Validation Enhancement
+    - Path traversal protection for file operations
+    - Request body size limits
+    - Content-Type validation
+- Database Connection Security
+    - Add connection encryption for production
+    - Add prepared statement caching
+- Trace Spans Leak Sensitive Data
+    - Redact sensitive fields before logging
+
+### 🟢 Feature Enhancements
+- API Documentation
+    - Add swaggo/swag for auto-generated API docs
+- Background Job Processing
+    - Implement RabbitMQ/Kafka as mentioned in roadmap
+    - Add worker command for processing async jobs
+    - Implement job retry and dead-letter queues
+- Caching Strategy
+    - Query result caching
+    - HTTP response caching
+    - Cache invalidation strategies
+    - Cache warming on startup
+- Database Connection
+    - Add retry logic with exponential backoff
+    - Add read replica pool
+- ETag Support
+    - Add ETag middleware for GET requests
+- SMTP Connection
+    - Add SMTP connection pool
+
+### 🟣 Observability & Monitoring
+- Metrics Collection
+    - Add custom business metrics
+    - Add Prometheus error counters by type/endpoint
+    - Add database query duration metrics
+- Alerting
+    - Implement Prometheus Alertmanager
+    - Define SLIs/SLOs
+    - Create runbooks for common alerts
+
+### 🟤 DevOps & Deployment
+- Kubernetes Manifests
+    - Deployment, Service, Ingress
+    - ConfigMaps and Secrets
+    - HPA (Horizontal Pod Autoscaler)
+    - PodDisruptionBudget
+- Graceful Shutdown
+    - Add graceful shutdown for message bus
+- CI/CD Enhancements
+    - Add dependency vulnerability scanning
+
+### 🔶 Developer Experience
+- Code Generation
+    - Create CLI tool for scaffolding
+- Pre-commit Hooks
+    - Linting
+    - Formatting (`gofmt`, `goimports`)
+    - Test execution
+    - Commit message validation
+- Documentation
+    - Add architecture diagrams
+    - Document design decisions (ADRs)
+    - Add troubleshooting guide
+    - Create onboarding guide for new developers
+    - Contributing
+    - Security
+    - Performance benchmarks
+
+</details>
+
 ## 🚀 Getting Started
 
 ### Prerequisites
