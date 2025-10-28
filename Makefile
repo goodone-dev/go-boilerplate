@@ -34,6 +34,9 @@ down:
 stop:
 	@docker-compose stop
 
+setup:
+	@chmod +x .dev/*.sh
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -47,17 +50,18 @@ help:
 	@echo "  seed DRIVER=<driver>                             	Apply all seeders"
 	@echo ""
 	@echo "Development targets:"
+	@echo "  setup                                              	Make all .sh files in .dev directory executable"
 	@echo "  run                                               	Run the application"
 	@echo "  watch                                             	Run the application with live reloading"
 	@echo "  mock                                              	Generate mocks"
-	@echo "  mock_add NAME=<interface_name>                     Add mock config"
+	@echo "  mock_add NAME=<interface_name>                     	Add mock config"
 	@echo ""
 	@echo "Docker targets:"
 	@echo "  up                                               	Start the application with docker-compose"
 	@echo "  down                                             	Remove the application with docker-compose"
 	@echo "  stop                                             	Stop the application with docker-compose"
 
-.PHONY: help run watch \
+.PHONY: help setup run watch \
 		migration migrate_up migrate_down \
 		seeder seed \
 		mock mock_add \

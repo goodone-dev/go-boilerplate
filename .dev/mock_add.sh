@@ -1,8 +1,8 @@
 #!/bin/bash
 
 show_usage() {
-    echo "Usage: make mock_config NAME=<interface_name>"
-    echo "Example: make mock_config NAME=ICustomerRepository"
+    echo "Usage: make mock_add NAME=<interface_name>"
+    echo "Example: make mock_add NAME=ICustomerRepository"
     echo ""
     exit 1
 }
@@ -21,37 +21,8 @@ if [ -z "$INTERFACE_NAME" ]; then
     show_usage
 fi
 
-if ! command -v mockery &> /dev/null;
-then
-    echo "Error: 'mockery' is not installed."
-    echo ""
-    echo "Would you like to install 'mockery'? (y/n)"
-    read -r response
-    
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        echo ""
-        echo "Installing 'mockery'..."
-        go install github.com/vektra/mockery/v2@latest
-        
-        if [ $? -eq 0 ]; then
-            echo ""
-            echo "✓ 'mockery' installed successfully!"
-            echo ""
-        else
-            echo ""
-            echo "✗ Failed to install 'mockery'. Please try installing manually:"
-            echo "  go install github.com/vektra/mockery/v2@latest"
-            echo "  Or visit: https://vektra.github.io/mockery/latest/installation/"
-            exit 1
-        fi
-    else
-        echo ""
-        echo "Installation cancelled. To install 'mockery' later, run:"
-        echo "  go install github.com/vektra/mockery/v2@latest"
-        echo "  Or visit: https://vektra.github.io/mockery/latest/installation/"
-        exit 1
-    fi
-fi
+# Check if 'mockery' is installed, and install it if not
+$(dirname "$0")/ensure_mockery.sh
 
 MODULE_PATH=$(head -n 1 go.mod | sed 's/module //')
 FILE_PATH=$(grep -rl "type ${INTERFACE_NAME} interface" internal | head -n 1)
