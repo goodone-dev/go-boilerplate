@@ -36,6 +36,7 @@ stop:
 
 setup:
 	@chmod +x .dev/*.sh
+	@echo "✅ All .sh files in .dev directory are executable"
 
 help:
 	@echo "Usage: make [target]"
