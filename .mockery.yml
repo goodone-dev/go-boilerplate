@@ -18,7 +18,7 @@ packages:
         config:
           dir: "{{.InterfaceDir}}/mocks"
           filename: customer.repository_mock.go
-          structname: "{{.InterfaceName}}Mock"
+
   github.com/goodone-dev/go-boilerplate/internal/domain/order:
     interfaces:
       IOrderRepository:
