@@ -14,17 +14,17 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🗃️ **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
-- 💉 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
-- 📊 **Observability**: Observability features include distributed tracing, metrics, and logging.
+- 🧩 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
+- 📈 **Observability**: Observability features include distributed tracing, metrics, and logging.
 - 🏁 **Health Check**: `/health` endpoint for liveness and readiness probes.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
-- 🔗 **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
+- ⏱️ **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
 - 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
 - ⚠️ **Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
-- 📧 **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
+- ✉️ **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
 - 🕒 **Asynchronous Processing**: Offloads long-running tasks to a message bus, ensuring non-blocking API responses.
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
