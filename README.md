@@ -191,9 +191,12 @@ This project is structured following the principles of **Clean Architecture**. T
 
 ```
 .
+├── .dev/                       # Local development tools, scripts, and configurations.
+├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
 ├── cmd/
-│   └── api/
-│       └── main.go             # Entry point of the application. Initializes and starts the server.
+│   ├── api/
+│   │   └── main.go             # Entry point of the application. Initializes and starts the server.
+│   └── utils/                  # Utility functions shared across the application.
 ├── internal/
 │   ├── application/            # Implements use cases by orchestrating domain logic.
 │   │   ├── <domain_name>/      # Groups application logic for a specific domain.
@@ -212,9 +215,10 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   ├── cache/              # Cache implementations (e.g., Redis).
 │   │   ├── database/           # Database implementations (PostgreSQL, MySQL, MongoDB).
 │   │   ├── integration/        # Clients for external APIs.
+│   │   ├── logger/             # Logger implementations.
 │   │   ├── mail/               # Email sending implementation.
-│   │   ├── message/            # Message bus implementation.
-│   │   ├── tracer/             # Distributed tracing implementation (e.g., Grafana).
+│   │   ├── message/            # Message bus/broker implementation.
+│   │   ├── tracer/             # Distributed tracing implementation.
 │   │   └── ...
 │   ├── presentation/           # Adapters for incoming requests.
 │   │   ├── rest/               # REST API handlers, router, and middleware.
@@ -225,10 +229,7 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   │   └── listener/       # Message bus listener.
 │   │   └── ...
 │   └── utils/                  # Utility functions shared across the application.
-│       ├── error/              # Custom error types and handling.
-│       ├── html/               # HTML template rendering utilities.
-│       ├── http/               # HTTP client functions.
-│       ├── success/            # Standardized success responses.
+│       ├── sanitizer/          # Request sanitizer utilities.
 │       ├── validator/          # Request validation utilities.
 │       └── ...
 ├── migrations/                 # SQL migration files for managing database schema changes.
