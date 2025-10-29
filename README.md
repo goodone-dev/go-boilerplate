@@ -193,11 +193,11 @@ This project is structured following the principles of **Clean Architecture**. T
 ```
 .
 ├── .dev/                       # Local development tools, scripts, and configurations.
-│   ├── script/                 # Local development scripts.
-│   └── ...
+│   └── script/                 # Local development scripts.
 ├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
+│   └── workflow/               # GitHub Actions workflows.
 ├── cmd/
-│   ├── api/
+│   ├── api/                    # API server.
 │   │   └── main.go             # Entry point of the application. Initializes and starts the server.
 │   └── utils/                  # Utility functions shared across the application.
 ├── internal/
@@ -218,7 +218,7 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   ├── cache/              # Cache implementations (e.g., Redis).
 │   │   ├── database/           # Database implementations (PostgreSQL, MySQL, MongoDB).
 │   │   ├── integration/        # Clients for external APIs.
-│   │   ├── logger/             # Logger implementations.
+│   │   ├── logger/             # Log aggregation implementations.
 │   │   ├── mail/               # Email sending implementation.
 │   │   ├── message/            # Message bus/broker implementation.
 │   │   ├── tracer/             # Distributed tracing implementation.
@@ -227,18 +227,23 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   ├── rest/               # REST API handlers, router, and middleware.
 │   │   │   ├── middleware/     # REST API middleware.
 │   │   │   └── router/         # REST API router setup.
-│   │   ├── messaging/          # Message bus handlers.
-│   │   │   ├── middleware/     # Messaging middleware.
-│   │   │   └── listener/       # Message bus listener.
-│   │   └── ...
+│   │   └── messaging/          # Message bus/broker handlers.
+│   │       ├── middleware/     # Messaging middleware.
+│   │       └── listener/       # Message bus/broker listener.
 │   └── utils/                  # Utility functions shared across the application.
+│       ├── breaker/            # Circuit breaker utilities.
+│       ├── html/               # HTML template utilities.
+│       ├── http_client/        # HTTP client utilities.
+│       ├── http_response/      # HTTP response utilities.
 │       ├── sanitizer/          # Request sanitizer utilities.
 │       ├── validator/          # Request validation utilities.
 │       └── ...
 ├── migrations/                 # SQL migration files for managing database schema changes.
-│   └── <database_name>/        # Migration files for a specific database.
+│   ├── <database_name>/        # Migration files for a specific database.
+│   └── ...
 ├── seeders/                    # SQL seed files for populating the database with initial data.
-│   └── <database_name>/        # Seeder files for a specific database.
+│   ├── <database_name>/        # Seeder files for a specific database.
+│   └── ...
 ├── templates/                  # HTML templates for emails, PDFs, etc.
 │   ├── email/                  # Email templates.
 │   ├── pdf/                    # PDF templates.
