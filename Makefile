@@ -35,8 +35,10 @@ stop:
 	@.dev/script/docker_stop.sh
 
 setup:
+	@echo "🔧 Making all .sh files in .dev directory executable..."
 	@chmod +x .dev/script/*.sh
 	@echo "✅ All .sh files in .dev directory are executable"
+	@echo "🔧 Installing pre-commit..."
 	@pre-commit install
 	@echo "✅ pre-commit installed"
 
