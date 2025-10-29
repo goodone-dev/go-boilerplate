@@ -276,19 +276,6 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Circuit Breaker**   | [gobreaker](https://github.com/sony/gobreaker)                                                                        |
 | **Mocking**           | [mockery](https://github.com/vektra/mockery)                                                                          |
 
-<!-- ## 🚧 Roadmap
-- [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
-- [ ] **Message Broker Support**: Adding support for Kafka and RabbitMQ.
-- [ ] **Authentication**: Implementing OAuth2 with Ory Kratos for identity and user management.
-- [ ] **Authorization**: Integration with Ory Keto for permission and access control.
-- [ ] **Structured Logging**: Implementing a structured logger (e.g., Logrus).
-- [ ] **Worker Command**: Add worker for processing asynchronous task.
-- [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
-- [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
-- [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
-- [ ] **CORS Handling**: Implement middleware for Cross-Origin Resource Sharing (CORS).
-- [ ] **Auto Generate Documentation**: Automatically generate API documentation. -->
-
 ## 🤝 Contributing
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
