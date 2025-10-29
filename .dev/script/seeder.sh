@@ -62,6 +62,7 @@ $(dirname "$0")/ensure_migrate.sh
 echo "🌱 Creating seeder files for $SEEDER_NAME..."
 migrate create -ext sql -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
 
+# Check if seeder files created successfully
 if [ $? -eq 0 ]; then
     echo "✅ Seeder files created successfully!"
 else

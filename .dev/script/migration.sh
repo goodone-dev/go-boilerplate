@@ -62,6 +62,7 @@ $(dirname "$0")/ensure_migrate.sh
 echo "📝 Creating migration files for $MIGRATION_NAME..."
 migrate create -ext sql -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
 
+# Check if migration files created successfully
 if [ $? -eq 0 ]; then
     echo "✅ Migration files created successfully!"
 else

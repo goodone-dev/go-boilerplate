@@ -5,7 +5,7 @@
 if ! command -v air &> /dev/null; then
     echo "❌ Error: 'air' is not installed."
     echo ""
-    echo "🤔 Would you like to install 'air' for live reloading? (y/n)"
+    echo "🤔 Would you like to install 'air'? (y/n)"
     read -r response
     
     if [[ "$response" =~ ^[Yy]$ ]]; then

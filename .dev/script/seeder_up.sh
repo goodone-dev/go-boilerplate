@@ -4,8 +4,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: make seed DRIVER=<database_driver>"
-    echo "Example: make seed DRIVER=postgres"
+    echo "Usage: make seeder_up DRIVER=<database_driver>"
+    echo "Example: make seeder_up DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
@@ -93,6 +93,7 @@ $(dirname "$0")/ensure_migrate.sh
 echo "🌱 Applying seeders for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$SEEDER_DIR" up
 
+# Check if seeders applied successfully
 if [ $? -eq 0 ]; then
     echo "✅ Seeders applied successfully!"
 else

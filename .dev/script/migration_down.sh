@@ -4,8 +4,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: make migrate_down DRIVER=<database_driver>"
-    echo "Example: make migrate_down DRIVER=postgres"
+    echo "Usage: make migration_down DRIVER=<database_driver>"
+    echo "Example: make migration_down DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
@@ -93,6 +93,7 @@ $(dirname "$0")/ensure_migrate.sh
 echo "⏮️ Rolling back all migrations for $DB_DRIVER..."
 migrate -database "$DB_URL" -path "$MIGRATION_DIR" down 1
 
+# Check if migrations rolled back successfully
 if [ $? -eq 0 ]; then
     echo "✅ Migrations rolled back successfully!"
 else
