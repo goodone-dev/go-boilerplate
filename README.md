@@ -154,11 +154,12 @@ This is the easiest way to get started, as it handles all services (database, ca
     ```bash
     make up
     ```
-    This command builds and starts the application, database, and other services.
-
-The API will be accessible at `http://localhost:8080`.
-
-To stop all services, run `make down`.
+    This command builds and starts the application, database, and other services. The API by default will be accessible at `http://localhost:8080`.
+2. **Stop the services**:
+    ```bash
+    make down
+    ```
+    This command stops all services.
 
 #### Option 2: Locally
 This method requires you to run the database and other services on your local machine.
