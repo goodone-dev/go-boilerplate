@@ -196,11 +196,11 @@ This project is structured following the principles of **Clean Architecture**. T
 │   └── script/                 # Local development scripts.
 ├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
 │   └── workflow/               # GitHub Actions workflows.
-├── cmd/
+├── cmd/                        # Server commands.
 │   ├── api/                    # API server.
 │   │   └── main.go             # Entry point of the application. Initializes and starts the server.
-│   └── utils/                  # Utility functions shared across the application.
-├── internal/
+│   └── utils/                  # Utility functions shared across the server.
+├── internal/                   # Internal packages.
 │   ├── application/            # Implements use cases by orchestrating domain logic.
 │   │   ├── <domain_name>/      # Groups application logic for a specific domain.
 │   │   │   ├── delivery/       # Adapters for handling incoming requests (e.g., HTTP, messaging).
@@ -248,9 +248,12 @@ This project is structured following the principles of **Clean Architecture**. T
 │   ├── email/                  # Email templates.
 │   ├── pdf/                    # PDF templates.
 │   └── ...
+├── .env.example                # Example environment variables file.
+├── .air.toml                   # Air.toml for local development.
+├── .mockery.yml                # Mockery configuration file.
 ├── Makefile                    # Makefile with shortcuts for common development commands.
-├── docker-compose.yml          # Defines services for the local Docker environment.
-└── Dockerfile                  # Dockerfile for building the application image.
+├── Dockerfile                  # Dockerfile for building the application image.
+└── docker-compose.yml          # Defines services for the local Docker environment.
 ```
 
 <!-- ## TODO: 🏗️ Architecture Diagram -->
