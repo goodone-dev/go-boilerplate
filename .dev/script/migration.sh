@@ -37,13 +37,13 @@ fi
 
 # Validate database driver
 case $DB_DRIVER in
-    postgres|postgresql) 
+    postgres|postgresql)
         MIGRATION_DIR="./migrations/postgres"
         ;;
-    mysql) 
+    mysql)
         MIGRATION_DIR="./migrations/mysql"
         ;;
-    mongodb) 
+    mongodb)
         MIGRATION_DIR="./migrations/mongodb"
         ;;
     *)

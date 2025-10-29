@@ -64,7 +64,7 @@ jobs:
         uses: securego/gosec@master
         with:
           args: '-exclude=G115 -r ./...'
-  
+
   # vulnerability_check:
   #   name: Dependency Vulnerability Check
   #   runs-on: ubuntu-latest

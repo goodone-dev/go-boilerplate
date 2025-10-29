@@ -63,7 +63,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_TLS: false
-      REDIS_PASSWORD: 
+      REDIS_PASSWORD:
       REDIS_DB: 0
       MAIL_HOST: mailpit
       MAIL_PORT: 1025

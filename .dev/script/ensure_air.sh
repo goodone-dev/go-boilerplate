@@ -7,12 +7,12 @@ if ! command -v air &> /dev/null; then
     echo ""
     echo "🤔 Would you like to install 'air'? (y/n)"
     read -r response
-    
+
     if [[ "$response" =~ ^[Yy]$ ]]; then
         echo ""
         echo "🔧 Installing 'air'..."
         go install github.com/air-verse/air@latest
-        
+
         if [ $? -eq 0 ]; then
             echo ""
             echo "✅ 'air' installed successfully!"

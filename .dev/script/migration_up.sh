@@ -35,7 +35,7 @@ fi
 
 # Set database URL and migration directory based on driver
 case $DB_DRIVER in
-    postgres|postgresql) 
+    postgres|postgresql)
         MIGRATION_DIR="./migrations/postgres"
         # Check required environment variables
         required_vars=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USERNAME" "POSTGRES_PASSWORD" "POSTGRES_SSL_MODE" "POSTGRES_DATABASE")
@@ -48,7 +48,7 @@ case $DB_DRIVER in
         # Construct database URL from environment variables
         DB_URL="postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}?sslmode=${POSTGRES_SSL_MODE}"
         ;;
-    mysql) 
+    mysql)
         MIGRATION_DIR="./migrations/mysql"
         # Check required environment variables
         required_vars=("MYSQL_HOST" "MYSQL_PORT" "MYSQL_USERNAME" "MYSQL_PASSWORD" "MYSQL_DATABASE")
@@ -61,7 +61,7 @@ case $DB_DRIVER in
         # Construct database URL from environment variables
         DB_URL="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}"
         ;;
-    mongodb) 
+    mongodb)
         MIGRATION_DIR="./migrations/mongodb"
         # Check required environment variables
         required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")

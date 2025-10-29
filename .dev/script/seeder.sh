@@ -37,13 +37,13 @@ fi
 
 # Validate database driver
 case $DB_DRIVER in
-    postgres|postgresql) 
+    postgres|postgresql)
         SEEDER_DIR="./seeders/postgres"
         ;;
-    mysql) 
+    mysql)
         SEEDER_DIR="./seeders/mysql"
         ;;
-    mongodb) 
+    mongodb)
         SEEDER_DIR="./seeders/mongodb"
         ;;
     *)

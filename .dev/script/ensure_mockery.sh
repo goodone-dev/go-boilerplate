@@ -7,12 +7,12 @@ if ! command -v mockery &> /dev/null; then
     echo ""
     echo "🤔 Would you like to install 'mockery'? (y/n)"
     read -r response
-    
+
     if [[ "$response" =~ ^[Yy]$ ]]; then
         echo ""
         echo "🔧 Installing 'mockery'..."
         go install github.com/vektra/mockery/v2@latest
-        
+
         if [ $? -eq 0 ]; then
             echo ""
             echo "✅ 'mockery' installed successfully!"

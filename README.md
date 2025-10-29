@@ -213,7 +213,7 @@ This project is structured following the principles of **Clean Architecture**. T
 │   ├── domain/                 # Contains core entities and interfaces.
 │   │   ├── <domain_name>/      # Groups domain logic for a specific business entity.
 │   │   │   └── mocks/          # Mocks for domain interfaces.
-│   │   └── ...                 
+│   │   └── ...
 │   ├── infrastructure/         # Provides implementations for external services.
 │   │   ├── cache/              # Cache implementations (e.g., Redis).
 │   │   ├── database/           # Database implementations (PostgreSQL, MySQL, MongoDB).

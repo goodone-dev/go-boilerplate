@@ -7,12 +7,12 @@ if ! command -v docker-compose &> /dev/null; then
     echo ""
     echo "🤔 Would you like to install 'docker-compose'? (y/n)"
     read -r response
-    
+
     if [[ "$response" =~ ^[Yy]$ ]]; then
         echo ""
         echo "🔧 Installing 'docker-compose'..."
         brew install docker-compose
-        
+
         if [ $? -eq 0 ]; then
             echo ""
             echo "✅ 'docker-compose' installed successfully!"
