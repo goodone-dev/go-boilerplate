@@ -48,18 +48,18 @@ func NewClient(ctx context.Context) cache.ICache {
 }
 
 func (c *RedisClient) Ping(ctx context.Context) (err error) {
-	ctx, span := tracer.StartSpan(ctx)
+	ctx, span := tracer.Start(ctx)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	return c.client.Ping(ctx).Err()
 }
 
 func (c *RedisClient) Get(ctx context.Context, key string) (res string, err error) {
-	ctx, span := tracer.StartSpan(ctx, key)
+	ctx, span := tracer.Start(ctx, key)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	res, err = c.client.Get(ctx, key).Result()
@@ -73,63 +73,63 @@ func (c *RedisClient) Get(ctx context.Context, key string) (res string, err erro
 }
 
 func (c *RedisClient) Set(ctx context.Context, key string, val any, ttl time.Duration) (err error) {
-	ctx, span := tracer.StartSpan(ctx, key, val, ttl)
+	ctx, span := tracer.Start(ctx, key, val, ttl)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	return c.client.Set(ctx, key, val, ttl).Err()
 }
 
 func (c *RedisClient) TTL(ctx context.Context, key string) (ttl time.Duration, err error) {
-	ctx, span := tracer.StartSpan(ctx, key)
+	ctx, span := tracer.Start(ctx, key)
 	defer func() {
-		span.EndSpan(err, ttl)
+		span.Stop(err, ttl)
 	}()
 
 	return c.client.TTL(ctx, key).Result()
 }
 
 func (c *RedisClient) Del(ctx context.Context, keys ...string) (err error) {
-	ctx, span := tracer.StartSpan(ctx, keys)
+	ctx, span := tracer.Start(ctx, keys)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	return c.client.Del(ctx, keys...).Err()
 }
 
 func (c *RedisClient) Incr(ctx context.Context, key string) (res int64, err error) {
-	ctx, span := tracer.StartSpan(ctx, key)
+	ctx, span := tracer.Start(ctx, key)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	return c.client.Incr(ctx, key).Result()
 }
 
 func (c *RedisClient) Decr(ctx context.Context, key string) (res int64, err error) {
-	ctx, span := tracer.StartSpan(ctx, key)
+	ctx, span := tracer.Start(ctx, key)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	return c.client.Decr(ctx, key).Result()
 }
 
 func (c *RedisClient) IncrBy(ctx context.Context, key string, value int64) (res int64, err error) {
-	ctx, span := tracer.StartSpan(ctx, key, value)
+	ctx, span := tracer.Start(ctx, key, value)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	return c.client.IncrBy(ctx, key, value).Result()
 }
 
 func (c *RedisClient) DecrBy(ctx context.Context, key string, value int64) (res int64, err error) {
-	ctx, span := tracer.StartSpan(ctx, key, value)
+	ctx, span := tracer.Start(ctx, key, value)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	return c.client.DecrBy(ctx, key, value).Result()

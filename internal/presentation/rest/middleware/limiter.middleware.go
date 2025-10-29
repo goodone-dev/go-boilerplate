@@ -16,9 +16,9 @@ func SingleLimiterMiddleware(cache cache.ICache, limit int, duration time.Durati
 	return func(c *gin.Context) {
 		var err error
 
-		ctx, span := tracer.StartSpan(c.Request.Context())
+		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.EndSpan(err)
+			span.Stop(err)
 		}()
 
 		key := fmt.Sprintf("rate_limit:%s:%s %s", c.ClientIP(), c.Request.Method, c.Request.URL.Path)
@@ -38,9 +38,9 @@ func GlobalLimiterMiddleware(cache cache.ICache, limit int, duration time.Durati
 	return func(c *gin.Context) {
 		var err error
 
-		ctx, span := tracer.StartSpan(c.Request.Context())
+		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.EndSpan(err)
+			span.Stop(err)
 		}()
 
 		key := fmt.Sprintf("rate_limit:%s", c.ClientIP())

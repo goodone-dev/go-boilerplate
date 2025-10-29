@@ -33,9 +33,9 @@ func (r *BaseRepo[D, I, E]) SlaveDB() *D {
 }
 
 func (r *BaseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	filter["deleted_at"] = nil
@@ -59,9 +59,9 @@ func (r *BaseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) 
 }
 
 func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	builder := sq.
@@ -86,9 +86,9 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 }
 
 func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	builder := sq.
@@ -119,9 +119,9 @@ func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (
 }
 
 func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	builder := sq.
@@ -146,9 +146,9 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 }
 
 func (r *BaseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, size, page)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, page)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	if size <= 0 {
@@ -210,9 +210,9 @@ func (r *BaseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]
 }
 
 func (r *BaseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, sort, size, next)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, next)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	if size <= 0 {
@@ -273,9 +273,9 @@ func (r *BaseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]
 
 // TODO: Check 'res' is still necessary
 func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	db := r.dbMaster
@@ -293,9 +293,9 @@ func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, e
 
 // TODO: Check 'res' is still necessary
 func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (res []E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	db := r.dbMaster
@@ -312,9 +312,9 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (re
 }
 
 func (r *BaseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster
@@ -331,9 +331,9 @@ func (r *BaseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err erro
 }
 
 func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string]any, trx *D) (res E, err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID, req)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	db := r.dbMaster
@@ -351,9 +351,9 @@ func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string
 
 // TODO: Check 'res' is needed
 func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[string]any, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs, req)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster
@@ -371,9 +371,9 @@ func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[st
 
 // TODO: Check 'res' is needed
 func (r *BaseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, req map[string]any, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter, req)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, req)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster
@@ -390,9 +390,9 @@ func (r *BaseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]an
 }
 
 func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, ID)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster
@@ -409,9 +409,9 @@ func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err e
 }
 
 func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, IDs)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster
@@ -428,9 +428,9 @@ func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 }
 
 func (r *BaseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
-	ctx, span := tracer.SpanPrefixName(r.Entity.RepositoryName()).StartSpan(ctx, filter)
+	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	db := r.dbMaster

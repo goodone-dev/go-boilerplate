@@ -9,11 +9,11 @@ import (
 
 func TracerMiddleware[T any](topic string, handler func(context.Context, T) error) func(T) {
 	return func(msg T) {
-		ctx, span := tracer.SpanCustomName(fmt.Sprintf("MESSAGE %s", topic)).StartSpan(context.Background())
+		ctx, span := tracer.CustomName(fmt.Sprintf("MESSAGE %s", topic)).Start(context.Background())
 
 		err := handler(ctx, msg)
 		defer func() {
-			span.EndSpan(err)
+			span.Stop(err)
 		}()
 	}
 }

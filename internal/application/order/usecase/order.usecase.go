@@ -41,9 +41,9 @@ func NewOrderUsecase(
 }
 
 func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
-	ctx, span := tracer.StartSpan(ctx, req)
+	ctx, span := tracer.Start(ctx, req)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	customer, err := u.customerRepo.FindById(ctx, req.CustomerID)

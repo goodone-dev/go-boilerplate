@@ -22,9 +22,9 @@ func NewMailSender() IMailSender {
 }
 
 func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
-	_, span := tracer.StartSpan(ctx, to, subject, file, data)
+	_, span := tracer.Start(ctx, to, subject, file, data)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	var body bytes.Buffer

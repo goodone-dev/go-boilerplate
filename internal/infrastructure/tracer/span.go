@@ -22,11 +22,11 @@ type customTracerSpan struct {
 	trace.Span
 }
 
-func SpanPrefixName(spanName string) spanPrefixName {
+func PrefixName(spanName string) spanPrefixName {
 	return spanPrefixName(spanName)
 }
 
-func (s spanPrefixName) StartSpan(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
+func (s spanPrefixName) Start(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
 	pc, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pc).Name()
 	funcParts := strings.Split(funcName, ".")
@@ -35,18 +35,18 @@ func (s spanPrefixName) StartSpan(ctx context.Context, params ...any) (context.C
 	return startSpan(ctx, fmt.Sprintf("%s.%s", string(s), methodName), funcName, params...)
 }
 
-func SpanCustomName(spanName string) spanCustomName {
+func CustomName(spanName string) spanCustomName {
 	return spanCustomName(spanName)
 }
 
-func (s spanCustomName) StartSpan(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
+func (s spanCustomName) Start(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
 	pc, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pc).Name()
 
 	return startSpan(ctx, string(s), funcName, params...)
 }
 
-func StartSpan(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
+func Start(ctx context.Context, params ...any) (context.Context, customTracerSpan) {
 	pc, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pc).Name()
 	spanName := parseSpanName(funcName)
@@ -75,7 +75,7 @@ func startSpan(ctx context.Context, spanName string, funcName string, params ...
 	return ctx, customTracerSpan{span}
 }
 
-func (s customTracerSpan) EndSpan(err error, returns ...any) {
+func (s customTracerSpan) Stop(err error, returns ...any) {
 	if !config.TracerConfig.Enabled {
 		return
 	}

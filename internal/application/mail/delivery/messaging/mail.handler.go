@@ -23,9 +23,9 @@ func NewMailHandler(usecase mail.IMailUsecase) *mailHandler {
 }
 
 func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err error) {
-	ctx, span := tracer.StartSpan(ctx, msg)
+	ctx, span := tracer.Start(ctx, msg)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	logger.Infof(ctx, "processing email send request to: %s", msg.To)

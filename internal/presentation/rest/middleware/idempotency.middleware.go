@@ -25,9 +25,9 @@ func IdempotencyMiddleware(cache cache.ICache, duration time.Duration) gin.Handl
 	return func(c *gin.Context) {
 		var err error
 
-		ctx, span := tracer.StartSpan(c.Request.Context())
+		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.EndSpan(err)
+			span.Stop(err)
 		}()
 
 		idempotencyKey := c.GetHeader("X-Idempotency-Key")
