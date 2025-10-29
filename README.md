@@ -251,6 +251,7 @@ This project is structured following the principles of **Clean Architecture**. T
 ├── .env.example                # Example environment variables file.
 ├── .air.toml                   # Air.toml for local development.
 ├── .mockery.yml                # Mockery configuration file.
+├── .pre-commit-config.yaml     # Pre-commit configuration file.
 ├── Makefile                    # Makefile with shortcuts for common development commands.
 ├── Dockerfile                  # Dockerfile for building the application image.
 └── docker-compose.yml          # Defines services for the local Docker environment.
