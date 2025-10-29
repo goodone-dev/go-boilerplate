@@ -112,13 +112,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - Add dependency vulnerability scanning
 
 #### 🔶 Developer Experience
-- Code Generation
-    - Create CLI tool for scaffolding
-- Pre-commit Hooks
-    - Linting
-    - Formatting (`gofmt`, `goimports`)
-    - Test execution
-    - Commit message validation
 - Documentation
     - Add architecture diagrams
     - Document design decisions (ADRs)

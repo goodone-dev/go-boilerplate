@@ -42,6 +42,12 @@ setup:
 	@pre-commit install
 	@echo "✅ pre-commit installed"
 
+generate_repository:
+	@.dev/script/generate_repository.sh $(NAME)
+
+generate_usecase:
+	@.dev/script/generate_usecase.sh $(NAME)
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -58,6 +64,8 @@ help:
 	@echo "  setup                                              		Make all .sh files in .dev directory executable"
 	@echo "  run                                               		Run the application"
 	@echo "  watch                                             		Run the application with live reloading"
+	@echo "  generate_repository NAME=<entity_name>            		Generate repository"
+	@echo "  generate_usecase NAME=<usecase_name>              		Generate usecase"
 	@echo ""
 	@echo "Mock targets:"
 	@echo "  mock                                              		Generate mocks"
@@ -72,4 +80,5 @@ help:
 		migration migration_up migration_down \
 		seeder seeder_up \
 		mock mock_add \
-		up down stop
+		up down stop \
+		generate_repository generate_usecase
