@@ -37,6 +37,8 @@ stop:
 setup:
 	@chmod +x .dev/script/*.sh
 	@echo "✅ All .sh files in .dev directory are executable"
+	@pre-commit install
+	@echo "✅ pre-commit installed"
 
 help:
 	@echo "Usage: make [target]"
