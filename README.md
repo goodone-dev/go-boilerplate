@@ -171,12 +171,12 @@ This method requires you to run the database and other services on your local ma
 
 2.  **Run database migrations**:
     ```bash
-    make migrate_up DRIVER=postgres
+    make migration_up DRIVER=postgres
     ```
 
 3.  **(Optional) Seed the database**:
     ```bash
-    make seed DRIVER=postgres
+    make seeder_up DRIVER=postgres
     ```
 
 4.  **Run the application**:
@@ -192,6 +192,8 @@ This project is structured following the principles of **Clean Architecture**. T
 ```
 .
 ├── .dev/                       # Local development tools, scripts, and configurations.
+│   ├── script/                 # Local development scripts.
+│   └── ...
 ├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
 ├── cmd/
 │   ├── api/
