@@ -135,7 +135,14 @@ git clone https://github.com/goodone-dev/go-boilerplate.git
 cd go-boilerplate
 ```
 
-### 2. Running the Application
+### 2. Project Setup
+Run the following command to prepare your development environment. This will make all necessary shell scripts executable:
+
+```bash
+make setup
+```
+
+### 3. Running the Application
 You can run the application in two ways:
 
 #### Option 1: With Docker (Recommended)
@@ -146,6 +153,7 @@ This is the easiest way to get started, as it handles all services (database, ca
     make up
     ```
     This command builds and starts the application, database, and other services. The API by default will be accessible at `http://localhost:8080`.
+
 2. **Stop the services**:
     ```bash
     make down
