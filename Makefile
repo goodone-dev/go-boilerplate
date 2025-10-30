@@ -47,6 +47,9 @@ generate_repository:
 generate_usecase:
 	@.dev/script/generate_usecase.sh $(NAME)
 
+generate_handler:
+	@.dev/script/generate_handler.sh $(NAME)
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -65,6 +68,7 @@ help:
 	@echo "  watch                                             		Run the application with live reloading"
 	@echo "  generate_repository NAME=<entity_name>            		Generate repository"
 	@echo "  generate_usecase NAME=<usecase_name>              		Generate usecase"
+	@echo "  generate_handler NAME=<handler_name>              		Generate handler"
 	@echo ""
 	@echo "Mock targets:"
 	@echo "  mock                                              		Generate mocks"
@@ -80,4 +84,4 @@ help:
 		seeder seeder_up \
 		mock mock_add \
 		up down stop \
-		generate_repository generate_usecase
+		generate_repository generate_usecase generate_handler
