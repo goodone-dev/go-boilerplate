@@ -64,7 +64,7 @@ case $DB_DRIVER in
     mongodb)
         SEEDER_DIR="./seeders/mongodb"
         # Check required environment variables
-        required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_SSL_MODE" "MONGODB_DATABASE")
+        required_vars=("MONGODB_HOST" "MONGODB_PORT" "MONGODB_USERNAME" "MONGODB_PASSWORD" "MONGODB_DATABASE")
         for var in "${required_vars[@]}"; do
             if [ -z "${!var}" ]; then
                 echo "❌ Error: Required environment variable $var is not set"
