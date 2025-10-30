@@ -16,13 +16,13 @@ type IHttpbinIntegration interface {
 	GetSuccessStatus(ctx context.Context) (data any, err error)
 }
 
-type HttpbinIntegration struct{}
+type httpbinIntegration struct{}
 
 func NewHttpBinIntegration() IHttpbinIntegration {
-	return &HttpbinIntegration{}
+	return &httpbinIntegration{}
 }
 
-func (*HttpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
+func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
 	_, span := tracer.Start(ctx)
 	defer func() {
 		span.Stop(err, body)
@@ -48,7 +48,7 @@ func (*HttpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err er
 	return
 }
 
-func (*HttpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
+func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
 	_, span := tracer.Start(ctx)
 	defer func() {
 		span.Stop(err, body)

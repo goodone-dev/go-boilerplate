@@ -15,13 +15,13 @@ type IMailSender interface {
 	SendEmail(ctx context.Context, to, subject, file string, data any) error
 }
 
-type MailSender struct{}
+type mailSender struct{}
 
 func NewMailSender() IMailSender {
-	return &MailSender{}
+	return &mailSender{}
 }
 
-func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
+func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
 	_, span := tracer.Start(ctx, to, subject, file, data)
 	defer func() {
 		span.Stop(err)

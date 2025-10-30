@@ -54,10 +54,10 @@ type postgresConnection struct {
 	Slave  *gorm.DB
 }
 
-func Open(ctx context.Context) postgresConnection {
+func Open(ctx context.Context) *postgresConnection {
 	pgConfig := setConfig()
 
-	return postgresConnection{
+	return &postgresConnection{
 		Master: open(ctx, pgConfig.Master),
 		Slave:  open(ctx, pgConfig.Slave),
 	}
@@ -110,7 +110,7 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 	return db
 }
 
-func (c postgresConnection) Shutdown(ctx context.Context) error {
+func (c *postgresConnection) Shutdown(ctx context.Context) error {
 	if err := close(c.Master); err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func close(conn *gorm.DB) error {
 	return sqlDB.Close()
 }
 
-func (c postgresConnection) Ping(ctx context.Context) error {
+func (c *postgresConnection) Ping(ctx context.Context) error {
 	masterDB, err := c.Master.DB()
 	if err != nil {
 		return err

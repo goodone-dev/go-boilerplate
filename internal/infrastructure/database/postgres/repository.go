@@ -11,28 +11,28 @@ import (
 	"gorm.io/gorm"
 )
 
-type BaseRepo[D any, I any, E database.Entity] struct {
+type baseRepo[D any, I any, E database.Entity] struct {
 	Entity   E
 	dbMaster *gorm.DB
 	dbSlave  *gorm.DB
 }
 
-func NewBaseRepository[D any, I any, E database.Entity](dbConn postgresConnection) database.IBaseRepository[D, I, E] {
-	return &BaseRepo[D, I, E]{
+func NewBaseRepository[D any, I any, E database.Entity](dbConn *postgresConnection) database.IBaseRepository[D, I, E] {
+	return &baseRepo[D, I, E]{
 		dbMaster: dbConn.Master,
 		dbSlave:  dbConn.Slave,
 	}
 }
 
-func (r *BaseRepo[D, I, E]) MasterDB() *D {
+func (r *baseRepo[D, I, E]) MasterDB() *D {
 	return any(r.dbMaster).(*D)
 }
 
-func (r *BaseRepo[D, I, E]) SlaveDB() *D {
+func (r *baseRepo[D, I, E]) SlaveDB() *D {
 	return any(r.dbSlave).(*D)
 }
 
-func (r *BaseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
+func (r *baseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
 	defer func() {
 		span.Stop(err, res)
@@ -58,7 +58,7 @@ func (r *BaseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) 
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
+func (r *baseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
 		span.Stop(err, res)
@@ -85,7 +85,7 @@ func (r *BaseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
+func (r *baseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
 		span.Stop(err, res)
@@ -118,7 +118,7 @@ func (r *BaseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
+func (r *baseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
 	defer func() {
 		span.Stop(err, res)
@@ -145,7 +145,7 @@ func (r *BaseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
+func (r *baseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, page)
 	defer func() {
 		span.Stop(err, res)
@@ -209,7 +209,7 @@ func (r *BaseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]
 	return
 }
 
-func (r *BaseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
+func (r *baseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, next)
 	defer func() {
 		span.Stop(err, res)
@@ -272,7 +272,7 @@ func (r *BaseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]
 }
 
 // TODO: Check 'res' is still necessary
-func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, err error) {
+func (r *baseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
 		span.Stop(err, res)
@@ -292,7 +292,7 @@ func (r *BaseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, e
 }
 
 // TODO: Check 'res' is still necessary
-func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (res []E, err error) {
+func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (res []E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
 		span.Stop(err, res)
@@ -311,7 +311,7 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (re
 	return req, nil
 }
 
-func (r *BaseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
 	defer func() {
 		span.Stop(err)
@@ -330,7 +330,7 @@ func (r *BaseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err erro
 	return nil
 }
 
-func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string]any, trx *D) (res E, err error) {
+func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string]any, trx *D) (res E, err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID, req)
 	defer func() {
 		span.Stop(err, res)
@@ -350,7 +350,7 @@ func (r *BaseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string
 }
 
 // TODO: Check 'res' is needed
-func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[string]any, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[string]any, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs, req)
 	defer func() {
 		span.Stop(err)
@@ -370,7 +370,7 @@ func (r *BaseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[st
 }
 
 // TODO: Check 'res' is needed
-func (r *BaseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, req map[string]any, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, req map[string]any, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, req)
 	defer func() {
 		span.Stop(err)
@@ -389,7 +389,7 @@ func (r *BaseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]an
 	return nil
 }
 
-func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
 	defer func() {
 		span.Stop(err)
@@ -408,7 +408,7 @@ func (r *BaseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err e
 	return nil
 }
 
-func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
 	defer func() {
 		span.Stop(err)
@@ -427,7 +427,7 @@ func (r *BaseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 	return nil
 }
 
-func (r *BaseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
+func (r *baseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
 	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
 	defer func() {
 		span.Stop(err)
@@ -446,7 +446,7 @@ func (r *BaseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]an
 	return nil
 }
 
-func (r *BaseRepo[D, I, E]) Begin(ctx context.Context) (trx *D, err error) {
+func (r *baseRepo[D, I, E]) Begin(ctx context.Context) (trx *D, err error) {
 	db := r.dbMaster.WithContext(ctx).Begin()
 	if db.Error != nil {
 		return trx, db.Error
@@ -455,7 +455,7 @@ func (r *BaseRepo[D, I, E]) Begin(ctx context.Context) (trx *D, err error) {
 	return any(db).(*D), nil
 }
 
-func (r *BaseRepo[D, I, E]) Rollback(trx *D) *D {
+func (r *baseRepo[D, I, E]) Rollback(trx *D) *D {
 	db, ok := any(trx).(*gorm.DB)
 	if !ok {
 		return trx
@@ -466,7 +466,7 @@ func (r *BaseRepo[D, I, E]) Rollback(trx *D) *D {
 	return any(db).(*D)
 }
 
-func (r *BaseRepo[D, I, E]) Commit(trx *D) *D {
+func (r *baseRepo[D, I, E]) Commit(trx *D) *D {
 	db, ok := any(trx).(*gorm.DB)
 	if !ok {
 		return trx

@@ -13,7 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisClient struct {
+type redisClient struct {
 	client *redis.Client
 }
 
@@ -42,12 +42,12 @@ func createClient(ctx context.Context) (client *redis.Client) {
 }
 
 func NewClient(ctx context.Context) cache.ICache {
-	return &RedisClient{
+	return &redisClient{
 		client: createClient(ctx),
 	}
 }
 
-func (c *RedisClient) Ping(ctx context.Context) (err error) {
+func (c *redisClient) Ping(ctx context.Context) (err error) {
 	ctx, span := tracer.Start(ctx)
 	defer func() {
 		span.Stop(err)
@@ -56,7 +56,7 @@ func (c *RedisClient) Ping(ctx context.Context) (err error) {
 	return c.client.Ping(ctx).Err()
 }
 
-func (c *RedisClient) Get(ctx context.Context, key string) (res string, err error) {
+func (c *redisClient) Get(ctx context.Context, key string) (res string, err error) {
 	ctx, span := tracer.Start(ctx, key)
 	defer func() {
 		span.Stop(err, res)
@@ -72,7 +72,7 @@ func (c *RedisClient) Get(ctx context.Context, key string) (res string, err erro
 	return
 }
 
-func (c *RedisClient) Set(ctx context.Context, key string, val any, ttl time.Duration) (err error) {
+func (c *redisClient) Set(ctx context.Context, key string, val any, ttl time.Duration) (err error) {
 	ctx, span := tracer.Start(ctx, key, val, ttl)
 	defer func() {
 		span.Stop(err)
@@ -81,7 +81,7 @@ func (c *RedisClient) Set(ctx context.Context, key string, val any, ttl time.Dur
 	return c.client.Set(ctx, key, val, ttl).Err()
 }
 
-func (c *RedisClient) TTL(ctx context.Context, key string) (ttl time.Duration, err error) {
+func (c *redisClient) TTL(ctx context.Context, key string) (ttl time.Duration, err error) {
 	ctx, span := tracer.Start(ctx, key)
 	defer func() {
 		span.Stop(err, ttl)
@@ -90,7 +90,7 @@ func (c *RedisClient) TTL(ctx context.Context, key string) (ttl time.Duration, e
 	return c.client.TTL(ctx, key).Result()
 }
 
-func (c *RedisClient) Del(ctx context.Context, keys ...string) (err error) {
+func (c *redisClient) Del(ctx context.Context, keys ...string) (err error) {
 	ctx, span := tracer.Start(ctx, keys)
 	defer func() {
 		span.Stop(err)
@@ -99,7 +99,7 @@ func (c *RedisClient) Del(ctx context.Context, keys ...string) (err error) {
 	return c.client.Del(ctx, keys...).Err()
 }
 
-func (c *RedisClient) Incr(ctx context.Context, key string) (res int64, err error) {
+func (c *redisClient) Incr(ctx context.Context, key string) (res int64, err error) {
 	ctx, span := tracer.Start(ctx, key)
 	defer func() {
 		span.Stop(err, res)
@@ -108,7 +108,7 @@ func (c *RedisClient) Incr(ctx context.Context, key string) (res int64, err erro
 	return c.client.Incr(ctx, key).Result()
 }
 
-func (c *RedisClient) Decr(ctx context.Context, key string) (res int64, err error) {
+func (c *redisClient) Decr(ctx context.Context, key string) (res int64, err error) {
 	ctx, span := tracer.Start(ctx, key)
 	defer func() {
 		span.Stop(err, res)
@@ -117,7 +117,7 @@ func (c *RedisClient) Decr(ctx context.Context, key string) (res int64, err erro
 	return c.client.Decr(ctx, key).Result()
 }
 
-func (c *RedisClient) IncrBy(ctx context.Context, key string, value int64) (res int64, err error) {
+func (c *redisClient) IncrBy(ctx context.Context, key string, value int64) (res int64, err error) {
 	ctx, span := tracer.Start(ctx, key, value)
 	defer func() {
 		span.Stop(err, res)
@@ -126,7 +126,7 @@ func (c *RedisClient) IncrBy(ctx context.Context, key string, value int64) (res 
 	return c.client.IncrBy(ctx, key, value).Result()
 }
 
-func (c *RedisClient) DecrBy(ctx context.Context, key string, value int64) (res int64, err error) {
+func (c *redisClient) DecrBy(ctx context.Context, key string, value int64) (res int64, err error) {
 	ctx, span := tracer.Start(ctx, key, value)
 	defer func() {
 		span.Stop(err, res)
@@ -135,6 +135,6 @@ func (c *RedisClient) DecrBy(ctx context.Context, key string, value int64) (res 
 	return c.client.DecrBy(ctx, key, value).Result()
 }
 
-func (c *RedisClient) Shutdown(ctx context.Context) (err error) {
+func (c *redisClient) Shutdown(ctx context.Context) (err error) {
 	return c.client.Close()
 }

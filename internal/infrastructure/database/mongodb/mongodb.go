@@ -59,10 +59,10 @@ type mongoConnection struct {
 	Slave  *mongo.Database
 }
 
-func Open(ctx context.Context) mongoConnection {
+func Open(ctx context.Context) *mongoConnection {
 	mongoConfig := setConfig()
 
-	return mongoConnection{
+	return &mongoConnection{
 		Master: open(ctx, mongoConfig.Master, readpref.Primary()),
 		Slave:  open(ctx, mongoConfig.Slave, readpref.Secondary()),
 	}
@@ -117,7 +117,7 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	return mongoDB
 }
 
-func (c mongoConnection) Shutdown(ctx context.Context) error {
+func (c *mongoConnection) Shutdown(ctx context.Context) error {
 	if err := close(ctx, c.Master); err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func close(ctx context.Context, db *mongo.Database) error {
 	return db.Client().Disconnect(ctx)
 }
 
-func (c mongoConnection) Ping(ctx context.Context) error {
+func (c *mongoConnection) Ping(ctx context.Context) error {
 	if err := c.Master.Client().Ping(ctx, readpref.Primary()); err != nil {
 		return err
 	}

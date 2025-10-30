@@ -52,10 +52,10 @@ type mysqlConnection struct {
 	Slave  *gorm.DB
 }
 
-func Open(ctx context.Context) mysqlConnection {
+func Open(ctx context.Context) *mysqlConnection {
 	mysqlConfig := setConfig()
 
-	return mysqlConnection{
+	return &mysqlConnection{
 		Master: open(ctx, mysqlConfig.Master),
 		Slave:  open(ctx, mysqlConfig.Slave),
 	}
@@ -108,7 +108,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 	return db
 }
 
-func (c mysqlConnection) Shutdown(ctx context.Context) error {
+func (c *mysqlConnection) Shutdown(ctx context.Context) error {
 	if err := close(c.Master); err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func close(conn *gorm.DB) error {
 	return sqlDB.Close()
 }
 
-func (c mysqlConnection) Ping(ctx context.Context) error {
+func (c *mysqlConnection) Ping(ctx context.Context) error {
 	masterDB, err := c.Master.DB()
 	if err != nil {
 		return err
