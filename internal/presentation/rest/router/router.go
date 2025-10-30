@@ -36,7 +36,7 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 	// ========== Define Routes ==========
 	health := router.Group("/health")
 	{
-		health.GET("", healthHandler.HealthCheck)
+		health.GET("", healthHandler.HealthLiveCheck)
 		health.GET("/ready", healthHandler.HealthReadyCheck)
 	}
 

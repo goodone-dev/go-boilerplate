@@ -11,7 +11,7 @@ type OrderRepository struct {
 	database.IBaseRepository[gorm.DB, uuid.UUID, order.Order]
 }
 
-func NewOrderRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, order.Order]) order.IOrderRepository {
+func NewOrderRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, order.Order]) order.IOrderRepository {
 	return &OrderRepository{
 		baseRepo,
 	}

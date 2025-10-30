@@ -19,7 +19,7 @@ func NewHealthHandler(services ...health.IHealthService) *HealthHandler {
 	}
 }
 
-func (h *HealthHandler) HealthCheck(c *gin.Context) {
+func (h *HealthHandler) HealthLiveCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, health.HealthStatus{Status: health.StatusUp})
 }
 

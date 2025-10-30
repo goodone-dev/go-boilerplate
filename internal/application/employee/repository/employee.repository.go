@@ -11,7 +11,7 @@ type EmployeeRepository struct {
 	database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]
 }
 
-func NewEmployeeRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]) employee.IEmployeeRepository {
+func NewEmployeeRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]) employee.IEmployeeRepository {
 	return &EmployeeRepository{
 		baseRepo,
 	}

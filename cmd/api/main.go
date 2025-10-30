@@ -53,14 +53,14 @@ func main() {
 	mailSender := mailsender.NewMailSender()
 
 	// ========== Repositories Setup ==========
-	customerBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
-	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
-	productBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, product.Product](postgresConn)
-	productRepo := productrepo.NewProductRepo(productBaseRepo)
-	orderBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.Order](postgresConn)
-	orderRepo := orderrepo.NewOrderRepo(orderBaseRepo)
-	orderItemBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
-	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
+	customerBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
+	customerRepo := customerrepo.NewCustomerRepository(customerBaseRepo)
+	productBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, product.Product](postgresConn)
+	productRepo := productrepo.NewProductRepository(productBaseRepo)
+	orderBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, order.Order](postgresConn)
+	orderRepo := orderrepo.NewOrderRepository(orderBaseRepo)
+	orderItemBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
+	orderItemRepo := orderrepo.NewOrderItemRepository(orderItemBaseRepo)
 
 	// ========== Bus Setup ==========
 	mailBus := bus.NewBus[mail.MailSendMessage]()
