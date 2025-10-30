@@ -40,6 +40,7 @@ PACKAGE_PATH="${MODULE_PATH}/${PACKAGE_DIR}"
 BASE_FILENAME=$(basename ${FILE_PATH} .go)
 MOCK_FILENAME="${BASE_FILENAME}_mock.go"
 
+# FIXME: Add another interface in same package path
 # Check if the package is already configured
 if grep -q "  ${PACKAGE_PATH}:" .mockery.yml;
 then
