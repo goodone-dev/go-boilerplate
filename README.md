@@ -108,8 +108,6 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
     - PodDisruptionBudget
 - Graceful Shutdown
     - Add graceful shutdown for message bus
-- CI/CD Enhancements
-    - Add dependency vulnerability scanning
 
 #### 🔶 Developer Experience
 - Documentation
