@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
@@ -25,11 +26,11 @@ func GracefulShutdown(ctx context.Context, services ...Service) {
 			packageName := parsePackageName(s)
 
 			if err := s.Shutdown(ctx); err != nil {
-				logger.Errorf(ctx, err, "%s forced to shutdown due to error", packageName)
+				logger.Errorf(ctx, err, "❌ %s forced to shutdown due to error", packageName)
 				return
 			}
 
-			logger.Infof(ctx, "%s shutdown gracefully", packageName)
+			logger.Infof(ctx, "✅ %s shutdown gracefully", packageName)
 		}(service)
 	}
 
@@ -42,7 +43,11 @@ func parsePackageName(service Service) string {
 
 	matches := r.FindStringSubmatch(n)
 	if len(matches) > 1 {
-		return matches[1]
+		name := matches[1]
+		if len(name) > 0 {
+			return strings.ToUpper(string(name[0])) + name[1:]
+		}
+		return name
 	}
 
 	return ""

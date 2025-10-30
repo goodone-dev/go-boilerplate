@@ -96,9 +96,9 @@ func main() {
 	}
 
 	go func() {
-		logger.Infof(ctx, "starting server on %s", addr)
+		logger.Infof(ctx, "🚀 Starting server on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal(ctx, err, "failed to start server")
+			logger.Fatal(ctx, err, "❌ Failed to start server")
 		}
 	}()
 
@@ -108,16 +108,16 @@ func main() {
 
 	<-quit
 	fmt.Println()
-	logger.Info(ctx, "initiating server shutdown...")
+	logger.Info(ctx, "🛑 Initiating server shutdown...")
 
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal(ctx, err, "server forced to shutdown due to error")
+		logger.Fatal(ctx, err, "❌ Server forced to shutdown due to error")
 	}
 
-	logger.Info(ctx, "server shutdown gracefully")
+	logger.Info(ctx, "✅ Server shutdown gracefully")
 
 	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient)
 }

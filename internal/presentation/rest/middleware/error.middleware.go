@@ -24,7 +24,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 					res["errors"] = e.Errors
 				}
 
-				logger.Errorf(c.Request.Context(), errors.New(strings.Join(e.Errors, ", ")), "failed to process %s %s: %s", c.Request.Method, c.Request.URL.Path, e.Message)
+				logger.Errorf(c.Request.Context(), errors.New(strings.Join(e.Errors, ", ")), "❌ Failed to process %s %s: %s", c.Request.Method, c.Request.URL.Path, e.Message)
 
 				c.JSON(e.Status, res)
 			} else {
@@ -33,7 +33,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 					res["errors"] = []string{err.Error()}
 				}
 
-				logger.Errorf(c.Request.Context(), err, "failed to process %s %s: an unexpected error occurred", c.Request.Method, c.Request.URL.Path)
+				logger.Errorf(c.Request.Context(), err, "❌ Failed to process %s %s: An unexpected error occurred", c.Request.Method, c.Request.URL.Path)
 
 				c.JSON(http.StatusInternalServerError, res)
 			}

@@ -17,7 +17,7 @@ func NewTemplate() *template.Template {
 		"FormatDate":   formatDate,
 	}).ParseGlob("./templates/**/*.html")
 	if err != nil {
-		logger.Fatal(context.Background(), err, "failed to parse template")
+		logger.Fatal(context.Background(), err, "❌ Failed to parse template")
 		return nil
 	}
 

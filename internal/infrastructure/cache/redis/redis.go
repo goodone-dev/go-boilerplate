@@ -35,7 +35,7 @@ func createClient(ctx context.Context) (client *redis.Client) {
 
 	client = redis.NewClient(options)
 	if _, err := client.Ping(ctx).Result(); err != nil {
-		logger.Fatal(ctx, err, "failed to establish redis connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish Redis connection")
 	}
 
 	return client

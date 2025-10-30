@@ -86,11 +86,11 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 
 	client, err := mongo.Connect(opts)
 	if err != nil {
-		logger.Fatal(ctx, err, "failed to establish mongodb connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection")
 	}
 
 	if err := client.Ping(ctx, rp); err != nil {
-		logger.Fatal(ctx, err, "mongodb connection test failed")
+		logger.Fatal(ctx, err, "❌ MongoDB connection test failed")
 	}
 
 	mongoDB := client.Database(config.MongoConfig.Database)
@@ -101,17 +101,17 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	// FIXME: mongodb migration
 	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
 	// if err != nil {
-	// 	logger.Fatal(ctx, err, "could not to create migrate instance for mongodb")
+	// 	logger.Fatal(ctx, err, "❌️ Could Not Create Migrate Instance For MongoDB")
 	// }
 
 	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
 	// if err != nil {
-	// 	logger.Fatal(ctx, err, "could not to create migrate instance for mongodb")
+	// 	logger.Fatal(ctx, err, "❌️ Could Not Create Migrate Instance For MongoDB")
 	// }
 
 	// err = m.Up()
 	// if err != nil && err != migrate.ErrNoChange {
-	// 	logger.Fatal(ctx, err, "could not to migrate mongodb")
+	// 	logger.Fatal(ctx, err, "❌️ Could Not Migrate MongoDB")
 	// }
 
 	return mongoDB

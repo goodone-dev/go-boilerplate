@@ -66,16 +66,16 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "failed to establish mysql connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish MySQL connection")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		logger.Fatal(ctx, err, "failed to initialize mysql tracing plugin")
+		logger.Fatal(ctx, err, "❌ Failed to initialize MySQL tracing plugin")
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.Fatal(ctx, err, "failed to access mysql connection pool")
+		logger.Fatal(ctx, err, "❌ Failed to access MySQL connection pool")
 	}
 
 	sqlDB.SetMaxOpenConns(config.MySQLConfig.MaxOpenConnections)
@@ -83,7 +83,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 	sqlDB.SetConnMaxLifetime(config.MySQLConfig.ConnMaxLifetime)
 
 	if err = sqlDB.Ping(); err != nil {
-		logger.Fatal(ctx, err, "mysql connection test failed")
+		logger.Fatal(ctx, err, "❌ MySQL connection test failed")
 	}
 
 	if !config.MySQLConfig.AutoMigrate {
@@ -92,17 +92,17 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 
 	migrateDriver, err := migratemysql.WithInstance(sqlDB, &migratemysql.Config{})
 	if err != nil {
-		logger.Fatal(ctx, err, "failed to initialize mysql migration driver")
+		logger.Fatal(ctx, err, "❌ Failed to initialize MySQL migration driver")
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/mysql", "mysql", migrateDriver)
 	if err != nil {
-		logger.Fatal(ctx, err, "failed to create migration instance from mysql driver")
+		logger.Fatal(ctx, err, "❌ Failed to create migration instance from MySQL driver")
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		logger.Fatal(ctx, err, "mysql migration failed")
+		logger.Fatal(ctx, err, "❌ MySQL migration failed")
 	}
 
 	return db
