@@ -15,7 +15,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-func NewRouter(healthHandler health.IHealthHandler, orderHandler order.IOrderHandler, cacheClient cache.ICache) *gin.Engine {
+func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandler, cacheClient cache.Cache) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	// ========== Initialize Router ==========

@@ -46,7 +46,7 @@ mkdir -p $HANDLER_IMPL_DIR
 cat > "${DOMAIN_DIR}/${HANDLER_SNAKE}.handler.go" << EOF
 package ${DOMAIN_NAME}
 
-type I${HANDLER_NAME}Handler interface {
+type ${HANDLER_NAME}Handler interface {
 	// Define your handler methods here
 }
 EOF
@@ -60,10 +60,10 @@ import (
 )
 
 type ${HANDLER_CAMEL}Handler struct {
-	${HANDLER_CAMEL}Usecase ${DOMAIN_NAME}.I${HANDLER_NAME}Usecase
+	${HANDLER_CAMEL}Usecase ${DOMAIN_NAME}.${HANDLER_NAME}Usecase
 }
 
-func New${HANDLER_NAME}Handler(${HANDLER_CAMEL}Usecase ${DOMAIN_NAME}.I${HANDLER_NAME}Usecase) ${DOMAIN_NAME}.I${HANDLER_NAME}Handler {
+func New${HANDLER_NAME}Handler(${HANDLER_CAMEL}Usecase ${DOMAIN_NAME}.${HANDLER_NAME}Usecase) ${DOMAIN_NAME}.${HANDLER_NAME}Handler {
 	return &${HANDLER_CAMEL}Handler{
 		${HANDLER_CAMEL}Usecase: ${HANDLER_CAMEL}Usecase,
 	}

@@ -17,7 +17,7 @@ type baseRepo[D any, I any, E database.Entity] struct {
 	dbSlave  *gorm.DB
 }
 
-func NewBaseRepo[D any, I any, E database.Entity](dbConn *mysqlConnection) database.IBaseRepository[D, I, E] {
+func NewBaseRepo[D any, I any, E database.Entity](dbConn *mysqlConnection) database.BaseRepository[D, I, E] {
 	return &baseRepo[D, I, E]{
 		dbMaster: dbConn.Master,
 		dbSlave:  dbConn.Slave,

@@ -13,10 +13,10 @@ import (
 )
 
 type mailHandler struct {
-	usecase mail.IMailUsecase
+	usecase mail.MailUsecase
 }
 
-func NewMailHandler(usecase mail.IMailUsecase) mail.IMailHandler {
+func NewMailHandler(usecase mail.MailUsecase) mail.MailHandler {
 	return &mailHandler{
 		usecase: usecase,
 	}

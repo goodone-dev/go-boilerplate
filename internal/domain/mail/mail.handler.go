@@ -2,6 +2,6 @@ package mail
 
 import "context"
 
-type IMailHandler interface {
+type MailHandler interface {
 	Send(ctx context.Context, msg MailSendMessage) error
 }

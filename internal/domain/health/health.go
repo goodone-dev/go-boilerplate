@@ -2,7 +2,7 @@ package health
 
 import "context"
 
-type IHealthService interface {
+type HealthService interface {
 	Ping(ctx context.Context) error
 }
 

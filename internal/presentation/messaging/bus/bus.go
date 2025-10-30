@@ -7,7 +7,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/middleware"
 )
 
-func NewBusListener(mailBus bus.Bus[mail.MailSendMessage], mailUsecase mail.IMailUsecase) {
+func NewBusListener(mailBus bus.Bus[mail.MailSendMessage], mailUsecase mail.MailUsecase) {
 	mailHandler := mailhandler.NewMailHandler(mailUsecase)
 
 	mailBus.SubscribeAsync(mail.MailSendTopic, middleware.TracerMiddleware(mail.MailSendTopic, mailHandler.Send), false)

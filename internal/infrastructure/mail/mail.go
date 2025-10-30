@@ -11,13 +11,13 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-type IMailSender interface {
+type MailSender interface {
 	SendEmail(ctx context.Context, to, subject, file string, data any) error
 }
 
 type mailSender struct{}
 
-func NewMailSender() IMailSender {
+func NewMailSender() MailSender {
 	return &mailSender{}
 }
 

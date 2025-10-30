@@ -8,10 +8,10 @@ import (
 )
 
 type orderRepository struct {
-	database.IBaseRepository[gorm.DB, uuid.UUID, order.Order]
+	database.BaseRepository[gorm.DB, uuid.UUID, order.Order]
 }
 
-func NewOrderRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, order.Order]) order.IOrderRepository {
+func NewOrderRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID, order.Order]) order.OrderRepository {
 	return &orderRepository{
 		baseRepo,
 	}

@@ -10,10 +10,10 @@ import (
 )
 
 type healthHandler struct {
-	services []health.IHealthService
+	services []health.HealthService
 }
 
-func NewHealthHandler(services ...health.IHealthService) health.IHealthHandler {
+func NewHealthHandler(services ...health.HealthService) health.HealthHandler {
 	return &healthHandler{
 		services: services,
 	}
@@ -43,7 +43,7 @@ func (h *healthHandler) ReadyCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func parsePackageName(service health.IHealthService) string {
+func parsePackageName(service health.HealthService) string {
 	n := reflect.TypeOf(service).String()
 	r := regexp.MustCompile(`\*?([^.]+)`)
 

@@ -46,7 +46,7 @@ mkdir -p $USECASE_IMPL_DIR
 cat > "${DOMAIN_DIR}/${USECASE_SNAKE}.usecase.go" << EOF
 package ${DOMAIN_NAME}
 
-type I${USECASE_NAME}Usecase interface {
+type ${USECASE_NAME}Usecase interface {
 	// Define your usecase methods here
 }
 EOF
@@ -60,10 +60,10 @@ import (
 )
 
 type ${USECASE_CAMEL}Usecase struct {
-	${USECASE_CAMEL}Repo ${DOMAIN_NAME}.I${USECASE_NAME}Repository
+	${USECASE_CAMEL}Repo ${DOMAIN_NAME}.${USECASE_NAME}Repository
 }
 
-func New${USECASE_NAME}Usecase(${USECASE_CAMEL}Repo ${DOMAIN_NAME}.I${USECASE_NAME}Repository) ${DOMAIN_NAME}.I${USECASE_NAME}Usecase {
+func New${USECASE_NAME}Usecase(${USECASE_CAMEL}Repo ${DOMAIN_NAME}.${USECASE_NAME}Repository) ${DOMAIN_NAME}.${USECASE_NAME}Usecase {
 	return &${USECASE_CAMEL}Usecase{
 		${USECASE_CAMEL}Repo: ${USECASE_CAMEL}Repo,
 	}

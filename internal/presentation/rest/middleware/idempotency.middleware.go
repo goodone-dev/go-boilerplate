@@ -21,7 +21,7 @@ func (r responseWriter) Write(b []byte) (int, error) {
 	return r.body.Write(b)
 }
 
-func IdempotencyMiddleware(cache cache.ICache, duration time.Duration) gin.HandlerFunc {
+func IdempotencyMiddleware(cache cache.Cache, duration time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 

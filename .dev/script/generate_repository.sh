@@ -76,8 +76,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type I${ENTITY_NAME}Repository interface {
-	database.IBaseRepository[gorm.DB, uuid.UUID, ${ENTITY_NAME}]
+type ${ENTITY_NAME}Repository interface {
+	database.BaseRepository[gorm.DB, uuid.UUID, ${ENTITY_NAME}]
 }
 EOF
 
@@ -93,10 +93,10 @@ import (
 )
 
 type ${ENTITY_CAMEL}Repository struct {
-	database.IBaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]
+	database.BaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]
 }
 
-func New${ENTITY_NAME}Repository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]) ${DOMAIN_NAME}.I${ENTITY_NAME}Repository {
+func New${ENTITY_NAME}Repository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]) ${DOMAIN_NAME}.${ENTITY_NAME}Repository {
 	return &${ENTITY_CAMEL}Repository{
 		baseRepo,
 	}

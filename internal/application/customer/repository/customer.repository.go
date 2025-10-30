@@ -8,10 +8,10 @@ import (
 )
 
 type customerRepository struct {
-	database.IBaseRepository[gorm.DB, uuid.UUID, customer.Customer]
+	database.BaseRepository[gorm.DB, uuid.UUID, customer.Customer]
 }
 
-func NewCustomerRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, customer.Customer]) customer.ICustomerRepository {
+func NewCustomerRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID, customer.Customer]) customer.CustomerRepository {
 	return &customerRepository{
 		baseRepo,
 	}

@@ -12,7 +12,7 @@ import (
 	htterror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
-func SingleLimiterMiddleware(cache cache.ICache, limit int, duration time.Duration) gin.HandlerFunc {
+func SingleLimiterMiddleware(cache cache.Cache, limit int, duration time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -34,7 +34,7 @@ func SingleLimiterMiddleware(cache cache.ICache, limit int, duration time.Durati
 	}
 }
 
-func GlobalLimiterMiddleware(cache cache.ICache, limit int, duration time.Duration) gin.HandlerFunc {
+func GlobalLimiterMiddleware(cache cache.Cache, limit int, duration time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -56,7 +56,7 @@ func GlobalLimiterMiddleware(cache cache.ICache, limit int, duration time.Durati
 	}
 }
 
-func handleLimiter(ctx context.Context, cache cache.ICache, key string, limit int, duration time.Duration) error {
+func handleLimiter(ctx context.Context, cache cache.Cache, key string, limit int, duration time.Duration) error {
 	countStr, err := cache.Get(ctx, key)
 	if err != nil {
 		return err

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type ICache interface {
+type Cache interface {
 	Ping(ctx context.Context) error
 	Get(ctx context.Context, key string) (string, error)
 	Set(ctx context.Context, key string, val any, ttl time.Duration) error

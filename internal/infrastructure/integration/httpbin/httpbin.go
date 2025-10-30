@@ -11,14 +11,14 @@ import (
 
 const url = "https://httpbin.org"
 
-type IHttpbinIntegration interface {
+type HttpbinIntegration interface {
 	GetErrorStatus(ctx context.Context) (data any, err error)
 	GetSuccessStatus(ctx context.Context) (data any, err error)
 }
 
 type httpbinIntegration struct{}
 
-func NewHttpBinIntegration() IHttpbinIntegration {
+func NewHttpBinIntegration() HttpbinIntegration {
 	return &httpbinIntegration{}
 }
 

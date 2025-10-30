@@ -41,7 +41,7 @@ func createClient(ctx context.Context) (client *redis.Client) {
 	return client
 }
 
-func NewClient(ctx context.Context) cache.ICache {
+func NewClient(ctx context.Context) cache.Cache {
 	return &redisClient{
 		client: createClient(ctx),
 	}

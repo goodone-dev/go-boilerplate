@@ -17,20 +17,20 @@ import (
 )
 
 type orderUsecase struct {
-	customerRepo  customer.ICustomerRepository
-	productRepo   product.IProductRepository
-	orderRepo     order.IOrderRepository
-	orderItemRepo order.IOrderItemRepository
+	customerRepo  customer.CustomerRepository
+	productRepo   product.ProductRepository
+	orderRepo     order.OrderRepository
+	orderItemRepo order.OrderItemRepository
 	mailBus       bus.Bus[mail.MailSendMessage]
 }
 
 func NewOrderUsecase(
-	customerRepo customer.ICustomerRepository,
-	productRepo product.IProductRepository,
-	orderRepo order.IOrderRepository,
-	orderItemRepo order.IOrderItemRepository,
+	customerRepo customer.CustomerRepository,
+	productRepo product.ProductRepository,
+	orderRepo order.OrderRepository,
+	orderItemRepo order.OrderItemRepository,
 	mailBus bus.Bus[mail.MailSendMessage],
-) order.IOrderUsecase {
+) order.OrderUsecase {
 	return &orderUsecase{
 		customerRepo:  customerRepo,
 		productRepo:   productRepo,

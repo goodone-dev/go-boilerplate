@@ -6,6 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type IOrderItemRepository interface {
-	database.IBaseRepository[gorm.DB, uuid.UUID, OrderItem]
+type OrderItemRepository interface {
+	database.BaseRepository[gorm.DB, uuid.UUID, OrderItem]
 }

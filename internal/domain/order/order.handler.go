@@ -2,6 +2,6 @@ package order
 
 import "github.com/gin-gonic/gin"
 
-type IOrderHandler interface {
+type OrderHandler interface {
 	Create(c *gin.Context)
 }

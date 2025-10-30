@@ -24,7 +24,7 @@ type PaginationNavigation struct {
 	Last  *string `json:"last,omitempty"`
 }
 
-type IBaseRepository[D any, I any, E Entity] interface {
+type BaseRepository[D any, I any, E Entity] interface {
 	MasterDB() *D
 	SlaveDB() *D
 

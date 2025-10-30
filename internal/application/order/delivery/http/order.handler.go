@@ -11,10 +11,10 @@ import (
 )
 
 type orderHandler struct {
-	orderUsecase order.IOrderUsecase
+	orderUsecase order.OrderUsecase
 }
 
-func NewOrderHandler(orderUsecase order.IOrderUsecase) order.IOrderHandler {
+func NewOrderHandler(orderUsecase order.OrderUsecase) order.OrderHandler {
 	return &orderHandler{
 		orderUsecase: orderUsecase,
 	}
