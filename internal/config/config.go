@@ -7,7 +7,6 @@ import (
 )
 
 var ContextTimeout time.Duration
-var InsertBatchSize int // TODO: Move to common database config
 var CorsConfig CorsConfigMap
 var ApplicationConfig ApplicationConfigMap
 var RedisConfig RedisConfigMap
@@ -64,6 +63,7 @@ type PostgresConfigMap struct {
 	MaxOpenConnections int           `mapstructure:"POSTGRES_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"POSTGRES_CONN_MAX_LIFETIME"`
+	InsertBatchSize    int           `mapstructure:"POSTGRES_INSERT_BATCH_SIZE"`
 }
 
 type MySQLConfigMap struct {
@@ -84,6 +84,7 @@ type MySQLConfigMap struct {
 	MaxOpenConnections int           `mapstructure:"MYSQL_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"MYSQL_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"MYSQL_CONN_MAX_LIFETIME"`
+	InsertBatchSize    int           `mapstructure:"MYSQL_INSERT_BATCH_SIZE"`
 }
 
 type MongoConfigMap struct {
@@ -104,6 +105,7 @@ type MongoConfigMap struct {
 	MaxConnPoolSize   int    `mapstructure:"MONGO_MAX_CONN_POOL_SIZE"`
 	MinConnPoolSize   int    `mapstructure:"MONGO_MIN_CONN_POOL_SIZE"`
 	ConnIdleTimeoutMS int    `mapstructure:"MONGO_CONN_IDLE_TIMEOUT_MS"`
+	InsertBatchSize   int    `mapstructure:"MONGO_INSERT_BATCH_SIZE"`
 }
 
 type TracerConfigMap struct {
@@ -173,15 +175,12 @@ func Load() (err error) {
 	}
 
 	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
-	InsertBatchSize = viper.GetInt("INSERT_BATCH_SIZE")
-
 	return
 }
 
 func setDefaultConfig() {
 	viper.SetDefault("APP_PORT", 8080)
 	viper.SetDefault("CONTEXT_TIMEOUT", 5)
-	viper.SetDefault("INSERT_BATCH_SIZE", 100)
 
 	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 	viper.SetDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
@@ -190,12 +189,15 @@ func setDefaultConfig() {
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("POSTGRES_MAX_IDLE_CONNECTIONS", 10)
 	viper.SetDefault("POSTGRES_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("POSTGRES_INSERT_BATCH_SIZE", 100)
 
 	viper.SetDefault("MYSQL_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("MYSQL_MAX_IDLE_CONNECTIONS", 10)
 	viper.SetDefault("MYSQL_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("MYSQL_INSERT_BATCH_SIZE", 100)
 
 	viper.SetDefault("MONGO_MIN_CONN_POOL_SIZE", 2)
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
+	viper.SetDefault("MONGO_INSERT_BATCH_SIZE", 100)
 }

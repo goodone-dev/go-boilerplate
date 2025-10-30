@@ -303,7 +303,7 @@ func (r *BaseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (re
 		db = trx
 	}
 
-	err = db.WithContext(ctx).CreateInBatches(req, config.InsertBatchSize).Error
+	err = db.WithContext(ctx).CreateInBatches(req, config.MySQLConfig.InsertBatchSize).Error
 	if err != nil {
 		return req, err
 	}
