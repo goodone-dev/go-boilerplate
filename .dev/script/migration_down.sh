@@ -87,7 +87,7 @@ if [ ! -d "$MIGRATION_DIR" ]; then
 fi
 
 # Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/ensure_migrate.sh
+$(dirname "$0")/install_golang-migrate.sh
 
 # Rollback migrations
 echo "⏮️ Rolling back all migrations for $DB_DRIVER..."

@@ -56,7 +56,7 @@ esac
 mkdir -p $MIGRATION_DIR
 
 # Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/ensure_migrate.sh
+$(dirname "$0")/install_golang-migrate.sh
 
 # Create migration files
 echo "📝 Creating migration files for $MIGRATION_NAME..."

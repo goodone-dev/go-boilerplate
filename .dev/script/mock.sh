@@ -3,7 +3,7 @@
 # Script to generate mock files using mockery
 
 # Check if 'mockery' is installed, and install it if not
-$(dirname "$0")/ensure_mockery.sh
+$(dirname "$0")/install_mockery.sh
 
 echo "🤖 Generating mock files..."
 

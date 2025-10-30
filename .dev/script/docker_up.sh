@@ -3,7 +3,7 @@
 # Script to start docker containers
 
 # Check if 'docker-compose' is installed, and install it if not
-$(dirname "$0")/ensure_docker-compose.sh
+$(dirname "$0")/install_docker-compose.sh
 
 echo "🚀 Starting docker containers..."
 

@@ -24,7 +24,7 @@ if [ -z "$INTERFACE_NAME" ]; then
 fi
 
 # Check if 'mockery' is installed, and install it if not
-$(dirname "$0")/ensure_mockery.sh
+$(dirname "$0")/install_mockery.sh
 
 MODULE_PATH=$(head -n 1 go.mod | sed 's/module //')
 FILE_PATH=$(grep -rl "type ${INTERFACE_NAME} interface" internal | head -n 1)

@@ -87,7 +87,7 @@ if [ ! -d "$SEEDER_DIR" ]; then
 fi
 
 # Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/ensure_migrate.sh
+$(dirname "$0")/install_golang-migrate.sh
 
 # Apply seeders
 echo "🌱 Applying seeders for $DB_DRIVER..."

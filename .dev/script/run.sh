@@ -13,7 +13,7 @@ done
 
 if [ "$WATCH_MODE" = true ]; then
     # Check if 'air' is installed, and install it if not
-    $(dirname "$0")/ensure_air.sh
+    $(dirname "$0")/install_air.sh
 
     echo "🚀 Starting application with live reloading..."
     air -c .air.toml
