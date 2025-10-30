@@ -1,0 +1,25 @@
+name: 'Checkout and Setup Go'
+description: 'Checks out code and sets up a specific Go version'
+
+# Define the inputs this action will accept
+inputs:
+  go-version:
+    description: 'Go version to install'
+    required: true
+  fetch-depth:
+    description: 'Number of commits to fetch'
+    required: false
+    default: '0'
+
+runs:
+  using: 'composite' # Mark this as a composite action
+  steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: ${{ inputs.go-version }}
