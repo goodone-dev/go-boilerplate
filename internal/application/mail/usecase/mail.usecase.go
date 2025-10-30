@@ -8,17 +8,17 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 )
 
-type MailUsecase struct {
+type mailUsecase struct {
 	mailSender mailsender.IMailSender
 }
 
 func NewMailUsecase(mailSender mailsender.IMailSender) mail.IMailUsecase {
-	return &MailUsecase{
+	return &mailUsecase{
 		mailSender: mailSender,
 	}
 }
 
-func (u *MailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
+func (u *mailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
 	ctx, span := tracer.Start(ctx, req)
 	defer func() {
 		span.Stop(err)

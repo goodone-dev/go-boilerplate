@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProductRepository struct {
+type productRepository struct {
 	database.IBaseRepository[gorm.DB, uuid.UUID, product.Product]
 }
 
 func NewProductRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, product.Product]) product.IProductRepository {
-	return &ProductRepository{
+	return &productRepository{
 		baseRepo,
 	}
 }

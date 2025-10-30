@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type OrderUsecase struct {
+type orderUsecase struct {
 	customerRepo  customer.ICustomerRepository
 	productRepo   product.IProductRepository
 	orderRepo     order.IOrderRepository
@@ -31,7 +31,7 @@ func NewOrderUsecase(
 	orderItemRepo order.IOrderItemRepository,
 	mailBus bus.Bus[mail.MailSendMessage],
 ) order.IOrderUsecase {
-	return &OrderUsecase{
+	return &orderUsecase{
 		customerRepo:  customerRepo,
 		productRepo:   productRepo,
 		orderRepo:     orderRepo,
@@ -40,7 +40,7 @@ func NewOrderUsecase(
 	}
 }
 
-func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
+func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
 	ctx, span := tracer.Start(ctx, req)
 	defer func() {
 		span.Stop(err, res)

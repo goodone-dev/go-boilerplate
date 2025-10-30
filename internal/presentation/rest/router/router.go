@@ -7,15 +7,15 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/http"
-	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderhandler.OrderHandler, cacheClient cache.ICache) *gin.Engine {
+func NewRouter(healthHandler health.IHealthHandler, orderHandler order.IOrderHandler, cacheClient cache.ICache) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	// ========== Initialize Router ==========
@@ -36,8 +36,8 @@ func NewRouter(healthHandler *healthhandler.HealthHandler, orderHandler *orderha
 	// ========== Define Routes ==========
 	health := router.Group("/health")
 	{
-		health.GET("", healthHandler.HealthLiveCheck)
-		health.GET("/ready", healthHandler.HealthReadyCheck)
+		health.GET("", healthHandler.LiveCheck)
+		health.GET("/ready", healthHandler.ReadyCheck)
 	}
 
 	// TODO: Add authentication

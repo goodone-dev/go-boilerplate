@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrderItemRepository struct {
+type orderItemRepository struct {
 	database.IBaseRepository[gorm.DB, uuid.UUID, order.OrderItem]
 }
 
 func NewOrderItemRepository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, order.OrderItem]) order.IOrderItemRepository {
-	return &OrderItemRepository{
+	return &orderItemRepository{
 		baseRepo,
 	}
 }

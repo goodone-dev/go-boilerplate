@@ -16,7 +16,7 @@ type mailHandler struct {
 	usecase mail.IMailUsecase
 }
 
-func NewMailHandler(usecase mail.IMailUsecase) *mailHandler {
+func NewMailHandler(usecase mail.IMailUsecase) mail.IMailHandler {
 	return &mailHandler{
 		usecase: usecase,
 	}

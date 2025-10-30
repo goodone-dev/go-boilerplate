@@ -9,17 +9,17 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
-type OrderHandler struct {
+type orderHandler struct {
 	orderUsecase order.IOrderUsecase
 }
 
-func NewOrderHandler(orderUsecase order.IOrderUsecase) *OrderHandler {
-	return &OrderHandler{
+func NewOrderHandler(orderUsecase order.IOrderUsecase) order.IOrderHandler {
+	return &orderHandler{
 		orderUsecase: orderUsecase,
 	}
 }
 
-func (h *OrderHandler) Create(c *gin.Context) {
+func (h *orderHandler) Create(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	var req order.CreateOrderRequest

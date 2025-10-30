@@ -9,21 +9,21 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
 )
 
-type HealthHandler struct {
+type healthHandler struct {
 	services []health.IHealthService
 }
 
-func NewHealthHandler(services ...health.IHealthService) *HealthHandler {
-	return &HealthHandler{
+func NewHealthHandler(services ...health.IHealthService) health.IHealthHandler {
+	return &healthHandler{
 		services: services,
 	}
 }
 
-func (h *HealthHandler) HealthLiveCheck(c *gin.Context) {
+func (h *healthHandler) LiveCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, health.HealthStatus{Status: health.StatusUp})
 }
 
-func (h *HealthHandler) HealthReadyCheck(c *gin.Context) {
+func (h *healthHandler) ReadyCheck(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	res := make(map[string]health.HealthStatus)
