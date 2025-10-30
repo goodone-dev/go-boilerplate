@@ -92,12 +92,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type ${ENTITY_NAME}Repository struct {
+type ${ENTITY_CAMEL}Repository struct {
 	database.IBaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]
 }
 
 func New${ENTITY_NAME}Repository(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, ${DOMAIN_NAME}.${ENTITY_NAME}]) ${DOMAIN_NAME}.I${ENTITY_NAME}Repository {
-	return &${ENTITY_NAME}Repository{
+	return &${ENTITY_CAMEL}Repository{
 		baseRepo,
 	}
 }

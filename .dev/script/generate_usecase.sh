@@ -59,14 +59,12 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/${DOMAIN_NAME}"
 )
 
-type ${USECASE_NAME}Usecase struct {
+type ${USECASE_CAMEL}Usecase struct {
 	${USECASE_CAMEL}Repo ${DOMAIN_NAME}.I${USECASE_NAME}Repository
 }
 
-func New${USECASE_NAME}Usecase(
-	${USECASE_CAMEL}Repo ${DOMAIN_NAME}.I${USECASE_NAME}Repository,
-) ${DOMAIN_NAME}.I${USECASE_NAME}Usecase {
-	return &${USECASE_NAME}Usecase{
+func New${USECASE_NAME}Usecase(${USECASE_CAMEL}Repo ${DOMAIN_NAME}.I${USECASE_NAME}Repository) ${DOMAIN_NAME}.I${USECASE_NAME}Usecase {
+	return &${USECASE_CAMEL}Usecase{
 		${USECASE_CAMEL}Repo: ${USECASE_CAMEL}Repo,
 	}
 }
