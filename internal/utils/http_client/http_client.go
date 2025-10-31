@@ -1,6 +1,7 @@
 package httpclient
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"runtime"
@@ -57,13 +58,13 @@ func (c *customHttpClient) WithBreaker() (*customHttpClient, error) {
 	return c, nil
 }
 
-func (r *customHttpRequest) Get(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Get(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.get(url)
+		return r.get(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.get(url)
+		return r.get(ctx, url)
 	})
 
 	if err != nil {
@@ -73,8 +74,8 @@ func (r *customHttpRequest) Get(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) get(url string) (*resty.Response, error) {
-	res, err := r.Request.Get(url)
+func (r *customHttpRequest) get(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +87,13 @@ func (r *customHttpRequest) get(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Post(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Post(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.post(url)
+		return r.post(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.post(url)
+		return r.post(ctx, url)
 	})
 
 	if err != nil {
@@ -102,8 +103,8 @@ func (r *customHttpRequest) Post(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) post(url string) (*resty.Response, error) {
-	res, err := r.Request.Post(url)
+func (r *customHttpRequest) post(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Post(url)
 	if err != nil {
 		return nil, err
 	}
@@ -115,13 +116,13 @@ func (r *customHttpRequest) post(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Put(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Put(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.put(url)
+		return r.put(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.put(url)
+		return r.put(ctx, url)
 	})
 
 	if err != nil {
@@ -131,8 +132,8 @@ func (r *customHttpRequest) Put(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) put(url string) (*resty.Response, error) {
-	res, err := r.Request.Put(url)
+func (r *customHttpRequest) put(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Put(url)
 	if err != nil {
 		return nil, err
 	}
@@ -144,13 +145,13 @@ func (r *customHttpRequest) put(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Patch(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Patch(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.patch(url)
+		return r.patch(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.patch(url)
+		return r.patch(ctx, url)
 	})
 
 	if err != nil {
@@ -160,8 +161,8 @@ func (r *customHttpRequest) Patch(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) patch(url string) (*resty.Response, error) {
-	res, err := r.Request.Patch(url)
+func (r *customHttpRequest) patch(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Patch(url)
 	if err != nil {
 		return nil, err
 	}
@@ -173,13 +174,13 @@ func (r *customHttpRequest) patch(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Delete(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Delete(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.delete(url)
+		return r.delete(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.delete(url)
+		return r.delete(ctx, url)
 	})
 
 	if err != nil {
@@ -189,8 +190,8 @@ func (r *customHttpRequest) Delete(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) delete(url string) (*resty.Response, error) {
-	res, err := r.Request.Delete(url)
+func (r *customHttpRequest) delete(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Delete(url)
 	if err != nil {
 		return nil, err
 	}
@@ -202,13 +203,13 @@ func (r *customHttpRequest) delete(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Head(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Head(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.head(url)
+		return r.head(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.head(url)
+		return r.head(ctx, url)
 	})
 
 	if err != nil {
@@ -218,8 +219,8 @@ func (r *customHttpRequest) Head(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) head(url string) (*resty.Response, error) {
-	res, err := r.Request.Head(url)
+func (r *customHttpRequest) head(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Head(url)
 	if err != nil {
 		return nil, err
 	}
@@ -231,13 +232,13 @@ func (r *customHttpRequest) head(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) Options(url string) (*resty.Response, error) {
+func (r *customHttpRequest) Options(ctx context.Context, url string) (*resty.Response, error) {
 	if r.breaker == nil {
-		return r.options(url)
+		return r.options(ctx, url)
 	}
 
 	res, err := r.breaker.Execute(func() (*resty.Response, error) {
-		return r.options(url)
+		return r.options(ctx, url)
 	})
 
 	if err != nil {
@@ -247,8 +248,8 @@ func (r *customHttpRequest) Options(url string) (*resty.Response, error) {
 	return res, nil
 }
 
-func (r *customHttpRequest) options(url string) (*resty.Response, error) {
-	res, err := r.Request.Options(url)
+func (r *customHttpRequest) options(ctx context.Context, url string) (*resty.Response, error) {
+	res, err := r.Request.SetContext(ctx).Options(url)
 	if err != nil {
 		return nil, err
 	}

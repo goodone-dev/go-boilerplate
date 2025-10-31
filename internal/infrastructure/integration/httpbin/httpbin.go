@@ -34,7 +34,7 @@ func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err 
 	}
 
 	res, err := http.Request.
-		Get(fmt.Sprintf("%s/status/500", url))
+		Get(ctx, fmt.Sprintf("%s/status/500", url))
 
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, er
 	}
 
 	res, err := http.Request.
-		Get(fmt.Sprintf("%s/headers", url))
+		Get(ctx, fmt.Sprintf("%s/headers", url))
 
 	if err != nil {
 		return nil, err
