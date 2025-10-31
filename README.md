@@ -15,21 +15,23 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
 - 🧩 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
+- 🛠️ **Code Generation**: Automatically generate repository, usecase, and delivery handler with a single `make generate` command.
 - 📈 **Observability**: Observability features include distributed tracing, metrics, and logging.
 - 🏁 **Health Check**: `/health` endpoint for liveness and readiness probes.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
 - ⏱️ **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
-- 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
+- 🔄 **Idempotency Handler**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
-- ⚠️ **Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
+- 📦 **Standardized Response**: Consistent JSON response format across all API endpoints, making it easier for clients to parse and handle responses uniformly.
 - ✉️ **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
-- 🕒 **Asynchronous Processing**: Offloads long-running tasks to a message bus, ensuring non-blocking API responses.
+- 🕒 **Background Job Processing**: Efficiently handle long-running or resource-intensive tasks asynchronously, ensuring responsive API performance and better user experience.
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
-- 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
+- 🔒 **Pre-Commit Hooks**: Automated git hooks that run code quality checks, including linting, formatting, and security scanning before each commit.
+- 🛡️ **Quality Gate CI/CD**: Automated quality checks in the CI/CD pipeline that enforce code quality standards, test coverage requirements, and security scans before deployment.
 
 📌 **[Project Roadmap](https://github.com/users/goodone-dev/projects/3/views/7)** - Track our development progress, upcoming features, and planned improvements on our public roadmap.
 
@@ -52,6 +54,12 @@ Run the following command to prepare your development environment. This will mak
 
 ```bash
 make setup
+```
+
+To see all available make commands and their descriptions, run:
+
+```bash
+make help
 ```
 
 ### 3. Running the Application
