@@ -30,6 +30,7 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
 - 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
+- 📌 **[Project Roadmap](https://github.com/users/goodone-dev/projects/3/views/7)**: Track our development progress, upcoming features, and planned improvements on our public roadmap.
 
 ## 🚀 Getting Started
 
