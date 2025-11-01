@@ -76,6 +76,11 @@ services:
       LOGGER_ENABLED: true
       LOGGER_EXPORTER_HOST: grafana
       LOGGER_EXPORTER_PORT: 4318
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:8080/health/ready || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     depends_on:
       - grafana
       - postgres
