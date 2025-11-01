@@ -8,11 +8,11 @@ import (
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -64,11 +64,11 @@ func Open(ctx context.Context) *postgresConnection {
 }
 
 func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
-	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	db, err := database.RetryWithBackoff(ctx, "PostgreSQL connection", func() (*gorm.DB, error) {
+		return gorm.Open(postgres.New(pgConfig))
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection after retries")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {

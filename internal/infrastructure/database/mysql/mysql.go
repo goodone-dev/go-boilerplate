@@ -9,10 +9,10 @@ import (
 	migratemysql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -62,11 +62,11 @@ func Open(ctx context.Context) *mysqlConnection {
 }
 
 func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
-	db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{
-		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	db, err := database.RetryWithBackoff(ctx, "MySQL connection", func() (*gorm.DB, error) {
+		return gorm.Open(mysql.New(mysqlConfig))
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish MySQL connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish MySQL connection after retries")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {

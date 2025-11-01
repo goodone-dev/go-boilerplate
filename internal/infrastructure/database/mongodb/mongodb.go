@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -84,9 +85,11 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		opts.SetMinPoolSize(uint64(config.MongoConfig.MinConnPoolSize))
 	}
 
-	client, err := mongo.Connect(opts)
+	client, err := database.RetryWithBackoff(ctx, "MongoDB connection", func() (*mongo.Client, error) {
+		return mongo.Connect(opts)
+	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection")
+		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection after retries")
 	}
 
 	if err := client.Ping(ctx, rp); err != nil {
