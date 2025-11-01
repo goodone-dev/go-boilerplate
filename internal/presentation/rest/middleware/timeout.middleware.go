@@ -14,26 +14,17 @@ func TimeoutMiddleware() gin.HandlerFunc {
 		defer cancel()
 
 		c.Request = c.Request.WithContext(ctx)
+		c.Next()
 
-		done := make(chan struct{})
-		go func() {
-			defer close(done)
-			c.Next()
-		}()
-
-		select {
-		case <-done:
-			// Handler finished, do nothing
-		case <-ctx.Done():
-			if !c.Writer.Written() {
-				switch ctx.Err() {
-				case context.Canceled:
-					c.Error(error.NewRequestTimeoutError("your request was canceled before completion"))
-				case context.DeadlineExceeded:
-					c.Error(error.NewRequestTimeoutError("request took too long to process, please try again"))
-				}
-				c.Abort()
+		// Check if timeout occurred after handlers complete
+		if ctx.Err() != nil && !c.Writer.Written() {
+			switch ctx.Err() {
+			case context.Canceled:
+				c.Error(error.NewRequestTimeoutError("your request was canceled before completion"))
+			case context.DeadlineExceeded:
+				c.Error(error.NewRequestTimeoutError("request took too long to process, please try again"))
 			}
+			c.Abort()
 		}
 	}
 }
