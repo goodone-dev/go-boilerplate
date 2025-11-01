@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
@@ -18,19 +19,33 @@ import (
 func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandler, cacheClient cache.Cache) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
-	// ========== Initialize Router ==========
-	router := gin.New()
-	router.Use(otelgin.Middleware(""))
-	router.Use(cors.New(cors.Config{
+	// ========== Middleware Config ==========
+	corsConfig := cors.Config{
 		AllowOrigins: config.CorsConfig.AllowOrigins,
 		AllowMethods: config.CorsConfig.AllowMethods,
-	}))
-	// router.Use(secure.New(secure.DefaultConfig()))
+	}
+
+	secureConfig := secure.DefaultConfig()
+	secureConfig.SSLRedirect = config.ApplicationConfig.Env == config.EnvProd // Only force HTTPS in production
+	if config.ApplicationConfig.Env != config.EnvProd {                       // Disable HSTS in non-production environments
+		secureConfig.STSSeconds = 0
+		secureConfig.STSIncludeSubdomains = false
+	}
+
+	// ========== Initialize Router ==========
+	router := gin.New()
+
+	// Library Middleware
+	router.Use(otelgin.Middleware(""))
+	router.Use(cors.New(corsConfig))
+	router.Use(secure.New(secureConfig))
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
+	// Internal Middleware
 	router.Use(middleware.ErrorMiddleware())
 	router.Use(middleware.TimeoutMiddleware())
 	router.Use(middleware.ResponseMiddleware())
+
 	router.Use(gin.Recovery())
 
 	// ========== Define Routes ==========
