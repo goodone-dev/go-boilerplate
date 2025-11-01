@@ -26,6 +26,10 @@ log/
 .DS_Store
 Thumbs.db
 
+# Test coverage files
+coverage.out
+coverage.svg
+
 # Version control
 .git/
 .gitignore

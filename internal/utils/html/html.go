@@ -24,10 +24,8 @@ func NewTemplate() *template.Template {
 	return tmpl
 }
 
-var customTemplate = NewTemplate()
-
 func ExecuteTemplate(wr io.Writer, file string, data any) (err error) {
-	err = customTemplate.ExecuteTemplate(wr, file, data)
+	err = NewTemplate().ExecuteTemplate(wr, file, data)
 	if err != nil {
 		return
 	}

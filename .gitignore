@@ -26,5 +26,9 @@ log/
 .DS_Store
 Thumbs.db
 
+# Test coverage files
+coverage.out
+coverage.svg
+
 # Environment variables
 .env

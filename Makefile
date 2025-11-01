@@ -13,6 +13,12 @@ mock:
 mock_add:
 	@.dev/script/mock_add.sh -n $(NAME)
 
+test:
+	@.dev/script/test.sh
+
+test_coverage:
+	@.dev/script/test_coverage.sh
+
 seeder:
 	@.dev/script/seeder.sh -n $(NAME) -d $(DRIVER)
 
@@ -70,6 +76,10 @@ help:
 	@echo "  generate_usecase NAME=<usecase_name>              		Generate usecase"
 	@echo "  generate_handler NAME=<handler_name>              		Generate handler"
 	@echo ""
+	@echo "Test targets:"
+	@echo "  test                                              		Run tests with coverage report"
+	@echo "  test_coverage                               					Run tests and verify coverage thresholds (configured in .testcoverage.yml)"
+	@echo ""
 	@echo "Mock targets:"
 	@echo "  mock                                              		Generate mocks"
 	@echo "  mock_add NAME=<interface_name>                     		Add mock config"
@@ -82,6 +92,7 @@ help:
 .PHONY: help setup run watch \
 		migration migration_up migration_down \
 		seeder seeder_up \
+		test test_coverage \
 		mock mock_add \
 		up down stop \
 		generate_repository generate_usecase generate_handler
