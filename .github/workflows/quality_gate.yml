@@ -108,7 +108,7 @@ jobs:
           config: ./.testcoverage.yml
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           file: ./coverage.out
           flags: unittests
