@@ -119,5 +119,5 @@ func main() {
 
 	logger.Info(ctx, "✅ Server shutdown gracefully")
 
-	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient)
+	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient, mailBus)
 }

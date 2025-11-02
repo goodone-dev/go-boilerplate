@@ -5,6 +5,8 @@
 package bus
 
 import (
+	"context"
+
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -130,6 +132,57 @@ func (_c *BusMock_Publish_Call[T]) Return() *BusMock_Publish_Call[T] {
 
 func (_c *BusMock_Publish_Call[T]) RunAndReturn(run func(topic string, arg T)) *BusMock_Publish_Call[T] {
 	_c.Run(run)
+	return _c
+}
+
+// Shutdown provides a mock function for the type BusMock
+func (_mock *BusMock[T]) Shutdown(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Shutdown")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// BusMock_Shutdown_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Shutdown'
+type BusMock_Shutdown_Call[T any] struct {
+	*mock.Call
+}
+
+// Shutdown is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *BusMock_Expecter[T]) Shutdown(ctx interface{}) *BusMock_Shutdown_Call[T] {
+	return &BusMock_Shutdown_Call[T]{Call: _e.mock.On("Shutdown", ctx)}
+}
+
+func (_c *BusMock_Shutdown_Call[T]) Run(run func(ctx context.Context)) *BusMock_Shutdown_Call[T] {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *BusMock_Shutdown_Call[T]) Return(err error) *BusMock_Shutdown_Call[T] {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *BusMock_Shutdown_Call[T]) RunAndReturn(run func(ctx context.Context) error) *BusMock_Shutdown_Call[T] {
+	_c.Call.Return(run)
 	return _c
 }
 

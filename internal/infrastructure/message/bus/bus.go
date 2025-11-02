@@ -1,6 +1,7 @@
 package bus
 
 import (
+	"context"
 	"sync"
 )
 
@@ -18,6 +19,7 @@ type BusSubscriber[T any] interface {
 type BusController interface {
 	HasCallback(topic string) bool
 	WaitAsync()
+	Shutdown(ctx context.Context) error
 }
 
 // BusPublisher defines publishing-related bus behavior for event of specific type T
@@ -164,4 +166,22 @@ func (bus *TypedBus[T]) fetchSubscribers(topic string) (*listeners[T], bool) {
 		return handlers, true
 	}
 	return nil, false
+}
+
+// Shutdown waits for all async handlers to complete before shutting down the bus
+func (bus *TypedBus[T]) Shutdown(ctx context.Context) error {
+	done := make(chan struct{})
+
+	go func() {
+		bus.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		<-done // Wait for the goroutine to complete to avoid goroutine leak
+		return ctx.Err()
+	}
 }
