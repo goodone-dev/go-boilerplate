@@ -42,7 +42,7 @@ func (b *BaseEntity[I]) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-func RetryWithBackoff[C any](ctx context.Context, operation string, fn func() (C, error)) (res C, err error) {
+func RetryWithBackoff[D any](ctx context.Context, operation string, fn func() (D, error)) (res D, err error) {
 	backoff := config.RetryConfig.InitialBackoff
 
 	for attempt := 0; attempt <= config.RetryConfig.MaxRetries; attempt++ {

@@ -94,7 +94,10 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection after retries")
 	}
 
-	if err := client.Ping(ctx, rp); err != nil {
+	_, err = database.RetryWithBackoff(ctx, "MongoDB connection test", func() (any, error) {
+		return nil, client.Ping(ctx, rp)
+	})
+	if err != nil {
 		logger.Fatal(ctx, err, "❌ MongoDB connection test failed")
 	}
 

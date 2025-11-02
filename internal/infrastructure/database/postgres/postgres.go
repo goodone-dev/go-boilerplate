@@ -89,7 +89,10 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 	sqlDB.SetMaxIdleConns(config.PostgresConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.PostgresConfig.ConnMaxLifetime)
 
-	if err = sqlDB.Ping(); err != nil {
+	_, err = database.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
+		return nil, sqlDB.Ping()
+	})
+	if err != nil {
 		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed")
 	}
 

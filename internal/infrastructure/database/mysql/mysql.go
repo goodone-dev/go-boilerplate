@@ -87,7 +87,10 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 	sqlDB.SetMaxIdleConns(config.MySQLConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.MySQLConfig.ConnMaxLifetime)
 
-	if err = sqlDB.Ping(); err != nil {
+	_, err = database.RetryWithBackoff(ctx, "MySQL connection test", func() (any, error) {
+		return nil, sqlDB.Ping()
+	})
+	if err != nil {
 		logger.Fatal(ctx, err, "❌ MySQL connection test failed")
 	}
 
