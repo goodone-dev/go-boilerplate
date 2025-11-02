@@ -15,10 +15,23 @@ type MailSender interface {
 	SendEmail(ctx context.Context, to, subject, file string, data any) error
 }
 
-type mailSender struct{}
+type mailSender struct {
+	dialer *gomail.Dialer
+}
 
 func NewMailSender() MailSender {
-	return &mailSender{}
+	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
+
+	if config.MailConfig.TLS {
+		d.TLSConfig = &tls.Config{
+			ServerName: config.MailConfig.Host,
+			MinVersion: tls.VersionTLS13,
+		}
+	}
+
+	return &mailSender{
+		dialer: d,
+	}
 }
 
 func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
@@ -38,16 +51,7 @@ func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, da
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())
 
-	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
-
-	if config.MailConfig.TLS {
-		d.TLSConfig = &tls.Config{
-			ServerName: config.MailConfig.Host,
-			MinVersion: tls.VersionTLS13,
-		}
-	}
-
-	if err := d.DialAndSend(m); err != nil {
+	if err := s.dialer.DialAndSend(m); err != nil {
 		return err
 	}
 
