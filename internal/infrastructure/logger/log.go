@@ -18,6 +18,11 @@ var zLogger = zerolog.New(zOutput).
 	Timestamp().
 	Logger()
 
+func Disabled() {
+	zerolog.SetGlobalLevel(zerolog.Disabled)
+	zLogger = zerolog.Nop()
+}
+
 func Trace(ctx context.Context, msg string) {
 	log := zLogger.Trace()
 

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
@@ -12,12 +13,20 @@ import (
 	ordermock "github.com/goodone-dev/go-boilerplate/internal/domain/order/mocks"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	productmock "github.com/goodone-dev/go-boilerplate/internal/domain/product/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	busmock "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus/mocks"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 )
+
+func TestMain(m *testing.M) {
+	logger.Disabled()
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNewOrderUsecase(t *testing.T) {
 	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)

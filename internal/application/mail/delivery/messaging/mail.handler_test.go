@@ -3,13 +3,22 @@ package messaging
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	mailmock "github.com/goodone-dev/go-boilerplate/internal/domain/mail/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TestMain(m *testing.M) {
+	logger.Disabled()
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNewMailHandler(t *testing.T) {
 	mockUsecase := mailmock.NewMailUsecaseMock(t)

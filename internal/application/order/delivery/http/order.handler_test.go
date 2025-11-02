@@ -6,15 +6,24 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	ordermock "github.com/goodone-dev/go-boilerplate/internal/domain/order/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TestMain(m *testing.M) {
+	logger.Disabled()
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNewOrderHandler(t *testing.T) {
 	mockUsecase := ordermock.NewOrderUsecaseMock(t)

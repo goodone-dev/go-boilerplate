@@ -4,14 +4,23 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
 	healthmock "github.com/goodone-dev/go-boilerplate/internal/domain/health/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TestMain(m *testing.M) {
+	logger.Disabled()
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNewHealthHandler(t *testing.T) {
 	mockService := healthmock.NewHealthServiceMock(t)
