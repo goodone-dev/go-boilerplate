@@ -13,6 +13,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -62,8 +63,12 @@ func Open(ctx context.Context) *mysqlConnection {
 }
 
 func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
+	gormConfig := &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	}
+
 	db, err := database.RetryWithBackoff(ctx, "MySQL connection", func() (*gorm.DB, error) {
-		return gorm.Open(mysql.New(mysqlConfig))
+		return gorm.Open(mysql.New(mysqlConfig), gormConfig)
 	})
 	if err != nil {
 		logger.Fatal(ctx, err, "❌ Failed to establish MySQL connection after retries")

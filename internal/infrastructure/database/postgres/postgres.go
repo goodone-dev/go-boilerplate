@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -64,8 +65,12 @@ func Open(ctx context.Context) *postgresConnection {
 }
 
 func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
+	gormConfig := &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	}
+
 	db, err := database.RetryWithBackoff(ctx, "PostgreSQL connection", func() (*gorm.DB, error) {
-		return gorm.Open(postgres.New(pgConfig))
+		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
 		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection after retries")
