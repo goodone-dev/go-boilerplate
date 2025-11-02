@@ -17,7 +17,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
-	github.com/redis/go-redis/v9 v9.14.0
+	github.com/redis/go-redis/v9 v9.16.0
 	github.com/rs/zerolog v1.34.0
 	github.com/sony/gobreaker/v2 v2.2.1
 	github.com/spf13/viper v1.21.0
