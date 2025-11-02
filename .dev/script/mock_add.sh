@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# Script to add mock configuration for an interface using mockery
-
 show_usage() {
     echo "Usage: make mock_add NAME=<interface_name>"
-    echo "Example: make mock_add NAME=ICustomerRepository"
-    echo ""
+    echo "Example: make mock_add NAME=CustomerRepository"
     exit 1
 }
 
@@ -22,9 +19,6 @@ if [ -z "$INTERFACE_NAME" ]; then
     echo "❌ Error: Interface name is required"
     show_usage
 fi
-
-# Check if 'mockery' is installed, and install it if not
-$(dirname "$0")/install_mockery.sh
 
 MODULE_PATH=$(head -n 1 go.mod | sed 's/module //')
 FILE_PATH=$(grep -rl "type ${INTERFACE_NAME} interface" internal | head -n 1)

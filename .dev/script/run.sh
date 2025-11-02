@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Script to run the application
-
 # Check if --watch argument is provided
 WATCH_MODE=false
 for arg in "$@"; do
@@ -12,9 +10,6 @@ for arg in "$@"; do
 done
 
 if [ "$WATCH_MODE" = true ]; then
-    # Check if 'air' is installed, and install it if not
-    $(dirname "$0")/install_air.sh
-
     air -c .air.toml
 else
     go run ./cmd/api/main.go

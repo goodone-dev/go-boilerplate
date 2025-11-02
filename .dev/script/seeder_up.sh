@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Script to apply database seeders using golang-migrate
-
 # Function to show usage
 show_usage() {
     echo "Usage: make seeder_up DRIVER=<database_driver>"
@@ -85,9 +83,6 @@ if [ ! -d "$SEEDER_DIR" ]; then
     echo "Error: Seeder directory not found: $SEEDER_DIR"
     exit 1
 fi
-
-# Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/install_golang-migrate.sh
 
 # Apply seeders
 echo "🌱 Applying seeders for $DB_DRIVER..."

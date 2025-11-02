@@ -1,13 +1,7 @@
 #!/bin/bash
 
-# Script to stop docker containers
-
-# Check if 'docker-compose' is installed, and install it if not
-$(dirname "$0")/install_docker-compose.sh
-
-echo "🛑 Stopping docker containers..."
-
 # Stop docker containers
+echo "🛑 Stopping docker containers..."
 docker-compose stop
 
 # Check if docker containers stopped successfully

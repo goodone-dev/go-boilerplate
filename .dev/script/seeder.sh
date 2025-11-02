@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Script to create database seeder files using golang-migrate
-
 # Function to show usage
 show_usage() {
     echo "Usage: make seeder NAME=<seeder_name> DRIVER=<database_driver>"
@@ -54,9 +52,6 @@ esac
 
 # Create seeders directory if it doesn't exist
 mkdir -p $SEEDER_DIR
-
-# Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/install_golang-migrate.sh
 
 # Create seeder files
 echo "🌱 Creating seeder files for $SEEDER_NAME..."

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Script to rollback database migrations using golang-migrate
-
 # Function to show usage
 show_usage() {
     echo "Usage: make migration_down DRIVER=<database_driver>"
@@ -85,9 +83,6 @@ if [ ! -d "$MIGRATION_DIR" ]; then
     echo "❌ Error: Migration directory not found: $MIGRATION_DIR"
     exit 1
 fi
-
-# Check if 'golang-migrate' is installed, and install it if not
-$(dirname "$0")/install_golang-migrate.sh
 
 # Rollback migrations
 echo "⏮️ Rolling back all migrations for $DB_DRIVER..."

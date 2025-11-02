@@ -29,6 +29,7 @@ Thumbs.db
 # Test coverage files
 coverage.out
 coverage.svg
+coverage.html
 
 # Version control
 .git/

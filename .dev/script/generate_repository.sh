@@ -32,7 +32,6 @@ ENTITY_NAME=$1
 ENTITY_SNAKE=$(snake_case $ENTITY_NAME)
 ENTITY_KEBAB=$(kebab_case $ENTITY_NAME)
 ENTITY_CAMEL=$(camel_case $ENTITY_KEBAB)
-
 DOMAIN_NAME=$(domain_name $ENTITY_SNAKE)
 
 # Define directories

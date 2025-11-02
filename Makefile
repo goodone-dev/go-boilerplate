@@ -1,51 +1,69 @@
-migration:
+setup:
+	@chmod -v +x .dev/script/*.sh
+	@echo "✅ All .sh files in .dev/script directory are executable"
+	@.dev/script/install_air.sh -f -d
+	@.dev/script/install_docker_compose.sh -f -d
+	@.dev/script/install_test_coverage.sh -f -d
+	@.dev/script/install_golang_migrate.sh -f -d
+	@.dev/script/install_mockery.sh -f -d
+	@.dev/script/install_pre_commit.sh -f -d
+
+install_air:
+	@.dev/script/install_air.sh
+
+install_docker_compose:
+	@.dev/script/install_docker_compose.sh
+
+install_test_coverage:
+	@.dev/script/install_test_coverage.sh
+
+install_golang_migrate:
+	@.dev/script/install_golang_migrate.sh
+
+install_mockery:
+	@.dev/script/install_mockery.sh
+
+install_pre_commit:
+	@.dev/script/install_pre_commit.sh
+
+migration: install_golang_migrate
 	@.dev/script/migration.sh -n $(NAME) -d $(DRIVER)
 
-migration_up:
+migration_up: install_golang_migrate
 	@.dev/script/migration_up.sh -d $(DRIVER)
 
-migration_down:
+migration_down: install_golang_migrate
 	@.dev/script/migration_down.sh -d $(DRIVER)
 
-mock:
+mock: install_mockery
 	@.dev/script/mock.sh
 
-mock_add:
+mock_add: install_mockery
 	@.dev/script/mock_add.sh -n $(NAME)
 
-test:
+test: install_test_coverage
 	@.dev/script/test.sh
 
-test_coverage:
-	@.dev/script/test_coverage.sh
-
-seeder:
+seeder: install_golang_migrate
 	@.dev/script/seeder.sh -n $(NAME) -d $(DRIVER)
 
-seeder_up:
+seeder_up: install_golang_migrate
 	@.dev/script/seeder_up.sh -d $(DRIVER)
 
 run:
 	@.dev/script/run.sh
 
-watch:
+watch: install_air
 	@.dev/script/run.sh -w
 
-up:
+up: install_docker_compose
 	@.dev/script/docker_up.sh
 
-down:
+down: install_docker_compose
 	@.dev/script/docker_down.sh
 
-stop:
+stop: install_docker_compose
 	@.dev/script/docker_stop.sh
-
-setup:
-	@echo "🔧 Making all .sh files in .dev/script directory executable..."
-	@chmod -v +x .dev/script/*.sh
-	@echo "✅ All .sh files in .dev/script directory are executable"
-	@echo ""
-	@.dev/script/install_pre-commit.sh
 
 generate_repository:
 	@.dev/script/generate_repository.sh $(NAME)
@@ -77,8 +95,7 @@ help:
 	@echo "  generate_handler NAME=<handler_name>              		Generate handler"
 	@echo ""
 	@echo "Test targets:"
-	@echo "  test                                              		Run tests with coverage report"
-	@echo "  test_coverage                               					Run tests and verify coverage thresholds (configured in .testcoverage.yml)"
+	@echo "  test                               									Run tests and verify coverage thresholds (configured in .testcoverage.yml)"
 	@echo ""
 	@echo "Mock targets:"
 	@echo "  mock                                              		Generate mocks"
@@ -92,7 +109,8 @@ help:
 .PHONY: help setup run watch \
 		migration migration_up migration_down \
 		seeder seeder_up \
-		test test_coverage \
+		test \
 		mock mock_add \
 		up down stop \
-		generate_repository generate_usecase generate_handler
+		generate_repository generate_usecase generate_handler \
+		install_air install_docker_compose install_test_coverage install_golang_migrate install_mockery install_pre_commit

@@ -1,13 +1,7 @@
 #!/bin/bash
 
-# Script to generate mock files using mockery
-
-# Check if 'mockery' is installed, and install it if not
-$(dirname "$0")/install_mockery.sh
-
-echo "🤖 Generating mock files..."
-
 # Generate mock files
+echo "🤖 Generating mock files..."
 mockery --log-level=ERROR
 
 # Check if mock files generated successfully

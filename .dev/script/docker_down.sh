@@ -1,13 +1,7 @@
 #!/bin/bash
 
-# Script to delete docker containers
-
-# Check if 'docker-compose' is installed, and install it if not
-$(dirname "$0")/install_docker-compose.sh
-
-echo "🗑️ Deleting docker containers..."
-
 # Delete docker containers
+echo "🗑️ Deleting docker containers..."
 docker-compose down
 
 # Check if docker containers deleted successfully

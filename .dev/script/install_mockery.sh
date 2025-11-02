@@ -1,29 +1,49 @@
 #!/bin/bash
 
-# Script to install mockery if it is not installed
+FORCED=false
+DEBUG=false
+
+while getopts ":fd" opt; do
+    case $opt in
+        f) FORCED=true;;
+        d) DEBUG=true;;
+    esac
+done
 
 if ! command -v mockery &> /dev/null; then
-    echo "❌ Error: 'mockery' is not installed."
-    echo ""
-    echo "🤔 Would you like to install 'mockery'? (y/n)"
-    read -r response
+    if [ "$FORCED" = true ]; then
+        install_mockery
+    else
+        echo "❌ Error: 'mockery' is not installed."
+        echo ""
+        echo "🤔 Would you like to install 'mockery'? (y/n)"
+        read -r response
 
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        echo "🔧 Installing 'mockery'..."
-        go install github.com/vektra/mockery/v2@latest
-
-        if [ $? -eq 0 ]; then
-            echo "✅ 'mockery' installed successfully!"
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            install_mockery
         else
-            echo "❌ Failed to install 'mockery'. Please try installing manually:"
+            echo "⏸️ Installation cancelled. To install 'mockery' later, run:"
             echo "  go install github.com/vektra/mockery/v2@latest"
             echo "  Or visit: https://vektra.github.io/mockery/latest/installation/"
             exit 1
         fi
+    fi
+else
+    if [ "$DEBUG" = true ]; then
+        echo "✅ 'mockery' is already installed."
+    fi
+fi
+
+install_mockery() {
+    echo "🔧 Installing 'mockery'..."
+    go install github.com/vektra/mockery/v2@latest
+
+    if [ $? -eq 0 ]; then
+        echo "✅ 'mockery' installed successfully!"
     else
-        echo "⏸️ Installation cancelled. To install 'mockery' later, run:"
+        echo "❌ Failed to install 'mockery'. Please try installing manually:"
         echo "  go install github.com/vektra/mockery/v2@latest"
         echo "  Or visit: https://vektra.github.io/mockery/latest/installation/"
         exit 1
     fi
-fi
+}
