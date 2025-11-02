@@ -23,7 +23,7 @@ func NewHttpBinIntegration() HttpbinIntegration {
 }
 
 func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.Start(ctx)
+	ctx, span := tracer.Start(ctx)
 	defer func() {
 		span.Stop(err, body)
 	}()
@@ -49,7 +49,7 @@ func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err 
 }
 
 func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.Start(ctx)
+	ctx, span := tracer.Start(ctx)
 	defer func() {
 		span.Stop(err, body)
 	}()
