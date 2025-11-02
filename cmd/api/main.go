@@ -108,6 +108,7 @@ func main() {
 	<-quit
 	fmt.Println()
 	logger.Info(ctx, "🛑 Initiating server shutdown...")
+	logger.Info(ctx, "⏳ Waiting for in-flight requests to complete...")
 
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
