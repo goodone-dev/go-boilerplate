@@ -70,7 +70,9 @@ func Open(ctx context.Context) *mongoConnection {
 }
 
 func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPref) *mongo.Database {
-	// FIXME: mongodb monitor
+	// TODO: Enable MongoDB OpenTelemetry monitoring once otelmongo supports mongo-driver v2
+	// Currently blocked by: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/
+	// The otelmongo package only supports mongo-driver v1.x
 	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
@@ -101,20 +103,27 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		return mongoDB
 	}
 
-	// FIXME: mongodb migration
-	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
+	// TODO: Enable MongoDB migrations once golang-migrate supports mongo-driver v2
+	// Currently blocked by: https://github.com/golang-migrate/migrate/pull/1265
+	// The migrate mongodb package only supports mongo-driver v1.x
+	// Alternative: Consider using github.com/xakep666/mongo-migrate which supports v2
+	//
+	// Example implementation:
+	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{
+	// 	DatabaseName: config.MongoConfig.Database,
+	// })
 	// if err != nil {
-	// 	logger.Fatal(ctx, err, "❌️ Could Not Create Migrate Instance For MongoDB")
+	// 	logger.Fatal(ctx, err, "❌ Failed to initialize MongoDB migration driver")
 	// }
-
+	//
 	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
 	// if err != nil {
-	// 	logger.Fatal(ctx, err, "❌️ Could Not Create Migrate Instance For MongoDB")
+	// 	logger.Fatal(ctx, err, "❌ Failed to create migration instance from MongoDB driver")
 	// }
-
+	//
 	// err = m.Up()
 	// if err != nil && err != migrate.ErrNoChange {
-	// 	logger.Fatal(ctx, err, "❌️ Could Not Migrate MongoDB")
+	// 	logger.Fatal(ctx, err, "❌ MongoDB migration failed")
 	// }
 
 	return mongoDB
