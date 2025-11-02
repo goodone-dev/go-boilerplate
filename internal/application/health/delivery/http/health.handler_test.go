@@ -85,8 +85,8 @@ func TestHealthHandler_ReadyCheck_ServiceDown(t *testing.T) {
 
 	handler.ReadyCheck(c)
 
-	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
-	assert.Contains(t, w.Body.String(), `"status":"down"`)
+	assert.NotEmpty(t, c.Errors)
+	assert.Contains(t, c.Errors.Last().Error(), "service dependency health check failed")
 
 	mockService1.AssertExpectations(t)
 	mockService2.AssertExpectations(t)
