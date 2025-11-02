@@ -57,10 +57,10 @@ packages:
 
   github.com/goodone-dev/go-boilerplate/internal/domain/health:
     interfaces:
-      HealthService:
+      HealthChecker:
         config:
           dir: "{{.InterfaceDir}}/mocks"
-          filename: "health.service_mock.go"
+          filename: "health.handler_mock.go"
 
   github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail:
     interfaces:

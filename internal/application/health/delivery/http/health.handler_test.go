@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewHealthHandler(t *testing.T) {
-	mockService := healthmock.NewHealthServiceMock(t)
+	mockService := healthmock.NewHealthCheckerMock(t)
 	handler := NewHealthHandler(mockService)
 
 	assert.NotNil(t, handler)
@@ -47,8 +47,8 @@ func TestHealthHandler_LiveCheck(t *testing.T) {
 func TestHealthHandler_ReadyCheck_AllServicesUp(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockService1 := healthmock.NewHealthServiceMock(t)
-	mockService2 := healthmock.NewHealthServiceMock(t)
+	mockService1 := healthmock.NewHealthCheckerMock(t)
+	mockService2 := healthmock.NewHealthCheckerMock(t)
 
 	mockService1.On("Ping", mock.Anything).Return(nil)
 	mockService2.On("Ping", mock.Anything).Return(nil)
@@ -71,8 +71,8 @@ func TestHealthHandler_ReadyCheck_AllServicesUp(t *testing.T) {
 func TestHealthHandler_ReadyCheck_ServiceDown(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockService1 := healthmock.NewHealthServiceMock(t)
-	mockService2 := healthmock.NewHealthServiceMock(t)
+	mockService1 := healthmock.NewHealthCheckerMock(t)
+	mockService2 := healthmock.NewHealthCheckerMock(t)
 
 	mockService1.On("Ping", mock.Anything).Return(nil)
 	mockService2.On("Ping", mock.Anything).Return(errors.New("connection failed"))
@@ -109,12 +109,12 @@ func TestHealthHandler_ReadyCheck_NoServices(t *testing.T) {
 func TestParsePackageName(t *testing.T) {
 	tests := []struct {
 		name     string
-		service  health.HealthService
+		service  health.HealthChecker
 		expected string
 	}{
 		{
 			name:     "MockHealthService",
-			service:  healthmock.NewHealthServiceMock(t),
+			service:  healthmock.NewHealthCheckerMock(t),
 			expected: "http",
 		},
 	}
@@ -128,7 +128,7 @@ func TestParsePackageName(t *testing.T) {
 }
 
 func TestParsePackageName_EmptyResult(t *testing.T) {
-	mockService := healthmock.NewHealthServiceMock(t)
+	mockService := healthmock.NewHealthCheckerMock(t)
 	result := parsePackageName(mockService)
 	assert.NotEmpty(t, result)
 }

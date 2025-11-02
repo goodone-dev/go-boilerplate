@@ -67,3 +67,11 @@ func NewInternalServerError(message string, errors ...string) error {
 		Errors:  errors,
 	}
 }
+
+func NewServiceUnavailableError(message string, errors ...string) error {
+	return &CustomError{
+		Status:  http.StatusServiceUnavailable,
+		Message: message,
+		Errors:  errors,
+	}
+}

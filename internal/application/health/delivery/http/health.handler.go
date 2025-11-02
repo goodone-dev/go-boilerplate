@@ -7,44 +7,43 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
+	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
 type healthHandler struct {
-	services []health.HealthService
+	checkers []health.HealthChecker
 }
 
-func NewHealthHandler(services ...health.HealthService) health.HealthHandler {
+func NewHealthHandler(checkers ...health.HealthChecker) health.HealthHandler {
 	return &healthHandler{
-		services: services,
+		checkers: checkers,
 	}
 }
 
 func (h *healthHandler) LiveCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, health.HealthStatus{Status: health.StatusUp})
+	c.JSON(http.StatusOK, health.HealthResponse{Status: health.StatusUp})
 }
 
 func (h *healthHandler) ReadyCheck(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	res := make(map[string]health.HealthStatus)
-	for _, service := range h.services {
-		packageName := parsePackageName(service)
+	res := make(map[string]health.HealthResponse)
+	for _, checker := range h.checkers {
+		packageName := parsePackageName(checker)
 
-		if err := service.Ping(ctx); err != nil {
-			res[packageName] = health.HealthStatus{Status: health.StatusDown}
-
-			c.JSON(http.StatusServiceUnavailable, res)
+		if err := checker.Ping(ctx); err != nil {
+			c.Error(httperror.NewServiceUnavailableError("service dependency health check failed", err.Error()))
 			return
 		}
 
-		res[packageName] = health.HealthStatus{Status: health.StatusUp}
+		res[packageName] = health.HealthResponse{Status: health.StatusUp}
 	}
 
 	c.JSON(http.StatusOK, res)
 }
 
-func parsePackageName(service health.HealthService) string {
-	n := reflect.TypeOf(service).String()
+func parsePackageName(checker health.HealthChecker) string {
+	n := reflect.TypeOf(checker).String()
 	r := regexp.MustCompile(`\*?([^.]+)`)
 
 	matches := r.FindStringSubmatch(n)
