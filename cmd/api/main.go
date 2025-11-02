@@ -10,7 +10,7 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
-	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/http"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/delivery/http"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
 	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
