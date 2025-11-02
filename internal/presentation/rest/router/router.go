@@ -2,7 +2,6 @@ package router
 
 import (
 	"net/http/pprof"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -71,8 +70,8 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		{
 			orders.POST(
 				"",
-				middleware.SingleLimiterMiddleware(cacheClient, 60, 1*time.Minute),
-				middleware.IdempotencyMiddleware(cacheClient, 5*time.Minute),
+				middleware.SingleLimiterMiddleware(cacheClient, config.RateLimiterConfig.SingleLimit, config.RateLimiterConfig.SingleDuration),
+				middleware.IdempotencyMiddleware(cacheClient, config.RateLimiterConfig.IdempotencyTTL),
 				orderHandler.Create,
 			)
 		}

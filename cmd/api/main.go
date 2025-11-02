@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
@@ -89,10 +88,10 @@ func main() {
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           r,
-		ReadTimeout:       5 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       120 * time.Second,
+		ReadTimeout:       config.HttpServerConfig.ReadTimeout,
+		ReadHeaderTimeout: config.HttpServerConfig.ReadHeaderTimeout,
+		WriteTimeout:      config.HttpServerConfig.WriteTimeout,
+		IdleTimeout:       config.HttpServerConfig.IdleTimeout,
 	}
 
 	go func() {

@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"regexp"
 	"runtime"
-	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/breaker"
 	"github.com/sony/gobreaker/v2"
 )
 
 var httpClient = resty.New().
 	SetDebug(false).
-	SetRetryCount(1).
-	SetRetryWaitTime(1 * time.Second).
+	SetRetryCount(config.HttpClientConfig.RetryCount).
+	SetRetryWaitTime(config.HttpClientConfig.RetryWaitTime).
 	AddRetryCondition(
 		func(r *resty.Response, err error) bool {
 			return r.StatusCode() >= 500 && r.StatusCode() <= 599

@@ -16,6 +16,11 @@ var MongoConfig MongoConfigMap
 var TracerConfig TracerConfigMap
 var LoggerConfig LoggerConfigMap
 var MailConfig MailConfigMap
+var HttpServerConfig HttpServerConfigMap
+var HttpClientConfig HttpClientConfigMap
+var CircuitBreakerConfig CircuitBreakerConfigMap
+var RateLimiterConfig RateLimiterConfigMap
+var RetryConfig RetryConfigMap
 
 type Environment string
 
@@ -133,6 +138,39 @@ type CorsConfigMap struct {
 	AllowMethods []string `mapstructure:"CORS_ALLOW_METHODS"`
 }
 
+type HttpServerConfigMap struct {
+	ReadTimeout       time.Duration `mapstructure:"HTTP_SERVER_READ_TIMEOUT"`
+	ReadHeaderTimeout time.Duration `mapstructure:"HTTP_SERVER_READ_HEADER_TIMEOUT"`
+	WriteTimeout      time.Duration `mapstructure:"HTTP_SERVER_WRITE_TIMEOUT"`
+	IdleTimeout       time.Duration `mapstructure:"HTTP_SERVER_IDLE_TIMEOUT"`
+}
+
+type HttpClientConfigMap struct {
+	RetryCount    int           `mapstructure:"HTTP_CLIENT_RETRY_COUNT"`
+	RetryWaitTime time.Duration `mapstructure:"HTTP_CLIENT_RETRY_WAIT_TIME"`
+}
+
+type CircuitBreakerConfigMap struct {
+	MinRequests  int           `mapstructure:"CIRCUIT_BREAKER_MIN_REQUESTS"`
+	FailureRatio float64       `mapstructure:"CIRCUIT_BREAKER_FAILURE_RATIO"`
+	Timeout      time.Duration `mapstructure:"CIRCUIT_BREAKER_TIMEOUT"`
+	MaxRequests  int           `mapstructure:"CIRCUIT_BREAKER_MAX_REQUESTS"`
+}
+
+type RateLimiterConfigMap struct {
+	SingleLimit    int           `mapstructure:"RATE_LIMITER_SINGLE_LIMIT"`
+	SingleDuration time.Duration `mapstructure:"RATE_LIMITER_SINGLE_DURATION"`
+	GlobalLimit    int           `mapstructure:"RATE_LIMITER_GLOBAL_LIMIT"`
+	GlobalDuration time.Duration `mapstructure:"RATE_LIMITER_GLOBAL_DURATION"`
+	IdempotencyTTL time.Duration `mapstructure:"RATE_LIMITER_IDEMPOTENCY_TTL"`
+}
+
+type RetryConfigMap struct {
+	MaxRetries     int           `mapstructure:"RETRY_MAX_RETRIES"`
+	InitialBackoff time.Duration `mapstructure:"RETRY_INITIAL_BACKOFF"`
+	MaxBackoff     time.Duration `mapstructure:"RETRY_MAX_BACKOFF"`
+}
+
 func Load() (err error) {
 	viper.AddConfigPath("./")
 	viper.SetConfigName(".env")
@@ -173,31 +211,81 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&CorsConfig); err != nil {
 		return
 	}
+	if err = viper.Unmarshal(&HttpServerConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&HttpClientConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&CircuitBreakerConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&RateLimiterConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&RetryConfig); err != nil {
+		return
+	}
 
-	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
+	ContextTimeout = viper.GetDuration("CONTEXT_TIMEOUT")
+
 	return
 }
 
 func setDefaultConfig() {
+	// Application defaults
 	viper.SetDefault("APP_PORT", 8080)
-	viper.SetDefault("CONTEXT_TIMEOUT", 5)
+	viper.SetDefault("APP_ENV", "local")
+	viper.SetDefault("CONTEXT_TIMEOUT", "5s")
 
+	// CORS defaults
 	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
 	viper.SetDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
 
+	// PostgreSQL defaults
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("POSTGRES_MAX_IDLE_CONNECTIONS", 10)
-	viper.SetDefault("POSTGRES_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("POSTGRES_CONN_MAX_LIFETIME", "300s")
 	viper.SetDefault("POSTGRES_INSERT_BATCH_SIZE", 100)
 
+	// MySQL defaults
 	viper.SetDefault("MYSQL_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("MYSQL_MAX_IDLE_CONNECTIONS", 10)
-	viper.SetDefault("MYSQL_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("MYSQL_CONN_MAX_LIFETIME", "300s")
 	viper.SetDefault("MYSQL_INSERT_BATCH_SIZE", 100)
 
+	// MongoDB defaults
 	viper.SetDefault("MONGO_MIN_CONN_POOL_SIZE", 2)
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
 	viper.SetDefault("MONGO_INSERT_BATCH_SIZE", 100)
+
+	// HTTP Server defaults (in seconds)
+	viper.SetDefault("HTTP_SERVER_READ_TIMEOUT", "5s")
+	viper.SetDefault("HTTP_SERVER_READ_HEADER_TIMEOUT", "2s")
+	viper.SetDefault("HTTP_SERVER_WRITE_TIMEOUT", "10s")
+	viper.SetDefault("HTTP_SERVER_IDLE_TIMEOUT", "120s")
+
+	// HTTP Client defaults
+	viper.SetDefault("HTTP_CLIENT_RETRY_COUNT", 1)
+	viper.SetDefault("HTTP_CLIENT_RETRY_WAIT_TIME", "1s")
+
+	// Circuit Breaker defaults
+	viper.SetDefault("CIRCUIT_BREAKER_MIN_REQUESTS", 3)
+	viper.SetDefault("CIRCUIT_BREAKER_FAILURE_RATIO", 0.5)
+	viper.SetDefault("CIRCUIT_BREAKER_TIMEOUT", "60s")
+	viper.SetDefault("CIRCUIT_BREAKER_MAX_REQUESTS", 1)
+
+	// Rate Limiter defaults
+	viper.SetDefault("RATE_LIMITER_SINGLE_LIMIT", 60)
+	viper.SetDefault("RATE_LIMITER_SINGLE_DURATION", "60s")
+	viper.SetDefault("RATE_LIMITER_GLOBAL_LIMIT", 1000)
+	viper.SetDefault("RATE_LIMITER_GLOBAL_DURATION", "60s")
+	viper.SetDefault("RATE_LIMITER_IDEMPOTENCY_TTL", "300s")
+
+	// Retry defaults
+	viper.SetDefault("RETRY_MAX_RETRIES", 5)
+	viper.SetDefault("RETRY_INITIAL_BACKOFF", "1s")
+	viper.SetDefault("RETRY_MAX_BACKOFF", "30s")
 }
