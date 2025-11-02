@@ -20,7 +20,7 @@ type baseRepo[D any, I any, E database.Entity] struct {
 	dbSlave  *mongo.Database
 }
 
-func NewBaseRepo[D any, I any, E database.Entity](dbConn *mongoConnection) database.BaseRepository[D, I, E] {
+func NewBaseRepository[D any, I any, E database.Entity](dbConn *mongoConnection) database.BaseRepository[D, I, E] {
 	return &baseRepo[D, I, E]{
 		dbMaster: dbConn.Master,
 		dbSlave:  dbConn.Slave,
