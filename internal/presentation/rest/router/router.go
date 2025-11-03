@@ -43,7 +43,7 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 	// Internal Middleware
 	router.Use(middleware.ContextTimeoutHandler())
 	router.Use(middleware.RequestIdHandler())
-	router.Use(middleware.IdempotencyHandler(cacheClient, config.RateLimiterConfig.IdempotencyTTL))
+	router.Use(middleware.IdempotencyHandler(cacheClient, config.IdempotencyDuration))
 	router.Use(middleware.ErrorHandler())
 
 	router.Use(gin.Recovery())
@@ -71,7 +71,11 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		{
 			orders.POST(
 				"",
-				middleware.RateLimiterHandler(cacheClient, config.RateLimiterConfig.SingleLimit, config.RateLimiterConfig.SingleDuration, middleware.SingleLimiter),
+				middleware.RateLimiterHandler(cacheClient, middleware.RateLimitConfig{
+					Limit: config.RateLimiterConfig.SingleLimit,
+					TTL:   config.RateLimiterConfig.SingleDuration,
+					Mode:  middleware.SingleLimiter,
+				}),
 				orderHandler.Create,
 			)
 		}

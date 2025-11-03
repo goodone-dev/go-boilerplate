@@ -17,7 +17,13 @@ const (
 	GlobalLimiter RateLimitMode = "global"
 )
 
-func RateLimiterHandler(cache cache.Cache, limit int, ttl time.Duration, mode RateLimitMode) gin.HandlerFunc {
+type RateLimitConfig struct {
+	Limit int
+	TTL   time.Duration
+	Mode  RateLimitMode
+}
+
+func RateLimiterHandler(cache cache.Cache, config RateLimitConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
@@ -27,7 +33,7 @@ func RateLimiterHandler(cache cache.Cache, limit int, ttl time.Duration, mode Ra
 		}()
 
 		key := fmt.Sprintf("rate_limit:%s", c.ClientIP())
-		if mode == SingleLimiter {
+		if config.Mode == SingleLimiter {
 			key = fmt.Sprintf("%s:%s %s", key, c.Request.Method, c.Request.URL.Path)
 		}
 
@@ -38,7 +44,7 @@ func RateLimiterHandler(cache cache.Cache, limit int, ttl time.Duration, mode Ra
 			return
 		}
 
-		if val.ToInt() >= limit {
+		if val.ToInt() >= config.Limit {
 			c.Error(htterror.NewTooManyRequestError("rate limit exceeded, please try again later"))
 			c.Abort()
 			return
@@ -51,7 +57,7 @@ func RateLimiterHandler(cache cache.Cache, limit int, ttl time.Duration, mode Ra
 			return
 		}
 
-		err = cache.Expire(ctx, key, ttl)
+		err = cache.Expire(ctx, key, config.TTL)
 		if err != nil {
 			c.Error(err)
 			c.Abort()

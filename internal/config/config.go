@@ -20,6 +20,7 @@ var HttpServerConfig HttpServerConfigMap
 var HttpClientConfig HttpClientConfigMap
 var CircuitBreakerConfig CircuitBreakerConfigMap
 var RateLimiterConfig RateLimiterConfigMap
+var IdempotencyDuration time.Duration
 var RetryConfig RetryConfigMap
 
 type Environment string
@@ -162,7 +163,6 @@ type RateLimiterConfigMap struct {
 	SingleDuration time.Duration `mapstructure:"RATE_LIMITER_SINGLE_DURATION"`
 	GlobalLimit    int           `mapstructure:"RATE_LIMITER_GLOBAL_LIMIT"`
 	GlobalDuration time.Duration `mapstructure:"RATE_LIMITER_GLOBAL_DURATION"`
-	IdempotencyTTL time.Duration `mapstructure:"RATE_LIMITER_IDEMPOTENCY_TTL"`
 }
 
 type RetryConfigMap struct {
@@ -228,6 +228,7 @@ func Load() (err error) {
 	}
 
 	ContextTimeout = viper.GetDuration("CONTEXT_TIMEOUT")
+	IdempotencyDuration = viper.GetDuration("IDEMPOTENCY_DURATION")
 
 	return
 }
@@ -282,7 +283,9 @@ func setDefaultConfig() {
 	viper.SetDefault("RATE_LIMITER_SINGLE_DURATION", "60s")
 	viper.SetDefault("RATE_LIMITER_GLOBAL_LIMIT", 1000)
 	viper.SetDefault("RATE_LIMITER_GLOBAL_DURATION", "60s")
-	viper.SetDefault("RATE_LIMITER_IDEMPOTENCY_TTL", "300s")
+
+	// Idempotency defaults
+	viper.SetDefault("IDEMPOTENCY_DURATION", "300s")
 
 	// Retry defaults
 	viper.SetDefault("RETRY_MAX_RETRIES", 5)
