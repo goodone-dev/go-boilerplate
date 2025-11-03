@@ -56,20 +56,21 @@ func (c *redisClient) Ping(ctx context.Context) (err error) {
 	return c.client.Ping(ctx).Err()
 }
 
-func (c *redisClient) Get(ctx context.Context, key string) (res string, err error) {
+func (c *redisClient) Get(ctx context.Context, key string) (res *cache.CacheValue, err error) {
 	ctx, span := tracer.Start(ctx, key)
 	defer func() {
 		span.Stop(err, res)
 	}()
 
-	res, err = c.client.Get(ctx, key).Result()
+	str, err := c.client.Get(ctx, key).Result()
 	if err == redis.Nil {
-		return "", nil
+		return nil, nil
 	} else if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return
+	val := cache.CacheValue(str)
+	return &val, nil
 }
 
 func (c *redisClient) Set(ctx context.Context, key string, val any, ttl time.Duration) (err error) {
@@ -133,6 +134,15 @@ func (c *redisClient) DecrBy(ctx context.Context, key string, value int64) (res 
 	}()
 
 	return c.client.DecrBy(ctx, key, value).Result()
+}
+
+func (c *redisClient) Expire(ctx context.Context, key string, ttl time.Duration) (err error) {
+	ctx, span := tracer.Start(ctx, key, ttl)
+	defer func() {
+		span.Stop(err)
+	}()
+
+	return c.client.ExpireNX(ctx, key, ttl).Err()
 }
 
 func (c *redisClient) Shutdown(ctx context.Context) (err error) {

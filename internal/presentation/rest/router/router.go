@@ -41,9 +41,10 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// Internal Middleware
-	router.Use(middleware.ErrorMiddleware())
-	router.Use(middleware.TimeoutMiddleware())
-	router.Use(middleware.ResponseMiddleware())
+	router.Use(middleware.ContextTimeoutHandler())
+	router.Use(middleware.RequestIdHandler())
+	router.Use(middleware.IdempotencyHandler(cacheClient, config.RateLimiterConfig.IdempotencyTTL))
+	router.Use(middleware.ErrorHandler())
 
 	router.Use(gin.Recovery())
 
@@ -70,8 +71,7 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		{
 			orders.POST(
 				"",
-				middleware.SingleLimiterMiddleware(cacheClient, config.RateLimiterConfig.SingleLimit, config.RateLimiterConfig.SingleDuration),
-				middleware.IdempotencyMiddleware(cacheClient, config.RateLimiterConfig.IdempotencyTTL),
+				middleware.RateLimiterHandler(cacheClient, config.RateLimiterConfig.SingleLimit, config.RateLimiterConfig.SingleDuration, middleware.SingleLimiter),
 				orderHandler.Create,
 			)
 		}

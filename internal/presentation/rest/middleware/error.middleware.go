@@ -11,7 +11,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
-func ErrorMiddleware() gin.HandlerFunc {
+func ErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
