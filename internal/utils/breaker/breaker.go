@@ -1,12 +1,11 @@
 package breaker
 
 import (
-	"github.com/go-resty/resty/v2"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/sony/gobreaker/v2"
 )
 
-func NewHttpBreaker(name string) *gobreaker.CircuitBreaker[*resty.Response] {
+func NewCircuitBreaker[T any](name string) *gobreaker.CircuitBreaker[T] {
 	setting := gobreaker.Settings{
 		Name:        name,
 		MaxRequests: uint32(config.CircuitBreakerConfig.MaxRequests),
@@ -17,5 +16,5 @@ func NewHttpBreaker(name string) *gobreaker.CircuitBreaker[*resty.Response] {
 		},
 	}
 
-	return gobreaker.NewCircuitBreaker[*resty.Response](setting)
+	return gobreaker.NewCircuitBreaker[T](setting)
 }

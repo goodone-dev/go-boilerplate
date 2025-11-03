@@ -47,7 +47,7 @@ func (c *customHttpClient) WithBreaker() (*customHttpClient, error) {
 	methodName := parseMethodName(funcName)
 
 	if _, ok := breakerMap[methodName]; !ok {
-		breakerMap[methodName] = breaker.NewHttpBreaker(methodName)
+		breakerMap[methodName] = breaker.NewCircuitBreaker[*resty.Response](methodName)
 	}
 
 	c.Request.breaker = breakerMap[methodName]
