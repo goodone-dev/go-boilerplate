@@ -8,8 +8,8 @@ import (
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -69,7 +69,7 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
 	}
 
-	db, err := database.RetryWithBackoff(ctx, "PostgreSQL connection", func() (*gorm.DB, error) {
+	db, err := retry.RetryWithBackoff(ctx, "PostgreSQL connection", func() (*gorm.DB, error) {
 		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
@@ -89,7 +89,7 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 	sqlDB.SetMaxIdleConns(config.PostgresConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.PostgresConfig.ConnMaxLifetime)
 
-	_, err = database.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
+	_, err = retry.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
 		return nil, sqlDB.Ping()
 	})
 	if err != nil {

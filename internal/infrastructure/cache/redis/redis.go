@@ -10,6 +10,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -34,7 +35,11 @@ func createClient(ctx context.Context) (client *redis.Client) {
 	}
 
 	client = redis.NewClient(options)
-	if _, err := client.Ping(ctx).Result(); err != nil {
+
+	_, err := retry.RetryWithBackoff(ctx, "Redis connection test", func() (any, error) {
+		return nil, client.Ping(ctx).Err()
+	})
+	if err != nil {
 		logger.Fatal(ctx, err, "❌ Failed to establish Redis connection")
 	}
 

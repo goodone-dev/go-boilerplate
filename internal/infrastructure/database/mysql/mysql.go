@@ -9,8 +9,8 @@ import (
 	migratemysql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
@@ -67,7 +67,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
 	}
 
-	db, err := database.RetryWithBackoff(ctx, "MySQL connection", func() (*gorm.DB, error) {
+	db, err := retry.RetryWithBackoff(ctx, "MySQL connection", func() (*gorm.DB, error) {
 		return gorm.Open(mysql.New(mysqlConfig), gormConfig)
 	})
 	if err != nil {
@@ -87,7 +87,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 	sqlDB.SetMaxIdleConns(config.MySQLConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.MySQLConfig.ConnMaxLifetime)
 
-	_, err = database.RetryWithBackoff(ctx, "MySQL connection test", func() (any, error) {
+	_, err = retry.RetryWithBackoff(ctx, "MySQL connection test", func() (any, error) {
 		return nil, sqlDB.Ping()
 	})
 	if err != nil {
