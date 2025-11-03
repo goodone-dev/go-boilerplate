@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	l "log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -36,10 +37,10 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// ========== Environment Setup ==========
+	// ========== Configuration Setup ==========
 	err := config.Load()
 	if err != nil {
-		panic(err)
+		l.Fatal("❌ Could not load environment variables", err)
 	}
 
 	// ========== Observability Setup ==========

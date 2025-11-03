@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"fmt"
+	l "log"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -24,7 +25,7 @@ func NewProvider(ctx context.Context) *log.LoggerProvider {
 		otlploghttp.WithInsecure(),
 	)
 	if err != nil {
-		return nil
+		l.Fatal("❌ Could not create logger exporter", err)
 	}
 
 	loggerProvider := log.NewLoggerProvider(
