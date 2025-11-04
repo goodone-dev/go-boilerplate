@@ -24,16 +24,16 @@ func IdempotencyHandler(cache cache.Cache, duration time.Duration) gin.HandlerFu
 	return func(c *gin.Context) {
 		var err error
 
-		ctx, span := tracer.Start(c.Request.Context())
-		defer func() {
-			span.Stop(err)
-		}()
-
 		idempotencyKey := c.GetHeader("X-Idempotency-Key")
 		if idempotencyKey == "" {
 			c.Next()
 			return
 		}
+
+		ctx, span := tracer.Start(c.Request.Context())
+		defer func() {
+			span.Stop(err)
+		}()
 
 		key := fmt.Sprintf("idempotency:%s:%s %s", idempotencyKey, c.Request.Method, c.Request.URL.Path)
 		val, err := cache.Get(ctx, key)
