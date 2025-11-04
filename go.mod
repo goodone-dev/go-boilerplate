@@ -5,7 +5,7 @@ go 1.24.9
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/gin-contrib/cors v1.7.6
-	github.com/gin-contrib/gzip v1.2.4
+	github.com/gin-contrib/gzip v1.2.5
 	github.com/gin-contrib/secure v1.1.2
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-playground/locales v0.14.1
