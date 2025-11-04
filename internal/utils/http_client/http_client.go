@@ -24,7 +24,7 @@ var httpClient = resty.New().
 
 var breakerMap = make(map[string]*gobreaker.CircuitBreaker[*resty.Response])
 
-type customHttpClient struct {
+type CustomHttpClient struct {
 	Request customHttpRequest
 }
 
@@ -33,15 +33,15 @@ type customHttpRequest struct {
 	breaker *gobreaker.CircuitBreaker[*resty.Response]
 }
 
-func NewHttpClient() *customHttpClient {
-	return &customHttpClient{
+func NewHttpClient() *CustomHttpClient {
+	return &CustomHttpClient{
 		Request: customHttpRequest{
 			Request: httpClient.NewRequest(),
 		},
 	}
 }
 
-func (c *customHttpClient) WithBreaker() (*customHttpClient, error) {
+func (c *CustomHttpClient) WithBreaker() (*CustomHttpClient, error) {
 	pc, _, _, _ := runtime.Caller(1)
 	funcName := runtime.FuncForPC(pc).Name()
 	methodName := parseMethodName(funcName)

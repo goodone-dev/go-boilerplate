@@ -16,10 +16,14 @@ type HttpbinIntegration interface {
 	GetSuccessStatus(ctx context.Context) (data any, err error)
 }
 
-type httpbinIntegration struct{}
+type httpbinIntegration struct {
+	http *httpclient.CustomHttpClient
+}
 
 func NewHttpBinIntegration() HttpbinIntegration {
-	return &httpbinIntegration{}
+	return &httpbinIntegration{
+		http: httpclient.NewHttpClient(),
+	}
 }
 
 func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
@@ -28,7 +32,7 @@ func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err 
 		span.Stop(err, body)
 	}()
 
-	http, err := httpclient.NewHttpClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +58,7 @@ func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, er
 		span.Stop(err, body)
 	}()
 
-	http, err := httpclient.NewHttpClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}
