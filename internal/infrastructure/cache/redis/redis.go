@@ -11,6 +11,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -19,6 +20,8 @@ type redisClient struct {
 }
 
 func createClient(ctx context.Context) (client *redis.Client) {
+	redis.SetLogger(&noLogger{})
+
 	options := &redis.Options{
 		Addr: fmt.Sprintf("%v:%v", config.RedisConfig.Host, config.RedisConfig.Port),
 		DB:   config.RedisConfig.DB,
@@ -41,6 +44,10 @@ func createClient(ctx context.Context) (client *redis.Client) {
 	})
 	if err != nil {
 		logger.Fatal(ctx, err, "❌ Failed to establish Redis connection")
+	}
+
+	if err := redisotel.InstrumentTracing(client); err != nil {
+		logger.Fatal(ctx, err, "❌ Failed to instrument Redis connection")
 	}
 
 	return client
@@ -153,3 +160,8 @@ func (c *redisClient) Expire(ctx context.Context, key string, ttl time.Duration)
 func (c *redisClient) Shutdown(ctx context.Context) (err error) {
 	return c.client.Close()
 }
+
+// noLogger is a no-op logger that implements redis internal.Logging interface
+type noLogger struct{}
+
+func (n *noLogger) Printf(_ context.Context, _ string, _ ...any) {}
