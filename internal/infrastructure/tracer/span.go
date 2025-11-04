@@ -108,6 +108,9 @@ func parseSpanName(funcName string) string {
 
 		re = regexp.MustCompile(`([^.]+)$`)
 		typeName = re.FindString(typeName)
+		if len(typeName) > 0 {
+			typeName = strings.ToUpper(string(typeName[0])) + typeName[1:]
+		}
 
 		return typeName + "." + methodName
 	}
