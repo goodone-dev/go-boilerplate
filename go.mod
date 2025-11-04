@@ -20,7 +20,7 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.16.0
 	github.com/redis/go-redis/v9 v9.16.0
 	github.com/rs/zerolog v1.34.0
-	github.com/sony/gobreaker/v2 v2.2.1
+	github.com/sony/gobreaker/v2 v2.3.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	go.mongodb.org/mongo-driver/v2 v2.3.1
