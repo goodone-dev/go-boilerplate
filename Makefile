@@ -1,116 +1,121 @@
 setup:
 	@chmod -v +x .dev/script/*.sh
 	@echo "✅ All .sh files in .dev/script directory are executable"
-	@.dev/script/install_air.sh -f -d
-	@.dev/script/install_docker_compose.sh -f -d
-	@.dev/script/install_test_coverage.sh -f -d
-	@.dev/script/install_golang_migrate.sh -f -d
-	@.dev/script/install_mockery.sh -f -d
-	@.dev/script/install_pre_commit.sh -f -d
+	@.dev/script/install-air.sh -f -d
+	@.dev/script/install-docker.sh -f -d
+	@.dev/script/install-test-coverage.sh -f -d
+	@.dev/script/install-migrate.sh -f -d
+	@.dev/script/install-mockery.sh -f -d
+	@.dev/script/install-pre-commit.sh -f -d
 
-install_air:
-	@.dev/script/install_air.sh
+install-air:
+	@.dev/script/install-air.sh
 
-install_docker_compose:
-	@.dev/script/install_docker_compose.sh
+install-docker:
+	@.dev/script/install-docker.sh
 
-install_test_coverage:
-	@.dev/script/install_test_coverage.sh
+install-test-coverage:
+	@.dev/script/install-test-coverage.sh
 
-install_golang_migrate:
-	@.dev/script/install_golang_migrate.sh
+install-migrate:
+	@.dev/script/install-migrate.sh
 
-install_mockery:
-	@.dev/script/install_mockery.sh
+install-mockery:
+	@.dev/script/install-mockery.sh
 
-install_pre_commit:
-	@.dev/script/install_pre_commit.sh
+install-pre-commit:
+	@.dev/script/install-pre-commit.sh
 
-migration: install_golang_migrate
-	@.dev/script/migration.sh -n $(NAME) -d $(DRIVER)
+db-migrate-new: install-migrate
+	@.dev/script/db-migrate-new.sh -n $(NAME) -d $(DRIVER)
 
-migration_up: install_golang_migrate
-	@.dev/script/migration_up.sh -d $(DRIVER)
+db-migrate-up: install-migrate
+	@.dev/script/db-migrate-up.sh -d $(DRIVER)
 
-migration_down: install_golang_migrate
-	@.dev/script/migration_down.sh -d $(DRIVER)
+db-migrate-down: install-migrate
+	@.dev/script/db-migrate-down.sh -d $(DRIVER)
 
-mock: install_mockery
+mock: install-mockery
 	@.dev/script/mock.sh
 
-mock_add: install_mockery
-	@.dev/script/mock_add.sh -n $(NAME)
+mock-add: install-mockery
+	@.dev/script/mock-add.sh -n $(NAME)
 
-test: install_test_coverage
+test: install-test-coverage
 	@.dev/script/test.sh
 
-seeder: install_golang_migrate
-	@.dev/script/seeder.sh -n $(NAME) -d $(DRIVER)
+db-seed-new: install-migrate
+	@.dev/script/db-seed-new.sh -n $(NAME) -d $(DRIVER)
 
-seeder_up: install_golang_migrate
-	@.dev/script/seeder_up.sh -d $(DRIVER)
+db-seed-up: install-migrate
+	@.dev/script/db-seed-up.sh -d $(DRIVER)
 
 run:
 	@.dev/script/run.sh
 
-watch: install_air
+watch: install-air
 	@.dev/script/run.sh -w
 
-up: install_docker_compose
-	@.dev/script/docker_up.sh
+docker-up: install-docker
+	@.dev/script/docker-up.sh
 
-down: install_docker_compose
-	@.dev/script/docker_down.sh
+docker-down: install-docker
+	@.dev/script/docker-down.sh
 
-stop: install_docker_compose
-	@.dev/script/docker_stop.sh
+docker-stop: install-docker
+	@.dev/script/docker-stop.sh
 
-generate_repository:
-	@.dev/script/generate_repository.sh $(NAME)
+gen-repo:
+	@.dev/script/gen-repo.sh $(NAME)
 
-generate_usecase:
-	@.dev/script/generate_usecase.sh $(NAME)
+gen-usecase:
+	@.dev/script/gen-usecase.sh $(NAME)
 
-generate_handler:
-	@.dev/script/generate_handler.sh $(NAME)
+gen-handler:
+	@.dev/script/gen-handler.sh $(NAME)
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
-	@echo "Migration targets:"
-	@echo "  migration NAME=<migration_name> DRIVER=<database_name>    	Create a new migration file"
-	@echo "  migration_up DRIVER=<database_name>                       	Run all migrations"
-	@echo "  migration_down DRIVER=<database_name>                     	Rollback the last migration"
-	@echo ""
-	@echo "Seeder targets:"
-	@echo "  seeder NAME=<seeder_name> DRIVER=<database_name>        	Create a new seeder file"
-	@echo "  seeder_up DRIVER=<database_name>                         	Apply all seeders"
+	@echo "Setup targets:"
+	@echo "  setup                                             Setup development environment"
 	@echo ""
 	@echo "Development targets:"
-	@echo "  setup                                              		Make all .sh files in .dev directory executable"
-	@echo "  run                                               		Run the application"
-	@echo "  watch                                             		Run the application with live reloading"
-	@echo "  generate_repository NAME=<entity_name>            		Generate repository"
-	@echo "  generate_usecase NAME=<usecase_name>              		Generate usecase"
-	@echo "  generate_handler NAME=<handler_name>              		Generate handler"
-	@echo ""
-	@echo "Test targets:"
-	@echo "  test                               									Run tests and verify coverage thresholds (configured in .testcoverage.yml)"
-	@echo ""
-	@echo "Mock targets:"
-	@echo "  mock                                              		Generate mocks"
-	@echo "  mock_add NAME=<interface_name>                     		Add mock config"
+	@echo "  run                                               Run application"
+	@echo "  watch                                             Run application with live reload"
 	@echo ""
 	@echo "Docker targets:"
-	@echo "  up                                               		Start the application with docker-compose"
-	@echo "  down                                             		Remove the application with docker-compose"
-	@echo "  stop                                             		Stop the application with docker-compose"
+	@echo "  docker-up                                         Start containers"
+	@echo "  docker-down                                       Stop and remove containers"
+	@echo "  docker-stop                                       Stop containers"
+	@echo ""
+	@echo "Layer generation targets:"
+	@echo "  gen-repo NAME=<name>                              Generate repository layer"
+	@echo "  gen-usecase NAME=<name>                           Generate usecase layer"
+	@echo "  gen-handler NAME=<name>                           Generate handler layer"
+	@echo ""
+	@echo "Migration targets:"
+	@echo "  db-migrate-new NAME=<name> DRIVER=<driver>        Create new migration file"
+	@echo "  db-migrate-up DRIVER=<driver>                     Apply all pending migrations"
+	@echo "  db-migrate-down DRIVER=<driver>                   Rollback last migration"
+	@echo ""
+	@echo "Seeder targets:"
+	@echo "  db-seed-new NAME=<name> DRIVER=<driver>           Create new seeder file"
+	@echo "  db-seed-up DRIVER=<driver>                        Apply all seeders"
+	@echo ""
+	@echo "Test targets:"
+	@echo "  test                                              Run tests with coverage check"
+	@echo ""
+	@echo "Mock targets:"
+	@echo "  mock                                              Generate all mocks"
+	@echo "  mock-add NAME=<interface>                         Add new mock configuration"
 
-.PHONY: help setup run watch \
-		migration migration_up migration_down \
-		seeder seeder_up \
+.PHONY: help setup \
+		install-air install-docker install-test-coverage install-migrate install-mockery install-pre-commit \
+		run watch \
+		docker-up docker-down docker-stop \
+		gen-repo gen-usecase gen-handler \
+		db-migrate-new db-migrate-up db-migrate-down \
+		db-seed-new db-seed-up \
 		test \
-		mock mock_add \
-		up down stop \
-		generate_repository generate_usecase generate_handler \
-		install_air install_docker_compose install_test_coverage install_golang_migrate install_mockery install_pre_commit
+		mock mock-add
