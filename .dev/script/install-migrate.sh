@@ -23,7 +23,7 @@ if ! command -v migrate &> /dev/null; then
             install_golang_migrate
         else
             echo "⏸️ Installation cancelled. To install 'migrate' later, run:"
-            echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+            echo "  go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
             exit 1
         fi
     fi
@@ -35,13 +35,13 @@ fi
 
 install_golang_migrate() {
     echo "🔧 Installing 'golang-migrate'..."
-    go install -tags "$DB_DRIVER" github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+    go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
     if [ $? -eq 0 ]; then
         echo "✅ 'migrate' installed successfully!"
     else
         echo "❌ Failed to install 'migrate'. Please try installing manually:"
-        echo "  go install -tags '$DB_DRIVER' github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
+        echo "  go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest"
         exit 1
     fi
 }
