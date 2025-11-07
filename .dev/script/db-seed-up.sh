@@ -80,7 +80,7 @@ esac
 
 # Check if seeder directory exists
 if [ ! -d "$SEEDER_DIR" ]; then
-    echo "Error: Seeder directory not found: $SEEDER_DIR"
+    echo "❌ Error: Seeder directory not found: $SEEDER_DIR"
     exit 1
 fi
 
