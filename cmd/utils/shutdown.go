@@ -27,7 +27,6 @@ func GracefulShutdown(ctx context.Context, services ...Service) {
 
 			if err := s.Shutdown(ctx); err != nil {
 				logger.Errorf(ctx, err, "❌ %s forced to shutdown due to error", packageName)
-				return
 			}
 
 			logger.Infof(ctx, "✅ %s shutdown gracefully", packageName)
