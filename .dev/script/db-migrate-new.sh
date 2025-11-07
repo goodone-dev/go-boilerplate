@@ -37,12 +37,15 @@ fi
 case $DB_DRIVER in
     postgres|postgresql)
         MIGRATION_DIR="./migrations/postgres"
+        MIGRATION_EXT="sql"
         ;;
     mysql)
         MIGRATION_DIR="./migrations/mysql"
+        MIGRATION_EXT="sql"
         ;;
     mongodb)
         MIGRATION_DIR="./migrations/mongodb"
+        MIGRATION_EXT="json"
         ;;
     *)
         echo "❌ Error: Unsupported database driver: $DB_DRIVER"
@@ -55,7 +58,7 @@ mkdir -p $MIGRATION_DIR
 
 # Create migration files
 echo "📝 Creating migration files for $MIGRATION_NAME..."
-migrate create -ext sql -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
+migrate create -ext $MIGRATION_EXT -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
 
 # Check if migration files created successfully
 if [ $? -eq 0 ]; then

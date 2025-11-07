@@ -37,12 +37,15 @@ fi
 case $DB_DRIVER in
     postgres|postgresql)
         SEEDER_DIR="./seeders/postgres"
+        SEEDER_EXT="sql"
         ;;
     mysql)
         SEEDER_DIR="./seeders/mysql"
+        SEEDER_EXT="sql"
         ;;
     mongodb)
         SEEDER_DIR="./seeders/mongodb"
+        SEEDER_EXT="json"
         ;;
     *)
         echo "❌ Error: Unsupported database driver: $DB_DRIVER"
@@ -55,7 +58,7 @@ mkdir -p $SEEDER_DIR
 
 # Create seeder files
 echo "🌱 Creating seeder files for $SEEDER_NAME..."
-migrate create -ext sql -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
+migrate create -ext $SEEDER_EXT -dir $SEEDER_DIR -format "20060102150405" -tz "Asia/Jakarta" $SEEDER_NAME
 
 # Check if seeder files created successfully
 if [ $? -eq 0 ]; then
