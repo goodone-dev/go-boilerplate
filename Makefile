@@ -1,12 +1,12 @@
 setup:
 	@chmod -v +x .dev/script/*.sh
 	@echo "✅ All .sh files in .dev/script directory are executable"
-	@.dev/script/install-air.sh -f -d
-	@.dev/script/install-docker.sh -f -d
-	@.dev/script/install-test-coverage.sh -f -d
-	@.dev/script/install-migrate.sh -f -d
-	@.dev/script/install-mockery.sh -f -d
-	@.dev/script/install-pre-commit.sh -f -d
+	@.dev/script/install-air.sh -f -v
+	@.dev/script/install-docker.sh -f -v
+	@.dev/script/install-test-coverage.sh -f -v
+	@.dev/script/install-migrate.sh -f -v
+	@.dev/script/install-mockery.sh -f -v
+	@.dev/script/install-pre-commit.sh -f -v
 
 install-air:
 	@.dev/script/install-air.sh

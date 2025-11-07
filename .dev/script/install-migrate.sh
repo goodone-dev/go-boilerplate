@@ -1,12 +1,12 @@
 #!/bin/bash
 
 FORCED=false
-DEBUG=false
+VERBOSE=false
 
-while getopts ":fd" opt; do
+while getopts ":fv" opt; do
     case $opt in
         f) FORCED=true;;
-        d) DEBUG=true;;
+        v) VERBOSE=true;;
     esac
 done
 
@@ -28,7 +28,7 @@ if ! command -v migrate &> /dev/null; then
         fi
     fi
 else
-    if [ "$DEBUG" = true ]; then
+    if [ "$VERBOSE" = true ]; then
         echo "✅ 'migrate' is already installed."
     fi
 fi
