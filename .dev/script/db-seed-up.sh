@@ -2,8 +2,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: make seeder_up DRIVER=<database_driver>"
-    echo "Example: make seeder_up DRIVER=postgres"
+    echo "Usage: make db-seed-up DRIVER=<database_driver>"
+    echo "Example: make db-seed-up DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"

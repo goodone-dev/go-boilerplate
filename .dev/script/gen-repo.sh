@@ -22,8 +22,8 @@ domain_name() {
 
 # Check if name is provided
 if [ -z "$1" ]; then
-    echo "Usage: make generate_repository <entity_name>"
-    echo "Example: make generate_repository CustomerAddress (PascalCase)"
+    echo "Usage: make gen-repo NAME=<entity_name>"
+    echo "Example: make gen-repo NAME=CustomerAddress"
     exit 1
 fi
 

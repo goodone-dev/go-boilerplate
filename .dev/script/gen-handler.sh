@@ -22,8 +22,8 @@ domain_name() {
 
 # Check if name is provided
 if [ -z "$1" ]; then
-    echo "Usage: make generate_handler <handler_name>"
-    echo "Example: make generate_handler CustomerAddress (PascalCase)"
+    echo "Usage: make gen-handler NAME=<handler_name>"
+    echo "Example: make gen-handler NAME=CustomerAddress"
     exit 1
 fi
 

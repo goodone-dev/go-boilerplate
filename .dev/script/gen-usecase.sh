@@ -22,8 +22,8 @@ domain_name() {
 
 # Check if name is provided
 if [ -z "$1" ]; then
-    echo "Usage: make generate_usecase <usecase_name>"
-    echo "Example: make generate_usecase CustomerAddress (PascalCase)"
+    echo "Usage: make gen-usecase NAME=<usecase_name>"
+    echo "Example: make gen-usecase NAME=CustomerAddress"
     exit 1
 fi
 

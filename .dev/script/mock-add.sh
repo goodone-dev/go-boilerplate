@@ -1,8 +1,8 @@
 #!/bin/bash
 
 show_usage() {
-    echo "Usage: make mock_add NAME=<interface_name>"
-    echo "Example: make mock_add NAME=CustomerRepository"
+    echo "Usage: make mock-add NAME=<interface_name>"
+    echo "Example: make mock-add NAME=CustomerRepository"
     exit 1
 }
 

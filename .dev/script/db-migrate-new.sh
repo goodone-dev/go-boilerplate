@@ -2,8 +2,8 @@
 
 # Function to show usage
 show_usage() {
-    echo "Usage: make migration NAME=<migration_name> DRIVER=<database_driver>"
-    echo "Example: make migration NAME=create_users_table DRIVER=postgres"
+    echo "Usage: make db-migrate-new NAME=<migration_name> DRIVER=<database_driver>"
+    echo "Example: make db-migrate-new NAME=create_users_table DRIVER=postgres"
     echo "
 Available database drivers:"
     echo "  - postgres    : PostgreSQL database"
