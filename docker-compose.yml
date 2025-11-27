@@ -119,6 +119,6 @@ services:
       - mailpit
 
 volumes:
-  postgres-data:
+  postgres_data:
   redis_data:
   rabbitmq_data:
