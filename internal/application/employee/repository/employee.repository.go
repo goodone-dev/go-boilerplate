@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type EmployeeRepository struct {
-	database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]
+type employeeRepository struct {
+	database.BaseRepository[gorm.DB, uuid.UUID, employee.Employee]
 }
 
-func NewEmployeeRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, employee.Employee]) employee.IEmployeeRepository {
-	return &EmployeeRepository{
+func NewEmployeeRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID, employee.Employee]) employee.EmployeeRepository {
+	return &employeeRepository{
 		baseRepo,
 	}
 }

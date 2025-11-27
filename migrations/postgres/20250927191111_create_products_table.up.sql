@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
 );
+
+CREATE INDEX idx_products_name ON products (name);

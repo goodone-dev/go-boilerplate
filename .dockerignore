@@ -1,0 +1,56 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Build output directories
+bin/
+pkg/
+
+# Development files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test coverage
+coverage.out
+coverage.svg
+coverage.html
+
+# Test files
+*_test.go
+
+# Version control
+.git/
+.gitignore
+
+# Documentation
+*.md
+
+# Local development directories
+tmp/
+log/

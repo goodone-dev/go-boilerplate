@@ -3,16 +3,17 @@ package mysql
 import (
 	"context"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	migratemysql "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -52,38 +53,45 @@ type mysqlConnection struct {
 	Slave  *gorm.DB
 }
 
-func Open() mysqlConnection {
+func Open(ctx context.Context) *mysqlConnection {
 	mysqlConfig := setConfig()
 
-	return mysqlConnection{
-		Master: open(mysqlConfig.Master),
-		Slave:  open(mysqlConfig.Slave),
+	return &mysqlConnection{
+		Master: open(ctx, mysqlConfig.Master),
+		Slave:  open(ctx, mysqlConfig.Slave),
 	}
 }
 
-func open(mysqlConfig mysql.Config) *gorm.DB {
-	db, err := gorm.Open(mysql.New(mysqlConfig), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
+	gormConfig := &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	}
+
+	db, err := retry.RetryWithBackoff(ctx, "MySQL connection", func() (*gorm.DB, error) {
+		return gorm.Open(mysql.New(mysqlConfig), gormConfig)
 	})
 	if err != nil {
-		log.Fatalf("❌ Could not to open MySQL connection: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to establish MySQL connection after retries")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		log.Fatalf("❌ Could not to use tracing plugin for MySQL: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to initialize MySQL tracing plugin")
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("❌ Could not to get MySQL connection: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to access MySQL connection pool")
 	}
 
 	sqlDB.SetMaxOpenConns(config.MySQLConfig.MaxOpenConnections)
 	sqlDB.SetMaxIdleConns(config.MySQLConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.MySQLConfig.ConnMaxLifetime)
 
-	if err = sqlDB.Ping(); err != nil {
-		log.Fatalf("❌ Could not to ping MySQL database: %v", err)
+	_, err = retry.RetryWithBackoff(ctx, "MySQL connection test", func() (any, error) {
+		return nil, sqlDB.Ping()
+	})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ MySQL connection test failed")
 	}
 
 	if !config.MySQLConfig.AutoMigrate {
@@ -92,23 +100,23 @@ func open(mysqlConfig mysql.Config) *gorm.DB {
 
 	migrateDriver, err := migratemysql.WithInstance(sqlDB, &migratemysql.Config{})
 	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for MySQL:%v", err)
+		logger.Fatal(ctx, err, "❌ Failed to initialize MySQL migration driver")
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/mysql", "mysql", migrateDriver)
 	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for MySQL:%v", err)
+		logger.Fatal(ctx, err, "❌ Failed to create migration instance from MySQL driver")
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("❌ Could not to migrate MySQL:%v", err)
+		logger.Fatal(ctx, err, "❌ MySQL migration failed")
 	}
 
 	return db
 }
 
-func (c mysqlConnection) Shutdown(ctx context.Context) error {
+func (c *mysqlConnection) Shutdown(ctx context.Context) error {
 	if err := close(c.Master); err != nil {
 		return err
 	}
@@ -127,4 +135,22 @@ func close(conn *gorm.DB) error {
 	}
 
 	return sqlDB.Close()
+}
+
+func (c *mysqlConnection) Ping(ctx context.Context) error {
+	masterDB, err := c.Master.DB()
+	if err != nil {
+		return err
+	} else if err := masterDB.Ping(); err != nil {
+		return err
+	}
+
+	slaveDB, err := c.Slave.DB()
+	if err != nil {
+		return err
+	} else if err := slaveDB.Ping(); err != nil {
+		return err
+	}
+
+	return nil
 }

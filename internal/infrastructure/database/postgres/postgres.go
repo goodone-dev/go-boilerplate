@@ -3,16 +3,17 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
@@ -54,38 +55,45 @@ type postgresConnection struct {
 	Slave  *gorm.DB
 }
 
-func Open() postgresConnection {
+func Open(ctx context.Context) *postgresConnection {
 	pgConfig := setConfig()
 
-	return postgresConnection{
-		Master: open(pgConfig.Master),
-		Slave:  open(pgConfig.Slave),
+	return &postgresConnection{
+		Master: open(ctx, pgConfig.Master),
+		Slave:  open(ctx, pgConfig.Slave),
 	}
 }
 
-func open(pgConfig postgres.Config) *gorm.DB {
-	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
+	gormConfig := &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	}
+
+	db, err := retry.RetryWithBackoff(ctx, "PostgreSQL connection", func() (*gorm.DB, error) {
+		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
-		log.Fatalf("❌ Could not to open PostgresSQL connection: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection after retries")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		log.Fatalf("❌ Could not to use tracing plugin for PostgresSQL: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL tracing plugin")
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("❌ Could not to get PostgresSQL connection: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to access PostgreSQL connection pool")
 	}
 
 	sqlDB.SetMaxOpenConns(config.PostgresConfig.MaxOpenConnections)
 	sqlDB.SetMaxIdleConns(config.PostgresConfig.MaxIdleConnections)
 	sqlDB.SetConnMaxLifetime(config.PostgresConfig.ConnMaxLifetime)
 
-	if err = sqlDB.Ping(); err != nil {
-		log.Fatalf("❌ Could not to ping PostgresSQL database: %v", err)
+	_, err = retry.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
+		return nil, sqlDB.Ping()
+	})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed")
 	}
 
 	if !config.PostgresConfig.AutoMigrate {
@@ -94,23 +102,23 @@ func open(pgConfig postgres.Config) *gorm.DB {
 
 	migrateDriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for PostgresSQL:%v", err)
+		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL migration driver")
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/postgres", "postgres", migrateDriver)
 	if err != nil {
-		log.Fatalf("❌ Could not to create migrate instance for PostgresSQL:%v", err)
+		logger.Fatal(ctx, err, "❌ Failed to create migration instance from PostgreSQL driver")
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("❌ Could not to migrate PostgresSQL:%v", err)
+		logger.Fatal(ctx, err, "❌ PostgreSQL migration failed")
 	}
 
 	return db
 }
 
-func (c postgresConnection) Shutdown(ctx context.Context) error {
+func (c *postgresConnection) Shutdown(ctx context.Context) error {
 	if err := close(c.Master); err != nil {
 		return err
 	}
@@ -129,4 +137,22 @@ func close(conn *gorm.DB) error {
 	}
 
 	return sqlDB.Close()
+}
+
+func (c *postgresConnection) Ping(ctx context.Context) error {
+	masterDB, err := c.Master.DB()
+	if err != nil {
+		return err
+	} else if err := masterDB.Ping(); err != nil {
+		return err
+	}
+
+	slaveDB, err := c.Slave.DB()
+	if err != nil {
+		return err
+	} else if err := slaveDB.Ping(); err != nil {
+		return err
+	}
+
+	return nil
 }

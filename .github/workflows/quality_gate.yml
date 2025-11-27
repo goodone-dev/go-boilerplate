@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  GO_VERSION: '1.24.2'
+  GO_VERSION: '1.24.9'
 
 jobs:
   build_check:
@@ -17,10 +17,10 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v5
         with:
-          fetch-depth: '0'
+          fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: ./.github/actions/setup
         with:
           go-version: '${{ env.GO_VERSION }}'
 
@@ -34,17 +34,17 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v5
         with:
-          fetch-depth: '0' # Number of commits to fetch. 0 indicates all history for all branches and tags.
+          fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: ./.github/actions/setup
         with:
           go-version: '${{ env.GO_VERSION }}'
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          only-new-issues: true # Show only new issues.
+          only-new-issues: true
 
   security_check:
     name: Security Check
@@ -53,10 +53,10 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v5
         with:
-          fetch-depth: '0' # Number of commits to fetch. 0 indicates all history for all branches and tags.
+          fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: ./.github/actions/setup
         with:
           go-version: '${{ env.GO_VERSION }}'
 
@@ -65,4 +65,44 @@ jobs:
         with:
           args: '-exclude=G115 -r ./...'
 
-# TODO: check unit test coverage
+  dependency_check:
+    name: Dependency Vulnerability Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: ./.github/actions/setup
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+
+      - name: Dependency Vulnerability Scanning
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: '${{ env.GO_VERSION }}'
+          go-package: ./...
+
+  test_check:
+    name: Test & Coverage Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: ./.github/actions/setup
+        with:
+          go-version: '${{ env.GO_VERSION }}'
+
+      - name: Run Tests with Coverage
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic -coverpkg=./... ./internal/application/...
+
+      - name: Check Coverage Threshold
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          config: ./.testcoverage.yml

@@ -3,19 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	l "log"
 	"net/http"
 	"os"
 	"os/signal"
-	"reflect"
-	"regexp"
-	"strings"
-	"sync"
 	"syscall"
-	"time"
 
+	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/delivery/http"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
+	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
 	orderuc "github.com/goodone-dev/go-boilerplate/internal/application/order/usecase"
 	productrepo "github.com/goodone-dev/go-boilerplate/internal/application/product/repository"
@@ -26,9 +24,10 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache/redis"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database/postgres"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer/jaeger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"
 	"github.com/google/uuid"
@@ -38,32 +37,35 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// ========== Environment Setup ==========
+	// ========== Configuration Setup ==========
 	err := config.Load()
 	if err != nil {
-		log.Fatalf("❌ Could not load config: %v", err)
+		l.Fatal("❌ Could not load environment variables", err)
 	}
 
-	// ========== Infrastructure ==========
-	postgresConn := postgres.Open()
+	// ========== Observability Setup ==========
+	loggerProvider := logger.NewProvider(ctx)
+	tracerProvider := tracer.NewProvider(ctx)
+
+	// ========== Infrastructure Setup ==========
+	postgresConn := postgres.Open(ctx)
 	redisClient := redis.NewClient(ctx)
-	tracerProvider := jaeger.NewProvider(ctx)
 	mailSender := mailsender.NewMailSender()
 
-	// ========== Repositories ==========
-	customerBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
-	customerRepo := customerrepo.NewCustomerRepo(customerBaseRepo)
-	productBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, product.Product](postgresConn)
-	productRepo := productrepo.NewProductRepo(productBaseRepo)
-	orderBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.Order](postgresConn)
-	orderRepo := orderrepo.NewOrderRepo(orderBaseRepo)
-	orderItemBaseRepo := postgres.NewBaseRepo[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
-	orderItemRepo := orderrepo.NewOrderItemRepo(orderItemBaseRepo)
+	// ========== Repositories Setup ==========
+	customerBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
+	customerRepo := customerrepo.NewCustomerRepository(customerBaseRepo)
+	productBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, product.Product](postgresConn)
+	productRepo := productrepo.NewProductRepository(productBaseRepo)
+	orderBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, order.Order](postgresConn)
+	orderRepo := orderrepo.NewOrderRepository(orderBaseRepo)
+	orderItemBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
+	orderItemRepo := orderrepo.NewOrderItemRepository(orderItemBaseRepo)
 
-	// ========== Bus ==========
+	// ========== Bus Setup ==========
 	mailBus := bus.NewBus[mail.MailSendMessage]()
 
-	// ========== Usecase ==========
+	// ========== Usecase Setup ==========
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
 	orderUsecase := orderuc.NewOrderUsecase(
 		customerRepo,
@@ -73,26 +75,30 @@ func main() {
 		mailBus,
 	)
 
-	// ========== Bus Listener ==========
+	// ========== HTTP Handler Setup ==========
+	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient)
+	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
+
+	// ========== Bus Listener Setup ==========
 	buslistener.NewBusListener(mailBus, mailUsecase)
 
 	// ========== HTTP Server Setup ==========
-	r := router.NewRouter(orderUsecase, redisClient)
+	r := router.NewRouter(healthHandler, orderHandler, redisClient)
 	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
 
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           r,
-		ReadTimeout:       5 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		IdleTimeout:       120 * time.Second,
+		ReadTimeout:       config.HttpServerConfig.ReadTimeout,
+		ReadHeaderTimeout: config.HttpServerConfig.ReadHeaderTimeout,
+		WriteTimeout:      config.HttpServerConfig.WriteTimeout,
+		IdleTimeout:       config.HttpServerConfig.IdleTimeout,
 	}
 
 	go func() {
-		log.Printf("🚀 Starting server on %s\n", addr)
+		logger.Infof(ctx, "🚀 Starting server on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("❌ Could not to start server: %v", err)
+			logger.Fatal(ctx, err, "❌ Failed to start server")
 		}
 	}()
 
@@ -102,56 +108,17 @@ func main() {
 
 	<-quit
 	fmt.Println()
-	log.Println("💤 Shutting down server...")
+	logger.Info(ctx, "🛑 Initiating server shutdown...")
+	logger.Info(ctx, "⏳ Waiting for in-flight requests to complete...")
 
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("❌ Server forced to shutdown: %v", err)
+		logger.Fatal(ctx, err, "❌ Server forced to shutdown due to error")
 	}
 
-	log.Println("✅ Server shutdown gracefully.")
+	logger.Info(ctx, "✅ Server shutdown gracefully")
 
-	infraShutdown(ctx, postgresConn, redisClient, tracerProvider)
-}
-
-type Infrastructure interface {
-	Shutdown(ctx context.Context) error
-}
-
-func infraShutdown(ctx context.Context, infras ...Infrastructure) {
-	var wg sync.WaitGroup
-
-	for _, infra := range infras {
-		wg.Add(1)
-
-		go func(c Infrastructure) {
-			defer wg.Done()
-
-			packageName := parsePackageName(c)
-
-			if err := c.Shutdown(ctx); err != nil {
-				log.Printf("❌ %s forced to shutdown: %v", packageName, err)
-				return
-			}
-
-			log.Printf("✅ %s shutdown gracefully.\n", packageName)
-		}(infra)
-	}
-
-	wg.Wait()
-}
-
-func parsePackageName(infra Infrastructure) string {
-	n := reflect.TypeOf(infra).String()
-	r := regexp.MustCompile(`\*?([^.]+)`)
-
-	matches := r.FindStringSubmatch(n)
-	if len(matches) > 1 {
-		name := matches[1]
-		return strings.ToUpper(string(name[0])) + name[1:]
-	}
-
-	return ""
+	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient, mailBus)
 }

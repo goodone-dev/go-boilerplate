@@ -2,35 +2,46 @@ package messaging
 
 import (
 	"context"
-	"log"
+	"errors"
+	"fmt"
+	"strings"
 
-	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
 type mailHandler struct {
-	usecase mail.IMailUsecase
+	mailUsecase mail.MailUsecase
 }
 
-func NewMailHandler(usecase mail.IMailUsecase) *mailHandler {
+func NewMailHandler(mailUsecase mail.MailUsecase) mail.MailHandler {
 	return &mailHandler{
-		usecase: usecase,
+		mailUsecase: mailUsecase,
 	}
 }
 
 func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
-	defer cancel()
+	ctx, span := tracer.Start(ctx, msg)
+	defer func() {
+		span.Stop(err)
+	}()
 
-	log.Printf("✉️ Receiving mail.send message: %s", msg.To)
+	logger.Infof(ctx, "📧 Processing email send request to: %s", msg.To)
 
-	err = h.usecase.Send(ctx, msg)
+	if errs := validator.Validate(msg); errs != nil {
+		logger.Errorf(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request to: %s", msg.To)
+		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
+	}
+
+	err = h.mailUsecase.Send(ctx, msg)
 	if err != nil {
-		log.Printf("❌ Could not to send email: %v", err)
+		logger.Errorf(ctx, err, "❌ Failed to send email to: %s", msg.To)
 		return
 	}
 
-	log.Printf("✅ Email sent to %s", msg.To)
+	logger.Infof(ctx, "✅ Successfully sent email to: %s", msg.To)
 
 	return
 }

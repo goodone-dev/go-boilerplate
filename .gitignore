@@ -1,23 +1,47 @@
-# VSCode
-.vscode
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Build output directories
+bin/
+pkg/
+
+# Development files
+.env
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
 
 # OS generated files
 .DS_Store
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Test binary, built with `go test -c`
-*.test
+# Test coverage
+coverage.out
+coverage.svg
+coverage.html
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Logs
-*.log
-
-# Dependency directories
-vendor
-
-# Config file
-.env
-
-# Binaries
-main
+# Local development directories
+tmp/
+log/

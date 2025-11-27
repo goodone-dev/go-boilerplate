@@ -3,12 +3,13 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -59,17 +60,19 @@ type mongoConnection struct {
 	Slave  *mongo.Database
 }
 
-func Open(ctx context.Context) mongoConnection {
+func Open(ctx context.Context) *mongoConnection {
 	mongoConfig := setConfig()
 
-	return mongoConnection{
-		Master: open(ctx, mongoConfig.Master),
-		Slave:  open(ctx, mongoConfig.Slave),
+	return &mongoConnection{
+		Master: open(ctx, mongoConfig.Master, readpref.Primary()),
+		Slave:  open(ctx, mongoConfig.Slave, readpref.Secondary()),
 	}
 }
 
-func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
-	// FIXME: mongodb monitor
+func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPref) *mongo.Database {
+	// TODO: Enable MongoDB OpenTelemetry monitoring once otelmongo supports mongo-driver v2
+	// Currently blocked by: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/
+	// The otelmongo package only supports mongo-driver v1.x
 	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
@@ -84,13 +87,18 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		opts.SetMinPoolSize(uint64(config.MongoConfig.MinConnPoolSize))
 	}
 
-	client, err := mongo.Connect(opts)
+	client, err := retry.RetryWithBackoff(ctx, "MongoDB connection", func() (*mongo.Client, error) {
+		return mongo.Connect(opts)
+	})
 	if err != nil {
-		log.Fatalf("❌ Could not to connect MongoDB connection: %v", err)
+		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection after retries")
 	}
 
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		log.Fatalf("❌ Could not to ping MongoDB database: %v", err)
+	_, err = retry.RetryWithBackoff(ctx, "MongoDB connection test", func() (any, error) {
+		return nil, client.Ping(ctx, rp)
+	})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ MongoDB connection test failed")
 	}
 
 	mongoDB := client.Database(config.MongoConfig.Database)
@@ -98,26 +106,33 @@ func open(ctx context.Context, opts *options.ClientOptions) *mongo.Database {
 		return mongoDB
 	}
 
-	// FIXME: mongodb migration
-	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{})
+	// TODO: Enable MongoDB migrations once golang-migrate supports mongo-driver v2
+	// Currently blocked by: https://github.com/golang-migrate/migrate/pull/1265
+	// The migrate mongodb package only supports mongo-driver v1.x
+	// Alternative: Consider using github.com/xakep666/mongo-migrate which supports v2
+	//
+	// Example implementation:
+	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{
+	// 	DatabaseName: config.MongoConfig.Database,
+	// })
 	// if err != nil {
-	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "❌ Failed to initialize MongoDB migration driver")
 	// }
-
+	//
 	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
 	// if err != nil {
-	// 	log.Fatalf("❌ Could not to create migrate instance for MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "❌ Failed to create migration instance from MongoDB driver")
 	// }
-
+	//
 	// err = m.Up()
 	// if err != nil && err != migrate.ErrNoChange {
-	// 	log.Fatalf("❌ Could not to migrate MongoDB:%v", err)
+	// 	logger.Fatal(ctx, err, "❌ MongoDB migration failed")
 	// }
 
 	return mongoDB
 }
 
-func (c mongoConnection) Shutdown(ctx context.Context) error {
+func (c *mongoConnection) Shutdown(ctx context.Context) error {
 	if err := close(ctx, c.Master); err != nil {
 		return err
 	}
@@ -131,4 +146,16 @@ func (c mongoConnection) Shutdown(ctx context.Context) error {
 
 func close(ctx context.Context, db *mongo.Database) error {
 	return db.Client().Disconnect(ctx)
+}
+
+func (c *mongoConnection) Ping(ctx context.Context) error {
+	if err := c.Master.Client().Ping(ctx, readpref.Primary()); err != nil {
+		return err
+	}
+
+	if err := c.Slave.Client().Ping(ctx, readpref.Secondary()); err != nil {
+		return err
+	}
+
+	return nil
 }

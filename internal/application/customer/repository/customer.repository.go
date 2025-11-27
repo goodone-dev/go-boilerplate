@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type CustomerRepository struct {
-	database.IBaseRepository[gorm.DB, uuid.UUID, customer.Customer]
+type customerRepository struct {
+	database.BaseRepository[gorm.DB, uuid.UUID, customer.Customer]
 }
 
-func NewCustomerRepo(baseRepo database.IBaseRepository[gorm.DB, uuid.UUID, customer.Customer]) customer.ICustomerRepository {
-	return &CustomerRepository{
+func NewCustomerRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID, customer.Customer]) customer.CustomerRepository {
+	return &customerRepository{
 		baseRepo,
 	}
 }

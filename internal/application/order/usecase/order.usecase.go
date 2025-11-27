@@ -11,27 +11,27 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
-	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/error"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 	"github.com/google/uuid"
 )
 
-type OrderUsecase struct {
-	customerRepo  customer.ICustomerRepository
-	productRepo   product.IProductRepository
-	orderRepo     order.IOrderRepository
-	orderItemRepo order.IOrderItemRepository
+type orderUsecase struct {
+	customerRepo  customer.CustomerRepository
+	productRepo   product.ProductRepository
+	orderRepo     order.OrderRepository
+	orderItemRepo order.OrderItemRepository
 	mailBus       bus.Bus[mail.MailSendMessage]
 }
 
 func NewOrderUsecase(
-	customerRepo customer.ICustomerRepository,
-	productRepo product.IProductRepository,
-	orderRepo order.IOrderRepository,
-	orderItemRepo order.IOrderItemRepository,
+	customerRepo customer.CustomerRepository,
+	productRepo product.ProductRepository,
+	orderRepo order.OrderRepository,
+	orderItemRepo order.OrderItemRepository,
 	mailBus bus.Bus[mail.MailSendMessage],
-) order.IOrderUsecase {
-	return &OrderUsecase{
+) order.OrderUsecase {
+	return &orderUsecase{
 		customerRepo:  customerRepo,
 		productRepo:   productRepo,
 		orderRepo:     orderRepo,
@@ -40,18 +40,17 @@ func NewOrderUsecase(
 	}
 }
 
-// TODO: Use DTO for return response
-func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.Order, err error) {
-	ctx, span := tracer.StartSpan(ctx, req)
+func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
+	ctx, span := tracer.Start(ctx, req)
 	defer func() {
-		span.EndSpan(err, res)
+		span.Stop(err, res)
 	}()
 
 	customer, err := u.customerRepo.FindById(ctx, req.CustomerID)
 	if err != nil {
 		return nil, err
 	} else if customer == nil {
-		return nil, httperror.NewNotFoundError("customer not found")
+		return nil, httperror.NewNotFoundError("customer with the provided ID was not found")
 	}
 
 	var productIDs []uuid.UUID
@@ -64,7 +63,7 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 	if err != nil {
 		return nil, err
 	} else if len(products) != len(req.OrderItems) {
-		return nil, httperror.NewNotFoundError("one or more products not found")
+		return nil, httperror.NewNotFoundError("one or more requested products could not be found")
 	}
 
 	productMap := make(map[uuid.UUID]product.Product)
@@ -132,5 +131,10 @@ func (u *OrderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		},
 	})
 
-	return &createdOrder, nil
+	return &order.CreateOrderResponse{
+		ID:          createdOrder.ID,
+		CustomerID:  createdOrder.CustomerID,
+		TotalAmount: createdOrder.TotalAmount,
+		Status:      createdOrder.Status,
+	}, nil
 }

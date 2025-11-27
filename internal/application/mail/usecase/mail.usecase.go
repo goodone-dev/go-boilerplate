@@ -5,23 +5,23 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 )
 
-type MailUsecase struct {
-	mailSender mailsender.IMailSender
+type mailUsecase struct {
+	mailSender mailsender.MailSender
 }
 
-func NewMailUsecase(mailSender mailsender.IMailSender) mail.IMailUsecase {
-	return &MailUsecase{
+func NewMailUsecase(mailSender mailsender.MailSender) mail.MailUsecase {
+	return &mailUsecase{
 		mailSender: mailSender,
 	}
 }
 
-func (u *MailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
-	ctx, span := tracer.StartSpan(ctx, req)
+func (u *mailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
+	ctx, span := tracer.Start(ctx, req)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	err = u.mailSender.SendEmail(ctx, req.To, req.Subject, req.Template, req.Data)

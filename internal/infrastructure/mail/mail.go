@@ -6,25 +6,38 @@ import (
 	"crypto/tls"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/html"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
 	"gopkg.in/gomail.v2"
 )
 
-type IMailSender interface {
+type MailSender interface {
 	SendEmail(ctx context.Context, to, subject, file string, data any) error
 }
 
-type MailSender struct{}
-
-func NewMailSender() IMailSender {
-	return &MailSender{}
+type mailSender struct {
+	dialer *gomail.Dialer
 }
 
-func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
-	_, span := tracer.StartSpan(ctx, to, subject, file, data)
+func NewMailSender() MailSender {
+	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
+
+	if config.MailConfig.TLS {
+		d.TLSConfig = &tls.Config{
+			ServerName: config.MailConfig.Host,
+			MinVersion: tls.VersionTLS13,
+		}
+	}
+
+	return &mailSender{
+		dialer: d,
+	}
+}
+
+func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
+	_, span := tracer.Start(ctx, to, subject, file, data)
 	defer func() {
-		span.EndSpan(err)
+		span.Stop(err)
 	}()
 
 	var body bytes.Buffer
@@ -38,16 +51,7 @@ func (s *MailSender) SendEmail(ctx context.Context, to, subject, file string, da
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())
 
-	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
-
-	if config.MailConfig.TLS {
-		d.TLSConfig = &tls.Config{
-			ServerName: config.MailConfig.Host,
-			MinVersion: tls.VersionTLS12,
-		}
-	}
-
-	if err := d.DialAndSend(m); err != nil {
+	if err := s.dialer.DialAndSend(m); err != nil {
 		return err
 	}
 

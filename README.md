@@ -1,5 +1,7 @@
 # Go Boilerplate
 [![Go Report Card](https://goreportcard.com/badge/github.com/goodone-dev/go-boilerplate)](https://goreportcard.com/report/github.com/goodone-dev/go-boilerplate)
+[![Go Quality Gate](https://github.com/goodone-dev/go-boilerplate/actions/workflows/quality_gate.yml/badge.svg)](https://github.com/goodone-dev/go-boilerplate/actions/workflows/quality_gate.yml)
+[![Active Development](https://img.shields.io/badge/Maintenance%20Level-Actively%20Developed-brightgreen.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 
 This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and production-grade foundation for your next web service. It embraces a clean, Domain-Driven Design (DDD) architecture to ensure maintainability and separation of concerns, empowering you to focus on delivering business value instead of wrestling with infrastructure setup.
 
@@ -7,26 +9,31 @@ This Go RESTful API Boilerplate is engineered to provide a robust, scalable, and
 
 ## 🌟 Features
 - 🏗️ **Clean Architecture**: Separates concerns into distinct layers (domain, application, infrastructure, presentation) for a more organized, testable, and maintainable codebase.
-- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework.
+- 🌐 **RESTful API**: A lightweight and high-performance RESTful API built with Gin, a popular Go web framework. Includes CORS and HTTP Security middleware.
 - 🔄 **Live Reload**: Automatically restart the application when file changes are detected.
 - 🗃️ **Multiple Database Support**: Supports PostgreSQL, MySQL, and MongoDB. Uses a repository pattern for flexible data management.
 - 🌱 **Database Migration & Seeding**: Manage your database schema and seed data with simple `make` commands.
 - ⚡ **Multiple Cache Support**: Easily connect to Redis or an in-memory cache.
-- 💉 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
-- 🔍 **Distributed Tracing**: Integrated with Jaeger for distributed tracing, offering insights into request flows across services to simplify debugging and performance monitoring.
+- 🧩 **Dependency Injection**: Switch between database or cache implementations without altering business logic.
+- 🛠️ **Code Generation**: Automatically generate repository, usecase, and delivery handler with a single `make generate` command.
+- 📈 **Observability**: Observability features include distributed tracing, metrics, and logging.
+- 🏁 **Health Check**: `/health` endpoint for liveness and readiness probes.
 - ✅ **Request Validation**: Validates incoming HTTP requests using struct tags to ensure data integrity.
 - 🧹 **Request Sanitization**: Sanitizes incoming request data based on struct tags to prevent XSS and other injection attacks.
-- 🔗 **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
-- 🛡️ **Idempotency Middleware**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
+- ⏱️ **Context Propagation**: Manages request lifecycles with Go's `context` to handle cancellations and timeouts gracefully.
+- 🔄 **Idempotency Handler**: Prevents duplicate requests by using a distributed cache, ensuring an operation is processed only once.
 - 🚦 **Rate Limiting**: A distributed rate-limiting middleware to protect your API from excessive traffic and abuse.
 - 🔌 **Circuit Breaker**: Enhances application stability by preventing repeated calls to failing external services.
-- ⚠️ **Centralized Error Handling**: A centralized middleware automatically handles errors, converting them into consistent and well-formatted HTTP responses.
-- 📧 **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
-- 🕒 **Asynchronous Processing**: Offloads long-running tasks to a message bus, ensuring non-blocking API responses.
+- 📦 **Standardized Response**: Consistent JSON response format across all API endpoints, making it easier for clients to parse and handle responses uniformly.
+- ✉️ **Email Sending**: Includes a mail sender service with support for HTML templates, allowing for easy and dynamic email generation.
+- 🕒 **Background Job Processing**: Efficiently handle long-running or resource-intensive tasks asynchronously, ensuring responsive API performance and better user experience.
 - 🎭 **Mock Generation**: Easily generate mocks for interfaces using the `make mock` command, simplifying unit testing.
 - 🌙 **Graceful Shutdown**: Ensures that the server shuts down gracefully, finishing all in-flight requests and cleaning up resources before exiting.
 - 🐳 **Dockerized Environment**: Comes with `Dockerfile` and `docker-compose.yml` for a consistent and easy-to-set-up local development environment.
-- 🤖 **CI/CD Pipeline**: Automated checks for building, linting, test coverage, and security scanning.
+- 🔒 **Pre-Commit Hooks**: Automated git hooks that run code quality checks, including linting, formatting, and security scanning before each commit.
+- 🛡️ **Quality Gate CI/CD**: Automated quality checks in the CI/CD pipeline that enforce code quality standards, test coverage requirements, and security scans before deployment.
+
+📌 **[Project Roadmap](https://github.com/users/goodone-dev/projects/3/views/7)** - Track our development progress, upcoming features, and planned improvements on our public roadmap.
 
 ## 🚀 Getting Started
 
@@ -42,7 +49,20 @@ git clone https://github.com/goodone-dev/go-boilerplate.git
 cd go-boilerplate
 ```
 
-### 2. Running the Application
+### 2. Project Setup
+Run the following command to prepare your development environment. This will make all necessary shell scripts executable:
+
+```bash
+make setup
+```
+
+To see all available make commands and their descriptions, run:
+
+```bash
+make help
+```
+
+### 3. Running the Application
 You can run the application in two ways:
 
 #### Option 1: With Docker (Recommended)
@@ -52,11 +72,13 @@ This is the easiest way to get started, as it handles all services (database, ca
     ```bash
     make up
     ```
-    This command builds and starts the application, database, and other services.
+    This command builds and starts the application, database, and other services. The API by default will be accessible at `http://localhost:8080`.
 
-The API will be accessible at `http://localhost:8080`.
-
-To stop all services, run `make down`.
+2. **Stop the services**:
+    ```bash
+    make down
+    ```
+    This command stops all services.
 
 #### Option 2: Locally
 This method requires you to run the database and other services on your local machine.
@@ -69,12 +91,12 @@ This method requires you to run the database and other services on your local ma
 
 2.  **Run database migrations**:
     ```bash
-    make migrate_up DRIVER=postgres
+    make migration_up DRIVER=postgres
     ```
 
 3.  **(Optional) Seed the database**:
     ```bash
-    make seed DRIVER=postgres
+    make seeder_up DRIVER=postgres
     ```
 
 4.  **Run the application**:
@@ -89,10 +111,15 @@ This project is structured following the principles of **Clean Architecture**. T
 
 ```
 .
-├── cmd/
-│   └── api/
-│       └── main.go             # Entry point of the application. Initializes and starts the server.
-├── internal/
+├── .dev/                       # Local development tools, scripts, and configurations.
+│   └── script/                 # Local development scripts.
+├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
+│   └── workflow/               # GitHub Actions workflows.
+├── cmd/                        # Server commands.
+│   ├── api/                    # API server.
+│   │   └── main.go             # Entry point of the application. Initializes and starts the server.
+│   └── utils/                  # Utility functions shared across the server.
+├── internal/                   # Internal packages.
 │   ├── application/            # Implements use cases by orchestrating domain logic.
 │   │   ├── <domain_name>/      # Groups application logic for a specific domain.
 │   │   │   ├── delivery/       # Adapters for handling incoming requests (e.g., HTTP, messaging).
@@ -105,42 +132,48 @@ This project is structured following the principles of **Clean Architecture**. T
 │   ├── domain/                 # Contains core entities and interfaces.
 │   │   ├── <domain_name>/      # Groups domain logic for a specific business entity.
 │   │   │   └── mocks/          # Mocks for domain interfaces.
-│   │   └── ...                 
+│   │   └── ...
 │   ├── infrastructure/         # Provides implementations for external services.
 │   │   ├── cache/              # Cache implementations (e.g., Redis).
 │   │   ├── database/           # Database implementations (PostgreSQL, MySQL, MongoDB).
 │   │   ├── integration/        # Clients for external APIs.
+│   │   ├── logger/             # Log aggregation implementations.
 │   │   ├── mail/               # Email sending implementation.
-│   │   ├── message/            # Message bus implementation.
-│   │   ├── tracer/             # Distributed tracing implementation (e.g., Jaeger).
+│   │   ├── message/            # Message bus/broker implementation.
+│   │   ├── tracer/             # Distributed tracing implementation.
 │   │   └── ...
 │   ├── presentation/           # Adapters for incoming requests.
 │   │   ├── rest/               # REST API handlers, router, and middleware.
 │   │   │   ├── middleware/     # REST API middleware.
 │   │   │   └── router/         # REST API router setup.
-│   │   ├── messaging/          # Message bus handlers.
-│   │   │   ├── middleware/     # Messaging middleware.
-│   │   │   └── listener/       # Message bus listener.
-│   │   └── ...
+│   │   └── messaging/          # Message bus/broker handlers.
+│   │       ├── middleware/     # Messaging middleware.
+│   │       └── listener/       # Message bus/broker listener.
 │   └── utils/                  # Utility functions shared across the application.
-│       ├── error/              # Custom error types and handling.
-│       ├── html/               # HTML template rendering utilities.
-│       ├── http/               # HTTP client functions.
-│       ├── success/            # Standardized success responses.
-│       ├── tracer/             # Tracer helper functions.
+│       ├── breaker/            # Circuit breaker utilities.
+│       ├── html/               # HTML template utilities.
+│       ├── http_client/        # HTTP client utilities.
+│       ├── http_response/      # HTTP response utilities.
+│       ├── sanitizer/          # Request sanitizer utilities.
 │       ├── validator/          # Request validation utilities.
 │       └── ...
 ├── migrations/                 # SQL migration files for managing database schema changes.
-│   └── <database_name>/        # Migration files for a specific database.
+│   ├── <database_name>/        # Migration files for a specific database.
+│   └── ...
 ├── seeders/                    # SQL seed files for populating the database with initial data.
-│   └── <database_name>/        # Seeder files for a specific database.
+│   ├── <database_name>/        # Seeder files for a specific database.
+│   └── ...
 ├── templates/                  # HTML templates for emails, PDFs, etc.
 │   ├── email/                  # Email templates.
 │   ├── pdf/                    # PDF templates.
 │   └── ...
+├── .env.example                # Example environment variables file.
+├── .air.toml                   # Air.toml for local development.
+├── .mockery.yml                # Mockery configuration file.
+├── .pre-commit-config.yaml     # Pre-commit configuration file.
 ├── Makefile                    # Makefile with shortcuts for common development commands.
-├── docker-compose.yml          # Defines services for the local Docker environment.
-└── Dockerfile                  # Dockerfile for building the application image.
+├── Dockerfile                  # Dockerfile for building the application image.
+└── docker-compose.yml          # Defines services for the local Docker environment.
 ```
 
 <!-- ## TODO: 🏗️ Architecture Diagram -->
@@ -158,28 +191,10 @@ This project is structured following the principles of **Clean Architecture**. T
 | **Config**            | [viper](https://github.com/spf13/viper)                                                                               |
 | **Validation**        | [validator](https://github.com/go-playground/validator)                                                               |
 | **Migration**         | [golang-migrate](https://github.com/golang-migrate/migrate)                                                           |
-| **Tracing**           | [opentelemetry](https://opentelemetry.io/)                                                                            |
+| **Observability**     | [opentelemetry](https://opentelemetry.io/)                                                                            |
 | **Email**             | [gomail](https://github.com/go-gomail/gomail)                                                                         |
 | **Circuit Breaker**   | [gobreaker](https://github.com/sony/gobreaker)                                                                        |
 | **Mocking**           | [mockery](https://github.com/vektra/mockery)                                                                          |
-
-## 🚧 Roadmap
-- [ ] **Alerting**: Integration with Prometheus Alertmanager for handling alerts.
-- [ ] **Message Broker Support**: Adding support for Kafka and RabbitMQ.
-- [ ] **Authentication**: Implementing OAuth2 with Ory Kratos for identity and user management.
-- [ ] **Authorization**: Integration with Ory Keto for permission and access control.
-- [ ] **Structured Logging**: Implementing a structured logger (e.g., Logrus).
-- [ ] **Worker Command**: Add worker for processing asynchronous task.
-- [ ] **Make Generate Command**: Automate the creation of entity, repository, usecase, and handler files.
-- [ ] **HTTP Security Middleware**: Add middleware for handling common security headers.
-- [ ] **XSS Handling**: Add middleware for Cross-Site Scripting (XSS) protection.
-- [ ] **CORS Handling**: Implement middleware for Cross-Origin Resource Sharing (CORS).
-- [ ] **Auto Generate Documentation**: Automatically generate API documentation.
-
-<!-- ## 🧪 Internal Test
-- [ ] Migration MongoDB & MySQL
-- [ ] Seeder MongoDB & MySQL
-- [ ] Implementation MongoDB & MySQL -->
 
 ## 🤝 Contributing
 1. Fork the repository
@@ -194,5 +209,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Contact
 **Bagus Abdul Kurniawan**
 - Email: hello@goodone.dev
-- GitHub: [github.com/goodone-dev](https://github.com/goodone-dev)
+- Web: [goodone.dev](https://www.goodone.dev)
 - LinkedIn: [linkedin.com/in/bagusak95](https://linkedin.com/in/bagusak95)

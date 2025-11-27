@@ -7,19 +7,36 @@ import (
 )
 
 var ContextTimeout time.Duration
+var CorsConfig CorsConfigMap
 var ApplicationConfig ApplicationConfigMap
 var RedisConfig RedisConfigMap
 var PostgresConfig PostgresConfigMap
 var MySQLConfig MySQLConfigMap
 var MongoConfig MongoConfigMap
-var JaegerConfig JaegerConfigMap
+var TracerConfig TracerConfigMap
+var LoggerConfig LoggerConfigMap
 var MailConfig MailConfigMap
+var HttpServerConfig HttpServerConfigMap
+var HttpClientConfig HttpClientConfigMap
+var CircuitBreakerConfig CircuitBreakerConfigMap
+var RateLimiterConfig RateLimiterConfigMap
+var IdempotencyDuration time.Duration
+var RetryConfig RetryConfigMap
+
+type Environment string
+
+const (
+	EnvLocal Environment = "local"
+	EnvDev   Environment = "development"
+	EnvStag  Environment = "staging"
+	EnvProd  Environment = "production"
+)
 
 type ApplicationConfigMap struct {
-	Name string `mapstructure:"APP_NAME"`
-	Env  string `mapstructure:"APP_ENV"`
-	Port int    `mapstructure:"APP_PORT"`
-	URL  string `mapstructure:"APP_URL"`
+	Name string      `mapstructure:"APP_NAME"`
+	Env  Environment `mapstructure:"APP_ENV"`
+	Port int         `mapstructure:"APP_PORT"`
+	URL  string      `mapstructure:"APP_URL"`
 }
 
 type RedisConfigMap struct {
@@ -52,6 +69,7 @@ type PostgresConfigMap struct {
 	MaxOpenConnections int           `mapstructure:"POSTGRES_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"POSTGRES_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"POSTGRES_CONN_MAX_LIFETIME"`
+	InsertBatchSize    int           `mapstructure:"POSTGRES_INSERT_BATCH_SIZE"`
 }
 
 type MySQLConfigMap struct {
@@ -72,6 +90,7 @@ type MySQLConfigMap struct {
 	MaxOpenConnections int           `mapstructure:"MYSQL_MAX_OPEN_CONNECTIONS"`
 	MaxIdleConnections int           `mapstructure:"MYSQL_MAX_IDLE_CONNECTIONS"`
 	ConnMaxLifetime    time.Duration `mapstructure:"MYSQL_CONN_MAX_LIFETIME"`
+	InsertBatchSize    int           `mapstructure:"MYSQL_INSERT_BATCH_SIZE"`
 }
 
 type MongoConfigMap struct {
@@ -92,12 +111,19 @@ type MongoConfigMap struct {
 	MaxConnPoolSize   int    `mapstructure:"MONGO_MAX_CONN_POOL_SIZE"`
 	MinConnPoolSize   int    `mapstructure:"MONGO_MIN_CONN_POOL_SIZE"`
 	ConnIdleTimeoutMS int    `mapstructure:"MONGO_CONN_IDLE_TIMEOUT_MS"`
+	InsertBatchSize   int    `mapstructure:"MONGO_INSERT_BATCH_SIZE"`
 }
 
-type JaegerConfigMap struct {
-	Host        string `mapstructure:"JAEGER_HOST"`
-	Port        int    `mapstructure:"JAEGER_PORT"`
-	ServiceName string `mapstructure:"JAEGER_SERVICE_NAME"`
+type TracerConfigMap struct {
+	Enabled bool   `mapstructure:"TRACER_ENABLED"`
+	Host    string `mapstructure:"TRACER_EXPORTER_HOST"`
+	Port    int    `mapstructure:"TRACER_EXPORTER_PORT"`
+}
+
+type LoggerConfigMap struct {
+	Enabled bool   `mapstructure:"LOGGER_ENABLED"`
+	Host    string `mapstructure:"LOGGER_EXPORTER_HOST"`
+	Port    int    `mapstructure:"LOGGER_EXPORTER_PORT"`
 }
 
 type MailConfigMap struct {
@@ -106,6 +132,43 @@ type MailConfigMap struct {
 	Username string `mapstructure:"MAIL_USERNAME"`
 	Password string `mapstructure:"MAIL_PASSWORD"`
 	TLS      bool   `mapstructure:"MAIL_TLS"`
+}
+
+type CorsConfigMap struct {
+	AllowOrigins []string `mapstructure:"CORS_ALLOW_ORIGINS"`
+	AllowMethods []string `mapstructure:"CORS_ALLOW_METHODS"`
+}
+
+type HttpServerConfigMap struct {
+	ReadTimeout       time.Duration `mapstructure:"HTTP_SERVER_READ_TIMEOUT"`
+	ReadHeaderTimeout time.Duration `mapstructure:"HTTP_SERVER_READ_HEADER_TIMEOUT"`
+	WriteTimeout      time.Duration `mapstructure:"HTTP_SERVER_WRITE_TIMEOUT"`
+	IdleTimeout       time.Duration `mapstructure:"HTTP_SERVER_IDLE_TIMEOUT"`
+}
+
+type HttpClientConfigMap struct {
+	RetryCount    int           `mapstructure:"HTTP_CLIENT_RETRY_COUNT"`
+	RetryWaitTime time.Duration `mapstructure:"HTTP_CLIENT_RETRY_WAIT_TIME"`
+}
+
+type CircuitBreakerConfigMap struct {
+	MinRequests  int           `mapstructure:"CIRCUIT_BREAKER_MIN_REQUESTS"`
+	FailureRatio float64       `mapstructure:"CIRCUIT_BREAKER_FAILURE_RATIO"`
+	Timeout      time.Duration `mapstructure:"CIRCUIT_BREAKER_TIMEOUT"`
+	MaxRequests  int           `mapstructure:"CIRCUIT_BREAKER_MAX_REQUESTS"`
+}
+
+type RateLimiterConfigMap struct {
+	SingleLimit    int           `mapstructure:"RATE_LIMITER_SINGLE_LIMIT"`
+	SingleDuration time.Duration `mapstructure:"RATE_LIMITER_SINGLE_DURATION"`
+	GlobalLimit    int           `mapstructure:"RATE_LIMITER_GLOBAL_LIMIT"`
+	GlobalDuration time.Duration `mapstructure:"RATE_LIMITER_GLOBAL_DURATION"`
+}
+
+type RetryConfigMap struct {
+	MaxRetries     int           `mapstructure:"RETRY_MAX_RETRIES"`
+	InitialBackoff time.Duration `mapstructure:"RETRY_INITIAL_BACKOFF"`
+	MaxBackoff     time.Duration `mapstructure:"RETRY_MAX_BACKOFF"`
 }
 
 func Load() (err error) {
@@ -130,7 +193,7 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&MailConfig); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&JaegerConfig); err != nil {
+	if err = viper.Unmarshal(&TracerConfig); err != nil {
 		return
 	}
 	if err = viper.Unmarshal(&RedisConfig); err != nil {
@@ -142,25 +205,90 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&MongoConfig); err != nil {
 		return
 	}
+	if err = viper.Unmarshal(&LoggerConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&CorsConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&HttpServerConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&HttpClientConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&CircuitBreakerConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&RateLimiterConfig); err != nil {
+		return
+	}
+	if err = viper.Unmarshal(&RetryConfig); err != nil {
+		return
+	}
 
-	ContextTimeout, err = time.ParseDuration(viper.GetString("CONTEXT_TIMEOUT") + "s")
+	ContextTimeout = viper.GetDuration("CONTEXT_TIMEOUT")
+	IdempotencyDuration = viper.GetDuration("IDEMPOTENCY_DURATION")
 
 	return
 }
 
 func setDefaultConfig() {
-	viper.SetDefault("CONTEXT_TIMEOUT", 5)
+	// Application defaults
+	viper.SetDefault("APP_PORT", 8080)
+	viper.SetDefault("APP_ENV", "local")
+	viper.SetDefault("CONTEXT_TIMEOUT", "5s")
 
+	// CORS defaults
+	viper.SetDefault("CORS_ALLOW_ORIGINS", "*")
+	viper.SetDefault("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS")
+
+	// PostgreSQL defaults
 	viper.SetDefault("POSTGRES_TIMEZONE", "Asia/Jakarta")
 	viper.SetDefault("POSTGRES_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("POSTGRES_MAX_IDLE_CONNECTIONS", 10)
-	viper.SetDefault("POSTGRES_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("POSTGRES_CONN_MAX_LIFETIME", "300s")
+	viper.SetDefault("POSTGRES_INSERT_BATCH_SIZE", 100)
 
+	// MySQL defaults
 	viper.SetDefault("MYSQL_MAX_OPEN_CONNECTIONS", 10)
 	viper.SetDefault("MYSQL_MAX_IDLE_CONNECTIONS", 10)
-	viper.SetDefault("MYSQL_CONN_MAX_LIFETIME", 300)
+	viper.SetDefault("MYSQL_CONN_MAX_LIFETIME", "300s")
+	viper.SetDefault("MYSQL_INSERT_BATCH_SIZE", 100)
 
+	// MongoDB defaults
 	viper.SetDefault("MONGO_MIN_CONN_POOL_SIZE", 2)
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
+	viper.SetDefault("MONGO_INSERT_BATCH_SIZE", 100)
+
+	// HTTP Server defaults (in seconds)
+	viper.SetDefault("HTTP_SERVER_READ_TIMEOUT", "5s")
+	viper.SetDefault("HTTP_SERVER_READ_HEADER_TIMEOUT", "2s")
+	viper.SetDefault("HTTP_SERVER_WRITE_TIMEOUT", "10s")
+	viper.SetDefault("HTTP_SERVER_IDLE_TIMEOUT", "120s")
+
+	// HTTP Client defaults
+	viper.SetDefault("HTTP_CLIENT_RETRY_COUNT", 1)
+	viper.SetDefault("HTTP_CLIENT_RETRY_WAIT_TIME", "1s")
+
+	// Circuit Breaker defaults
+	viper.SetDefault("CIRCUIT_BREAKER_MIN_REQUESTS", 3)
+	viper.SetDefault("CIRCUIT_BREAKER_FAILURE_RATIO", 0.5)
+	viper.SetDefault("CIRCUIT_BREAKER_TIMEOUT", "60s")
+	viper.SetDefault("CIRCUIT_BREAKER_MAX_REQUESTS", 1)
+
+	// Rate Limiter defaults
+	viper.SetDefault("RATE_LIMITER_SINGLE_LIMIT", 60)
+	viper.SetDefault("RATE_LIMITER_SINGLE_DURATION", "60s")
+	viper.SetDefault("RATE_LIMITER_GLOBAL_LIMIT", 1000)
+	viper.SetDefault("RATE_LIMITER_GLOBAL_DURATION", "60s")
+
+	// Idempotency defaults
+	viper.SetDefault("IDEMPOTENCY_DURATION", "300s")
+
+	// Retry defaults
+	viper.SetDefault("RETRY_MAX_RETRIES", 5)
+	viper.SetDefault("RETRY_INITIAL_BACKOFF", "1s")
+	viper.SetDefault("RETRY_MAX_BACKOFF", "30s")
 }

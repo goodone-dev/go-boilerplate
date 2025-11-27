@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Function to show usage
+show_usage() {
+    echo "Usage: make db-migrate-new NAME=<migration_name> DRIVER=<database_driver>"
+    echo "Example: make db-migrate-new NAME=create_users_table DRIVER=postgres"
+    echo "
+Available database drivers:"
+    echo "  - postgres    : PostgreSQL database"
+    echo "  - mysql       : MySQL database"
+    echo "  - mongodb     : MongoDB database"
+    exit 1
+}
+
+# Parse command line arguments
+while getopts ":n:d:h" opt; do
+    case $opt in
+        n) MIGRATION_NAME="$OPTARG";;
+        d) DB_DRIVER="$OPTARG";;
+        h) show_usage;;
+    esac
+done
+
+# Validate required arguments
+if [ -z "$MIGRATION_NAME" ] || [ -z "$DB_DRIVER" ]; then
+    echo "❌ Error: Both migration name and database driver are required"
+    show_usage
+fi
+
+# Validate migration name (allow only lowercase letters, numbers, and underscores)
+if ! [[ $MIGRATION_NAME =~ ^[a-z0-9_]+$ ]]; then
+    echo "❌ Error: Migration name can only contain lowercase letters, numbers, and underscores"
+    exit 1
+fi
+
+# Validate database driver
+case $DB_DRIVER in
+    postgres|postgresql)
+        MIGRATION_DIR="./migrations/postgres"
+        MIGRATION_EXT="sql"
+        ;;
+    mysql)
+        MIGRATION_DIR="./migrations/mysql"
+        MIGRATION_EXT="sql"
+        ;;
+    mongodb)
+        MIGRATION_DIR="./migrations/mongodb"
+        MIGRATION_EXT="json"
+        ;;
+    *)
+        echo "❌ Error: Unsupported database driver: $DB_DRIVER"
+        show_usage
+        ;;
+esac
+
+# Create migrations directory if it doesn't exist
+mkdir -p $MIGRATION_DIR
+
+# Create migration files
+echo "📝 Creating migration files for $MIGRATION_NAME..."
+migrate create -ext $MIGRATION_EXT -dir $MIGRATION_DIR -format "20060102150405" -tz "Asia/Jakarta" $MIGRATION_NAME
+
+# Check if migration files created successfully
+if [ $? -eq 0 ]; then
+    echo "✅ Migration files created successfully!"
+else
+    echo "❌ Error: Failed to create migration files"
+    exit 1
+fi

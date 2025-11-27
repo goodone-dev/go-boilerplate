@@ -1,53 +1,61 @@
 package router
 
 import (
-	"log"
-	"time"
-
 	"net/http/pprof"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/secure"
 	"github.com/gin-gonic/gin"
-	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/domain/health"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
-func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.Engine {
+func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandler, cacheClient cache.Cache) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
-	// Initialize router
+	// ========== Middleware Config ==========
+	corsConfig := cors.Config{
+		AllowOrigins: config.CorsConfig.AllowOrigins,
+		AllowMethods: config.CorsConfig.AllowMethods,
+	}
+
+	secureConfig := secure.DefaultConfig()
+	secureConfig.SSLRedirect = config.ApplicationConfig.Env == config.EnvProd // Only force HTTPS in production
+	if config.ApplicationConfig.Env != config.EnvProd {                       // Disable HSTS in non-production environments
+		secureConfig.STSSeconds = 0
+		secureConfig.STSIncludeSubdomains = false
+	}
+
+	// ========== Initialize Router ==========
 	router := gin.New()
+
+	// Library Middleware
 	router.Use(otelgin.Middleware(""))
-	router.Use(middleware.ErrorMiddleware())
-	router.Use(middleware.ContextMiddleware())
+	router.Use(cors.New(corsConfig))
+	router.Use(secure.New(secureConfig))
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
+
+	// Internal Middleware
+	router.Use(middleware.ContextTimeoutHandler())
+	router.Use(middleware.RequestIdHandler())
+	router.Use(middleware.IdempotencyHandler(cacheClient, config.IdempotencyDuration))
+	router.Use(middleware.ErrorHandler())
+
 	router.Use(gin.Recovery())
 
-	// Initialize handlers
-	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
-
-	// Define routes
-	v1 := router.Group("/api/v1")
+	// ========== Define Routes ==========
+	health := router.Group("/health")
 	{
-		orders := v1.Group("/orders")
-		{
-			orders.POST(
-				"",
-				middleware.RateLimitMiddleware(cacheClient, 1, 1*time.Second),
-				middleware.IdempotencyMiddleware(cacheClient, 5*time.Minute),
-				orderHandler.Create,
-			)
-		}
+		health.GET("", healthHandler.LiveCheck)
+		health.GET("/ready", healthHandler.ReadyCheck)
 	}
 
-	if config.ApplicationConfig.Env == "production" {
-		return router
-	}
-
-	// Enabling pprof for profiling
-	log.Printf("🔎 Enabling pprof for profiling")
+	// TODO: Add authentication
 	debug := router.Group("/debug/pprof")
 	{
 		debug.GET("/goroutine", gin.WrapF(pprof.Index))
@@ -55,6 +63,22 @@ func NewRouter(orderUsecase order.IOrderUsecase, cacheClient cache.ICache) *gin.
 		debug.GET("/cmdline", gin.WrapF(pprof.Cmdline))
 		debug.GET("/symbol", gin.WrapF(pprof.Symbol))
 		debug.GET("/trace", gin.WrapF(pprof.Trace))
+	}
+
+	v1 := router.Group("/api/v1")
+	{
+		orders := v1.Group("/orders")
+		{
+			orders.POST(
+				"",
+				middleware.RateLimiterHandler(cacheClient, middleware.RateLimitConfig{
+					Limit: config.RateLimiterConfig.SingleLimit,
+					TTL:   config.RateLimiterConfig.SingleDuration,
+					Mode:  middleware.SingleLimiter,
+				}),
+				orderHandler.Create,
+			)
+		}
 	}
 
 	return router

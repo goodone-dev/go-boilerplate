@@ -9,5 +9,12 @@ type CreateOrderRequest struct {
 
 type OrderItemRequest struct {
 	ProductID uuid.UUID `json:"product_id" validate:"required"`
-	Quantity  int       `json:"quantity" validate:"required,min=1"`
+	Quantity  int       `json:"quantity" san:"min=1"`
+}
+
+type CreateOrderResponse struct {
+	ID          uuid.UUID `json:"id"`
+	CustomerID  uuid.UUID `json:"customer_id" `
+	TotalAmount float64   `json:"total_amount"`
+	Status      string    `json:"status" `
 }

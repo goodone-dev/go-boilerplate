@@ -3,38 +3,44 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/error"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/sanitizer"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
 )
 
-type OrderHandler struct {
-	orderUsecase order.IOrderUsecase
+type orderHandler struct {
+	orderUsecase order.OrderUsecase
 }
 
-func NewOrderHandler(orderUsecase order.IOrderUsecase) *OrderHandler {
-	return &OrderHandler{
+func NewOrderHandler(orderUsecase order.OrderUsecase) order.OrderHandler {
+	return &orderHandler{
 		orderUsecase: orderUsecase,
 	}
 }
 
-func (h *OrderHandler) Create(c *gin.Context) {
-	ctx := c.Request.Context()
+func (h *orderHandler) Create(c *gin.Context) {
+	var err error
+
+	ctx, span := tracer.Start(c.Request.Context())
+	defer func() {
+		span.Stop(err)
+	}()
 
 	var req order.CreateOrderRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(error.NewInternalServerError(err.Error()))
+	if err = c.ShouldBindJSON(&req); err != nil {
+		c.Error(httperror.NewBadRequestError("invalid JSON payload format", err.Error()))
 		return
 	}
 
-	if err := sanitizer.Sanitize(req); err != nil {
-		c.Error(error.NewBadRequestError(err.Error()))
+	if err = sanitizer.Sanitize(req); err != nil {
+		c.Error(httperror.NewInternalServerError("failed to process request data", err.Error()))
 		return
 	}
 
 	if errs := validator.Validate(req); errs != nil {
-		c.Error(error.NewBadRequestError("invalid request body", errs...))
+		c.Error(httperror.NewBadRequestError("request contains invalid or missing fields", errs...))
 		return
 	}
 

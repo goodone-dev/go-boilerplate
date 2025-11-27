@@ -5,36 +5,40 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/goodone-dev/go-boilerplate/internal/utils/http"
-	"github.com/goodone-dev/go-boilerplate/internal/utils/tracer"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
+	httpclient "github.com/goodone-dev/go-boilerplate/internal/utils/http_client"
 )
 
 const url = "https://httpbin.org"
 
-type IHttpbinIntegration interface {
+type HttpbinIntegration interface {
 	GetErrorStatus(ctx context.Context) (data any, err error)
 	GetSuccessStatus(ctx context.Context) (data any, err error)
 }
 
-type HttpbinIntegration struct{}
-
-func NewHttpBinIntegration() IHttpbinIntegration {
-	return &HttpbinIntegration{}
+type httpbinIntegration struct {
+	http *httpclient.CustomHttpClient
 }
 
-func (*HttpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.StartSpan(ctx)
+func NewHttpBinIntegration() HttpbinIntegration {
+	return &httpbinIntegration{
+		http: httpclient.NewHttpClient(),
+	}
+}
+
+func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
+	ctx, span := tracer.Start(ctx)
 	defer func() {
-		span.EndSpan(err, body)
+		span.Stop(err, body)
 	}()
 
-	http, err := http.NewClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := http.Request.
-		Get(fmt.Sprintf("%s/status/500", url))
+		Get(ctx, fmt.Sprintf("%s/status/500", url))
 
 	if err != nil {
 		return nil, err
@@ -48,19 +52,19 @@ func (*HttpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err er
 	return
 }
 
-func (*HttpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.StartSpan(ctx)
+func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
+	ctx, span := tracer.Start(ctx)
 	defer func() {
-		span.EndSpan(err, body)
+		span.Stop(err, body)
 	}()
 
-	http, err := http.NewClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := http.Request.
-		Get(fmt.Sprintf("%s/headers", url))
+		Get(ctx, fmt.Sprintf("%s/headers", url))
 
 	if err != nil {
 		return nil, err

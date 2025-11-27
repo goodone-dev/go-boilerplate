@@ -14,21 +14,64 @@ template-schema: '{{.Template}}.schema.json'
 packages:
   github.com/goodone-dev/go-boilerplate/internal/domain/customer:
     interfaces:
-      ICustomerRepository:
+      CustomerRepository:
         config:
           dir: "{{.InterfaceDir}}/mocks"
           filename: customer.repository_mock.go
-          structname: "{{.InterfaceName}}Mock"
+
+  github.com/goodone-dev/go-boilerplate/internal/domain/employee:
+    interfaces:
+      EmployeeRepository:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: employee.repository_mock.go
+
+  github.com/goodone-dev/go-boilerplate/internal/domain/product:
+    interfaces:
+      ProductRepository:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: product.repository_mock.go
+
   github.com/goodone-dev/go-boilerplate/internal/domain/order:
     interfaces:
-      IOrderRepository:
+      OrderRepository:
         config:
           dir: "{{.InterfaceDir}}/mocks"
           filename: "order.repository_mock.go"
-
-  github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache:
-    interfaces:
-      ICache:
+      OrderItemRepository:
         config:
           dir: "{{.InterfaceDir}}/mocks"
-          filename: "cache_mock.go"
+          filename: "order_item.repository_mock.go"
+      OrderUsecase:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "order.usecase_mock.go"
+
+  github.com/goodone-dev/go-boilerplate/internal/domain/mail:
+    interfaces:
+      MailUsecase:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "mail.usecase_mock.go"
+
+  github.com/goodone-dev/go-boilerplate/internal/domain/health:
+    interfaces:
+      HealthChecker:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "health.handler_mock.go"
+
+  github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail:
+    interfaces:
+      MailSender:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "mail_sender_mock.go"
+
+  github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus:
+    interfaces:
+      Bus:
+        config:
+          dir: "{{.InterfaceDir}}/mocks"
+          filename: "bus_mock.go"

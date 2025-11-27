@@ -2,6 +2,6 @@ package mail
 
 import "context"
 
-type IMailUsecase interface {
+type MailUsecase interface {
 	Send(ctx context.Context, req MailSendMessage) error
 }
