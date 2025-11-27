@@ -29,9 +29,7 @@ services:
       start_period: 5s
 
   rabbitmq:
-    networks:
-      - backend
-    image: rabbitmq:4.2.1-management
+    image: rabbitmq:4.2.1-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
