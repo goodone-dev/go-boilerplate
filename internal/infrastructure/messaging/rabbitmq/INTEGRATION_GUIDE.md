@@ -41,7 +41,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/spf13/viper"
 )
@@ -49,14 +49,14 @@ import (
 func main() {
     // Load config
     viper.AutomaticEnv()
-    
+
     // Initialize RabbitMQ client
     rabbitClient, err := rabbitmq.NewClientFromViper()
     if err != nil {
         log.Fatalf("Failed to initialize RabbitMQ: %v", err)
     }
     defer rabbitClient.Close()
-    
+
     // Pass client to your services
     // ...
 }
@@ -81,7 +81,7 @@ func NewInfrastructure() (*Infrastructure, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &Infrastructure{
         RabbitMQ: rabbitClient,
     }, nil
@@ -104,7 +104,7 @@ package customer
 import (
     "context"
     "time"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/direct"
 )
@@ -118,7 +118,7 @@ func NewService(rabbitClient rabbitmq.Client) (*Service, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &Service{
         publisher: publisher,
     }, nil
@@ -130,7 +130,7 @@ func (s *Service) CreateCustomer(ctx context.Context, req CreateCustomerRequest)
     if err != nil {
         return err
     }
-    
+
     // Publish event
     event := CustomerCreatedEvent{
         CustomerID: customer.ID,
@@ -138,12 +138,12 @@ func (s *Service) CreateCustomer(ctx context.Context, req CreateCustomerRequest)
         Name:       customer.Name,
         CreatedAt:  time.Now(),
     }
-    
+
     if err := s.publisher.Publish(ctx, "customer.created", event); err != nil {
         log.Printf("Failed to publish event: %v", err)
         // Don't fail the request, just log the error
     }
-    
+
     return nil
 }
 ```
@@ -157,7 +157,7 @@ import (
     "context"
     "encoding/json"
     "log"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/direct"
 )
@@ -176,7 +176,7 @@ func NewService(rabbitClient rabbitmq.Client) (*Service, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &Service{
         consumer: consumer,
     }, nil
@@ -188,13 +188,13 @@ func (s *Service) Start(ctx context.Context) error {
         if err := json.Unmarshal(body, &event); err != nil {
             return err // Will retry
         }
-        
+
         // Send welcome email
         if err := s.sendWelcomeEmail(ctx, event); err != nil {
             log.Printf("Failed to send email: %v", err)
             return err // Will retry
         }
-        
+
         log.Printf("Welcome email sent to %s", event.Email)
         return nil // Success - message will be acknowledged
     })
@@ -210,7 +210,7 @@ package logger
 
 import (
     "context"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/topic"
 )
@@ -224,7 +224,7 @@ func NewMessageBrokerLogger(rabbitClient rabbitmq.Client) (*MessageBrokerLogger,
     if err != nil {
         return nil, err
     }
-    
+
     return &MessageBrokerLogger{
         publisher: publisher,
     }, nil
@@ -254,7 +254,7 @@ package monitoring
 
 import (
     "context"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/topic"
 )
@@ -269,7 +269,7 @@ func StartErrorLogConsumer(ctx context.Context, rabbitClient rabbitmq.Client) er
     if err != nil {
         return err
     }
-    
+
     return consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
         // Send to monitoring system (e.g., Sentry, DataDog)
         log.Printf("Error log from %s: %s", routingKey, string(body))
@@ -287,7 +287,7 @@ package customer
 
 import (
     "context"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/rpc"
 )
@@ -304,7 +304,7 @@ func NewValidationService(rabbitClient rabbitmq.Client, repo CustomerRepository)
     if err != nil {
         return nil, err
     }
-    
+
     return &ValidationService{
         server: server,
         repo:   repo,
@@ -314,13 +314,13 @@ func NewValidationService(rabbitClient rabbitmq.Client, repo CustomerRepository)
 func (s *ValidationService) Start(ctx context.Context) error {
     return s.server.ServeJSON(ctx, func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error) {
         req := request.(*ValidateCustomerRequest)
-        
+
         // Validate customer
         exists, err := s.repo.ExistsByEmail(ctx, req.Email)
         if err != nil {
             return nil, err
         }
-        
+
         return ValidateCustomerResponse{
             Valid:   !exists,
             Message: "Email is available",
@@ -337,7 +337,7 @@ package api
 import (
     "context"
     "time"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/rpc"
 )
@@ -353,7 +353,7 @@ func NewCustomerHandler(rabbitClient rabbitmq.Client) (*CustomerHandler, error) 
     if err != nil {
         return nil, err
     }
-    
+
     return &CustomerHandler{
         rpcClient: rpcClient,
     }, nil
@@ -363,12 +363,12 @@ func (h *CustomerHandler) ValidateEmail(ctx context.Context, email string) (bool
     request := ValidateCustomerRequest{
         Email: email,
     }
-    
+
     var response ValidateCustomerResponse
     if err := h.rpcClient.CallJSON(ctx, "customer.validate.rpc", request, &response); err != nil {
         return false, err
     }
-    
+
     return response.Valid, nil
 }
 ```
@@ -380,9 +380,9 @@ func (h *CustomerHandler) ValidateEmail(ctx context.Context, email string) (bool
 ```go
 func main() {
     // ... initialize rabbitClient
-    
+
     ctx := context.Background()
-    
+
     // Start consumers
     go func() {
         emailService, _ := email.NewService(rabbitClient)
@@ -390,13 +390,13 @@ func main() {
             log.Printf("Email consumer error: %v", err)
         }
     }()
-    
+
     go func() {
         if err := monitoring.StartErrorLogConsumer(ctx, rabbitClient); err != nil {
             log.Printf("Monitoring consumer error: %v", err)
         }
     }()
-    
+
     // Start RPC servers
     go func() {
         validationService, _ := customer.NewValidationService(rabbitClient, customerRepo)
@@ -404,7 +404,7 @@ func main() {
             log.Printf("Validation RPC server error: %v", err)
         }
     }()
-    
+
     // Start HTTP server
     // ...
 }
@@ -421,16 +421,16 @@ package main
 func main() {
     rabbitClient, _ := rabbitmq.NewClientFromViper()
     defer rabbitClient.Close()
-    
+
     ctx := context.Background()
-    
+
     // Start all consumers
     consumers := []func(context.Context, rabbitmq.Client) error{
         email.StartCustomerCreatedConsumer,
         email.StartOrderCreatedConsumer,
         monitoring.StartErrorLogConsumer,
     }
-    
+
     for _, consumer := range consumers {
         go func(c func(context.Context, rabbitmq.Client) error) {
             if err := c(ctx, rabbitClient); err != nil {
@@ -438,7 +438,7 @@ func main() {
             }
         }(consumer)
     }
-    
+
     // Wait for shutdown signal
     select {}
 }
@@ -454,7 +454,7 @@ package customer_test
 import (
     "context"
     "testing"
-    
+
     "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
 )
 
@@ -470,15 +470,15 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
         MaxRetry: 3,
     })
     defer client.Close()
-    
+
     service, _ := customer.NewService(client)
-    
+
     // Test customer creation
     err := service.CreateCustomer(context.Background(), CreateCustomerRequest{
         Email: "test@example.com",
         Name:  "Test User",
     })
-    
+
     if err != nil {
         t.Errorf("Expected no error, got %v", err)
     }

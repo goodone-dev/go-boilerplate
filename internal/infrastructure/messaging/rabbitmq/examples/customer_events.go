@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/direct"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/topic"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/topic"
 )
 
 // CustomerCreatedEvent represents a customer created event

@@ -26,7 +26,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database/postgres"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"

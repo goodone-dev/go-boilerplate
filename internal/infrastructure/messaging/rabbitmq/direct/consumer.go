@@ -1,4 +1,4 @@
-package topic
+package direct
 
 import (
 	"context"
@@ -6,40 +6,36 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // MessageHandler is a function that processes messages
-type MessageHandler func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error
+type MessageHandler func(ctx context.Context, body []byte, headers map[string]interface{}) error
 
-// Consumer handles topic exchange consumption
+// Consumer handles direct exchange consumption
 type Consumer struct {
-	client         rabbitmq.Client
-	exchangeName   string
-	queueName      string
-	routingPattern string
-	dlxName        string
+	client       rabbitmq.Client
+	exchangeName string
+	queueName    string
+	routingKey   string
+	dlxName      string
 }
 
 // ConsumerConfig holds consumer configuration
 type ConsumerConfig struct {
-	ExchangeName   string
-	QueueName      string
-	RoutingPattern string // Pattern like "logs.*", "events.customer.#", "notifications.*.sent"
-	DLXEnabled     bool   // Enable Dead Letter Exchange
+	ExchangeName string
+	QueueName    string
+	RoutingKey   string
+	DLXEnabled   bool // Enable Dead Letter Exchange
 }
 
-// NewConsumer creates a new topic exchange consumer with DLX support
-// Routing pattern examples:
-// - "logs.*" matches "logs.error", "logs.info", but not "logs.error.critical"
-// - "logs.#" matches "logs.error", "logs.error.critical", "logs.info.debug"
-// - "events.customer.*" matches "events.customer.created", "events.customer.updated"
+// NewConsumer creates a new direct exchange consumer with DLX support
 func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, error) {
-	// Declare the topic exchange
+	// Declare the direct exchange
 	err := client.DeclareExchange(rabbitmq.ExchangeConfig{
 		Name:       config.ExchangeName,
-		Type:       rabbitmq.ExchangeTopic,
+		Type:       rabbitmq.ExchangeDirect,
 		Durable:    true,
 		AutoDelete: false,
 		Internal:   false,
@@ -51,10 +47,10 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 	}
 
 	consumer := &Consumer{
-		client:         client,
-		exchangeName:   config.ExchangeName,
-		queueName:      config.QueueName,
-		routingPattern: config.RoutingPattern,
+		client:       client,
+		exchangeName: config.ExchangeName,
+		queueName:    config.QueueName,
+		routingKey:   config.RoutingKey,
 	}
 
 	// Setup Dead Letter Exchange if enabled
@@ -65,7 +61,7 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		// Declare DLX
 		err = client.DeclareExchange(rabbitmq.ExchangeConfig{
 			Name:       dlxName,
-			Type:       rabbitmq.ExchangeTopic,
+			Type:       rabbitmq.ExchangeDirect,
 			Durable:    true,
 			AutoDelete: false,
 			Internal:   false,
@@ -89,8 +85,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 			return nil, fmt.Errorf("failed to declare DLQ: %w", err)
 		}
 
-		// Bind DLQ to DLX with the same routing pattern
-		err = client.BindQueue(dlqName, config.RoutingPattern, dlxName, nil)
+		// Bind DLQ to DLX
+		err = client.BindQueue(dlqName, config.RoutingKey, dlxName, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to bind DLQ: %w", err)
 		}
@@ -102,6 +98,7 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 	queueArgs := amqp.Table{}
 	if config.DLXEnabled {
 		queueArgs["x-dead-letter-exchange"] = consumer.dlxName
+		queueArgs["x-dead-letter-routing-key"] = config.RoutingKey
 	}
 
 	_, err = client.DeclareQueue(rabbitmq.QueueConfig{
@@ -116,8 +113,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		return nil, fmt.Errorf("failed to declare queue: %w", err)
 	}
 
-	// Bind queue to exchange with routing pattern
-	err = client.BindQueue(config.QueueName, config.RoutingPattern, config.ExchangeName, nil)
+	// Bind queue to exchange
+	err = client.BindQueue(config.QueueName, config.RoutingKey, config.ExchangeName, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to bind queue: %w", err)
 	}
@@ -128,8 +125,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 // Consume starts consuming messages from the queue
 func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
-		log.Printf("Topic Consumer: Received message from queue %s with routing key %s", c.queueName, delivery.RoutingKey)
-		return handler(ctx, delivery.RoutingKey, delivery.Body, delivery.Headers)
+		log.Printf("Direct Consumer: Received message from queue %s", c.queueName)
+		return handler(ctx, delivery.Body, delivery.Headers)
 	}
 
 	consumeConfig := rabbitmq.ConsumeConfig{
@@ -146,8 +143,8 @@ func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 }
 
 // ConsumeJSON consumes messages and unmarshals them into the provided type
-func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, routingKey string, payload interface{}, headers map[string]interface{}) error, payloadType interface{}) error {
-	messageHandler := func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
+func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, payload interface{}, headers map[string]interface{}) error, payloadType interface{}) error {
+	messageHandler := func(ctx context.Context, body []byte, headers map[string]interface{}) error {
 		// Create a new instance of the payload type
 		payload := payloadType
 
@@ -155,7 +152,7 @@ func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Con
 			return fmt.Errorf("failed to unmarshal message: %w", err)
 		}
 
-		return handler(ctx, routingKey, payload, headers)
+		return handler(ctx, payload, headers)
 	}
 
 	return c.Consume(ctx, messageHandler)

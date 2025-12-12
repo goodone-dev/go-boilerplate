@@ -10,7 +10,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 	"github.com/google/uuid"

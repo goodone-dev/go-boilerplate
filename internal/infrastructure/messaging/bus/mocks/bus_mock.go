@@ -7,7 +7,7 @@ package bus
 import (
 	"context"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/bus"
 	mock "github.com/stretchr/testify/mock"
 )
 

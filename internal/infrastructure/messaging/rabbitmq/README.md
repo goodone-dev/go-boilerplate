@@ -101,7 +101,7 @@ defer consumer.Close()
 // Start consuming
 err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
     log.Printf("Received: %s", string(body))
-    
+
     // Process message
     // If error is returned, message will be retried or sent to DLQ
     return nil
@@ -182,14 +182,14 @@ defer server.Close()
 // Serve requests
 err = server.ServeJSON(ctx, func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error) {
     req := request.(*GetCustomerRequest)
-    
+
     // Process request
     response := GetCustomerResponse{
         CustomerID: req.CustomerID,
         Email:      "customer@example.com",
         Name:       "Customer Name",
     }
-    
+
     return response, nil
 }, &GetCustomerRequest{})
 ```
@@ -239,7 +239,7 @@ err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[s
     if err := processMessage(body); err != nil {
         return fmt.Errorf("processing failed: %w", err)
     }
-    
+
     // Success - message will be acknowledged
     return nil
 })

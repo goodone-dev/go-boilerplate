@@ -69,7 +69,7 @@ packages:
           dir: "{{.InterfaceDir}}/mocks"
           filename: "mail_sender_mock.go"
 
-  github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus:
+  github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/bus:
     interfaces:
       Bus:
         config:

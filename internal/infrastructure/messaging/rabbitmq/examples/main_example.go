@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/rpc"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/rpc"
 )
 
 // RunAllExamples demonstrates all RabbitMQ features

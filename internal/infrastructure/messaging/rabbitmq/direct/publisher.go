@@ -1,4 +1,4 @@
-package topic
+package direct
 
 import (
 	"context"
@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/google/uuid"
 )
 
-// Publisher handles topic exchange publishing
+// Publisher handles direct exchange publishing
 type Publisher struct {
 	client       rabbitmq.Client
 	exchangeName string
 }
 
-// NewPublisher creates a new topic exchange publisher
+// NewPublisher creates a new direct exchange publisher
 func NewPublisher(client rabbitmq.Client, exchangeName string) (*Publisher, error) {
-	// Declare the topic exchange
+	// Declare the direct exchange
 	err := client.DeclareExchange(rabbitmq.ExchangeConfig{
 		Name:       exchangeName,
-		Type:       rabbitmq.ExchangeTopic,
+		Type:       rabbitmq.ExchangeDirect,
 		Durable:    true,
 		AutoDelete: false,
 		Internal:   false,
@@ -38,8 +38,7 @@ func NewPublisher(client rabbitmq.Client, exchangeName string) (*Publisher, erro
 	}, nil
 }
 
-// Publish publishes a message to the topic exchange with a routing pattern
-// Routing key examples: "logs.error", "events.customer.created", "notifications.email.sent"
+// Publish publishes a message to the direct exchange with a specific routing key
 func (p *Publisher) Publish(ctx context.Context, routingKey string, payload interface{}) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -51,31 +50,6 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, payload inte
 		ContentType: "application/json",
 		MessageID:   uuid.New().String(),
 		Timestamp:   time.Now(),
-	}
-
-	config := rabbitmq.PublishConfig{
-		Exchange:   p.exchangeName,
-		RoutingKey: routingKey,
-		Mandatory:  false,
-		Immediate:  false,
-	}
-
-	return p.client.Publish(ctx, config, msg)
-}
-
-// PublishWithPriority publishes a message with priority
-func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, payload interface{}, priority uint8) error {
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
-	}
-
-	msg := rabbitmq.Message{
-		Body:        body,
-		ContentType: "application/json",
-		MessageID:   uuid.New().String(),
-		Timestamp:   time.Now(),
-		Priority:    priority,
 	}
 
 	config := rabbitmq.PublishConfig{

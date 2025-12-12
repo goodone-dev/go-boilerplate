@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/rabbitmq/rpc"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/rpc"
 )
 
 // GetCustomerRequest represents a request to get customer details

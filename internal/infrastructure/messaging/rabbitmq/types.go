@@ -73,15 +73,15 @@ type ConsumeConfig struct {
 
 // Message represents a message to be published
 type Message struct {
-	Body        []byte
-	ContentType string
-	Headers     map[string]interface{}
-	Priority    uint8
-	Expiration  string
-	MessageID   string
-	Timestamp   time.Time
-	Type        string
-	ReplyTo     string
+	Body          []byte
+	ContentType   string
+	Headers       map[string]interface{}
+	Priority      uint8
+	Expiration    string
+	MessageID     string
+	Timestamp     time.Time
+	Type          string
+	ReplyTo       string
 	CorrelationID string
 }
 

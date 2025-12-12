@@ -167,7 +167,7 @@ consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]
     if err := process(body); err != nil {
         return err // Message will be retried
     }
-    
+
     // Return nil to acknowledge
     return nil // Message is acknowledged and removed from queue
 })
