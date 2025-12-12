@@ -181,8 +181,6 @@ func (c *redisClient) Monitor(ctx context.Context) {
 				if !wasLost {
 					logger.Errorf(ctx, err, "🛑 Redis connection lost")
 					wasLost = true
-				} else {
-					logger.Warn(ctx, "🔄 Retrying Redis connection...")
 				}
 			} else {
 				if wasLost {

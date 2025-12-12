@@ -178,8 +178,6 @@ func (c *postgresConnection) Monitor(ctx context.Context) {
 				if !wasLost {
 					logger.Errorf(ctx, err, "🛑 PostgreSQL connection lost")
 					wasLost = true
-				} else {
-					logger.Warn(ctx, "🔄 Retrying PostgreSQL connection...")
 				}
 			} else {
 				if wasLost {

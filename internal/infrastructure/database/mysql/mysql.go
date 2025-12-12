@@ -176,8 +176,6 @@ func (c *mysqlConnection) Monitor(ctx context.Context) {
 				if !wasLost {
 					logger.Errorf(ctx, err, "🛑 MySQL connection lost")
 					wasLost = true
-				} else {
-					logger.Warn(ctx, "🔄 Retrying MySQL connection...")
 				}
 			} else {
 				if wasLost {

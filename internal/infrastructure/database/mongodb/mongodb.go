@@ -180,8 +180,6 @@ func (c *mongoConnection) Monitor(ctx context.Context) {
 				if !wasLost {
 					logger.Errorf(ctx, err, "🛑 MongoDB connection lost")
 					wasLost = true
-				} else {
-					logger.Warn(ctx, "🔄 Retrying MongoDB connection...")
 				}
 			} else {
 				if wasLost {
