@@ -13,12 +13,12 @@ import (
 )
 
 type mailHandler struct {
-	usecase mail.MailUsecase
+	mailUsecase mail.MailUsecase
 }
 
-func NewMailHandler(usecase mail.MailUsecase) mail.MailHandler {
+func NewMailHandler(mailUsecase mail.MailUsecase) mail.MailHandler {
 	return &mailHandler{
-		usecase: usecase,
+		mailUsecase: mailUsecase,
 	}
 }
 
@@ -35,7 +35,7 @@ func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err e
 		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
 	}
 
-	err = h.usecase.Send(ctx, msg)
+	err = h.mailUsecase.Send(ctx, msg)
 	if err != nil {
 		logger.Errorf(ctx, err, "❌ Failed to send email to: %s", msg.To)
 		return
