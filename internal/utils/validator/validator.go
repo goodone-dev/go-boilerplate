@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/validator/rules"
 )
 
 type CustomValidator struct {
@@ -31,6 +32,12 @@ func NewValidator() *CustomValidator {
 		logger.Fatal(context.Background(), err, "❌ Failed to register default translations")
 		return nil
 	}
+
+	// Register custom validators
+	_ = vl.RegisterValidation("sql_injection_safe", rules.SQLInjectionSafeValidation)
+
+	// Register custom translations
+	_ = vl.RegisterTranslation("sql_injection_safe", tr, rules.SQLInjectionSafeRegistration, rules.SQLInjectionSafeTranslation)
 
 	return &CustomValidator{
 		validator:  vl,
