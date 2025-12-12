@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/masker"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -68,7 +69,8 @@ func startSpan(ctx context.Context, spanName string, funcName string, params ...
 	)
 
 	for i, param := range params {
-		paramJSON, _ := json.Marshal(param)
+		maskedParam := masker.Mask(param)
+		paramJSON, _ := json.Marshal(maskedParam)
 		span.SetAttributes(
 			attribute.String(fmt.Sprintf("func.param.%d", i), string(paramJSON)),
 		)
@@ -88,7 +90,8 @@ func (s *customTracerSpan) Stop(err error, returns ...any) {
 	}
 
 	for i, returnValue := range returns {
-		returnJSON, _ := json.Marshal(returnValue)
+		maskedReturn := masker.Mask(returnValue)
+		returnJSON, _ := json.Marshal(maskedReturn)
 		s.SetAttributes(
 			attribute.String(fmt.Sprintf("func.return.%d", i), string(returnJSON)),
 		)
