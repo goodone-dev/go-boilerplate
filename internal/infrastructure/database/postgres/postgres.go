@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -58,10 +59,14 @@ type postgresConnection struct {
 func Open(ctx context.Context) *postgresConnection {
 	pgConfig := setConfig()
 
-	return &postgresConnection{
+	conn := &postgresConnection{
 		Master: open(ctx, pgConfig.Master),
 		Slave:  open(ctx, pgConfig.Slave),
 	}
+
+	go conn.Monitor(ctx)
+
+	return conn
 }
 
 func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
@@ -155,4 +160,33 @@ func (c *postgresConnection) Ping(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *postgresConnection) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	var wasLost bool
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			err := c.Ping(ctx)
+			if err != nil {
+				if !wasLost {
+					logger.Errorf(ctx, err, "🛑 PostgreSQL connection lost")
+					wasLost = true
+				} else {
+					logger.Warn(ctx, "🔄 Retrying PostgreSQL connection...")
+				}
+			} else {
+				if wasLost {
+					logger.Info(ctx, "✅ PostgreSQL connection restored")
+					wasLost = false
+				}
+			}
+		}
+	}
 }
