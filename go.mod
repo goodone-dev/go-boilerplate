@@ -1,6 +1,6 @@
 module github.com/goodone-dev/go-boilerplate
 
-go 1.24.9
+go 1.24.11
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
