@@ -173,6 +173,8 @@ type RetryConfigMap struct {
 
 func Load() (err error) {
 	viper.AddConfigPath("./")
+	viper.AddConfigPath("../")
+	viper.AddConfigPath("../../")
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
