@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
@@ -56,10 +57,14 @@ type mysqlConnection struct {
 func Open(ctx context.Context) *mysqlConnection {
 	mysqlConfig := setConfig()
 
-	return &mysqlConnection{
+	conn := &mysqlConnection{
 		Master: open(ctx, mysqlConfig.Master),
 		Slave:  open(ctx, mysqlConfig.Slave),
 	}
+
+	go conn.Monitor(ctx)
+
+	return conn
 }
 
 func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
@@ -153,4 +158,31 @@ func (c *mysqlConnection) Ping(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *mysqlConnection) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	var wasLost bool
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			err := c.Ping(ctx)
+			if err != nil {
+				if !wasLost {
+					logger.Errorf(ctx, err, "🛑 MySQL connection lost")
+					wasLost = true
+				}
+			} else {
+				if wasLost {
+					logger.Info(ctx, "✅ MySQL connection restored")
+					wasLost = false
+				}
+			}
+		}
+	}
 }

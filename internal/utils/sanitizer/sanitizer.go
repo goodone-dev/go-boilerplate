@@ -18,8 +18,8 @@ func NewSanitizer() *sanitize.Sanitizer {
 	return s
 }
 
-var customSanitizer = NewSanitizer()
+var sanitizer = NewSanitizer()
 
 func Sanitize[S any](obj S) (err error) {
-	return customSanitizer.Sanitize(&obj)
+	return sanitizer.Sanitize(&obj)
 }

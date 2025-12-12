@@ -63,10 +63,14 @@ type mongoConnection struct {
 func Open(ctx context.Context) *mongoConnection {
 	mongoConfig := setConfig()
 
-	return &mongoConnection{
+	conn := &mongoConnection{
 		Master: open(ctx, mongoConfig.Master, readpref.Primary()),
 		Slave:  open(ctx, mongoConfig.Slave, readpref.Secondary()),
 	}
+
+	go conn.Monitor(ctx)
+
+	return conn
 }
 
 func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPref) *mongo.Database {
@@ -158,4 +162,31 @@ func (c *mongoConnection) Ping(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *mongoConnection) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	var wasLost bool
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			err := c.Ping(ctx)
+			if err != nil {
+				if !wasLost {
+					logger.Errorf(ctx, err, "🛑 MongoDB connection lost")
+					wasLost = true
+				}
+			} else {
+				if wasLost {
+					logger.Info(ctx, "✅ MongoDB connection restored")
+					wasLost = false
+				}
+			}
+		}
+	}
 }

@@ -9,23 +9,25 @@ import (
 	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/templates"
 )
 
-func NewTemplate() *template.Template {
-	tmpl, err := template.New("baseTemplate").Funcs(template.FuncMap{
+var tmpl *template.Template
+
+func init() {
+	var err error
+
+	tmpl, err = template.New("baseTemplate").Funcs(template.FuncMap{
 		"FormatNumber": formatNumber,
 		"FormatDate":   formatDate,
-	}).ParseGlob("./templates/**/*.html")
+	}).ParseFS(templates.FS, "email/*.html", "pdf/*.html")
 	if err != nil {
 		logger.Fatal(context.Background(), err, "❌ Failed to parse template")
-		return nil
 	}
-
-	return tmpl
 }
 
 func ExecuteTemplate(wr io.Writer, file string, data any) (err error) {
-	err = NewTemplate().ExecuteTemplate(wr, file, data)
+	err = tmpl.ExecuteTemplate(wr, file, data)
 	if err != nil {
 		return
 	}

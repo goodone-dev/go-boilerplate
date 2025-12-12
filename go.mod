@@ -1,9 +1,10 @@
 module github.com/goodone-dev/go-boilerplate
 
-go 1.24.9
+go 1.24.11
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/ggwhite/go-masker v1.1.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-contrib/gzip v1.2.4
 	github.com/gin-contrib/secure v1.1.2

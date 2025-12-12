@@ -54,9 +54,13 @@ func createClient(ctx context.Context) (client *redis.Client) {
 }
 
 func NewClient(ctx context.Context) cache.Cache {
-	return &redisClient{
+	client := &redisClient{
 		client: createClient(ctx),
 	}
+
+	go client.Monitor(ctx)
+
+	return client
 }
 
 func (c *redisClient) Ping(ctx context.Context) (err error) {
@@ -159,6 +163,33 @@ func (c *redisClient) Expire(ctx context.Context, key string, ttl time.Duration)
 
 func (c *redisClient) Shutdown(ctx context.Context) (err error) {
 	return c.client.Close()
+}
+
+func (c *redisClient) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	var wasLost bool
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			err := c.Ping(ctx)
+			if err != nil {
+				if !wasLost {
+					logger.Errorf(ctx, err, "🛑 Redis connection lost")
+					wasLost = true
+				}
+			} else {
+				if wasLost {
+					logger.Info(ctx, "✅ Redis connection restored")
+					wasLost = false
+				}
+			}
+		}
+	}
 }
 
 // noLogger is a no-op logger that implements redis internal.Logging interface
