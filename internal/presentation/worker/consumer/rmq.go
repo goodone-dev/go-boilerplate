@@ -3,7 +3,7 @@ package consumer
 import (
 	"context"
 
-	"github.com/goodone-dev/go-boilerplate/internal/application/mail/delivery/worker"
+	"github.com/goodone-dev/go-boilerplate/internal/application/mail/handler/worker"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"

@@ -11,9 +11,9 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
-	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/delivery/http"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/handler/rest"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
-	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
+	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/handler/rest"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
 	orderuc "github.com/goodone-dev/go-boilerplate/internal/application/order/usecase"
 	productrepo "github.com/goodone-dev/go-boilerplate/internal/application/product/repository"
