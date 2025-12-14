@@ -222,7 +222,7 @@ func (c *client) BindQueue(queueName, routingKey, exchangeName string, args amqp
 }
 
 func (c *client) Publish(ctx context.Context, config PublishConfig, msg Message) error {
-	ctx, span := c.tracer.Start(ctx, "rabbitmq.publish",
+	ctx, span := c.tracer.Start(ctx, "RabbitMQ.Publish",
 		trace.WithAttributes(
 			attribute.String("exchange", config.Exchange),
 			attribute.String("routing_key", config.RoutingKey),
@@ -331,7 +331,7 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 	carrier := NewHeaderCarrier(delivery.Headers)
 	ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
 
-	ctx, span := c.tracer.Start(ctx, "rabbitmq.consume",
+	ctx, span := c.tracer.Start(ctx, fmt.Sprintf("RabbitMQ Consume %s", delivery.RoutingKey),
 		trace.WithAttributes(
 			attribute.String("exchange", delivery.Exchange),
 			attribute.String("routing_key", delivery.RoutingKey),
