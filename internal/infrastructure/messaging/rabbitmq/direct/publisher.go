@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/google/uuid"
 )
@@ -17,7 +18,7 @@ type Publisher struct {
 }
 
 // NewPublisher creates a new direct exchange publisher
-func NewPublisher(client rabbitmq.Client, exchangeName string) (*Publisher, error) {
+func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName string) *Publisher {
 	// Declare the direct exchange
 	err := client.DeclareExchange(rabbitmq.ExchangeConfig{
 		Name:       exchangeName,
@@ -29,13 +30,14 @@ func NewPublisher(client rabbitmq.Client, exchangeName string) (*Publisher, erro
 		Args:       nil,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare exchange: %w", err)
+		logger.Fatal(ctx, err, "failed to declare exchange")
+		return nil
 	}
 
 	return &Publisher{
 		client:       client,
 		exchangeName: exchangeName,
-	}, nil
+	}
 }
 
 // Publish publishes a message to the direct exchange with a specific routing key

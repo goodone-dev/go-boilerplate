@@ -7,6 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/utils/retry"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,7 +19,6 @@ import (
 
 const (
 	reconnectDelay = 5 * time.Second
-	resendDelay    = 5 * time.Second
 )
 
 // client implements the Client interface with connection pooling
@@ -31,15 +33,29 @@ type client struct {
 }
 
 // NewClient creates a new RabbitMQ client with connection pooling
-func NewClient(config Config) (Client, error) {
+func NewClient(ctx context.Context) Client {
+	config := Config{
+		Host:       config.RabbitMQConfig.Host,
+		Port:       config.RabbitMQConfig.Port,
+		Username:   config.RabbitMQConfig.Username,
+		Password:   config.RabbitMQConfig.Password,
+		Vhost:      config.RabbitMQConfig.Vhost,
+		PoolSize:   config.RabbitMQConfig.PoolSize,
+		MaxRetry:   config.RabbitMQConfig.MaxRetry,
+		RetryDelay: config.RabbitMQConfig.RetryDelay,
+	}
+
 	c := &client{
 		config:   config,
 		channels: make(chan *amqp.Channel, config.PoolSize),
 		tracer:   otel.Tracer("rabbitmq"),
 	}
 
-	if err := c.connect(); err != nil {
-		return nil, fmt.Errorf("failed to connect: %w", err)
+	_, err := retry.RetryWithBackoff(ctx, "RabbitMQ connection", func() (any, error) {
+		return nil, c.connect()
+	})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ Failed to establish RabbitMQ connection after retries")
 	}
 
 	// Initialize channel pool
@@ -47,20 +63,22 @@ func NewClient(config Config) (Client, error) {
 		ch, err := c.conn.Channel()
 		if err != nil {
 			c.Close()
-			return nil, fmt.Errorf("failed to create channel: %w", err)
+
+			logger.Fatal(ctx, err, "❌ Failed to create channel")
+			return nil
 		}
 		c.channels <- ch
 	}
 
 	// Handle reconnection
-	go c.handleReconnect()
+	go c.Monitor(ctx)
 
-	return c, nil
+	return c
 }
 
 func (c *client) connect() error {
 	dsn := fmt.Sprintf(
-		"amqp://%s:%s@%s:%s%s",
+		"amqp://%s:%s@%s:%d%s",
 		c.config.Username,
 		c.config.Password,
 		c.config.Host,
@@ -77,45 +95,52 @@ func (c *client) connect() error {
 	c.notifyClose = make(chan *amqp.Error)
 	c.conn.NotifyClose(c.notifyClose)
 
-	log.Println("RabbitMQ: Connected successfully")
 	return nil
 }
 
-func (c *client) handleReconnect() {
+func (c *client) Monitor(ctx context.Context) {
 	for {
-		err := <-c.notifyClose
-		if c.closed {
+		select {
+		case <-ctx.Done():
 			return
+		case err := <-c.notifyClose:
+			logger.Error(ctx, err, "🛑 RabbitMQ connection lost")
+			if c.closed {
+				return
+			}
+
+			c.reconnect(ctx)
+		}
+	}
+}
+
+func (c *client) reconnect(ctx context.Context) {
+	for {
+		time.Sleep(reconnectDelay)
+		logger.Info(ctx, "🔄 RabbitMQ reconnecting...")
+
+		if err := c.connect(); err != nil {
+			logger.Error(ctx, err, "❌ RabbitMQ reconnection failed")
+			continue
 		}
 
-		log.Printf("RabbitMQ: Connection closed: %v. Reconnecting...", err)
-
-		for {
-			time.Sleep(reconnectDelay)
-
-			if err := c.connect(); err != nil {
-				log.Printf("RabbitMQ: Reconnection failed: %v", err)
+		// Recreate channel pool
+		c.mu.Lock()
+		close(c.channels)
+		c.channels = make(chan *amqp.Channel, c.config.PoolSize)
+		for i := 0; i < c.config.PoolSize; i++ {
+			ch, err := c.conn.Channel()
+			if err != nil {
+				logger.Error(ctx, err, "❌ RabbitMQ channel creation failed")
+				c.mu.Unlock()
 				continue
 			}
-
-			// Recreate channel pool
-			c.mu.Lock()
-			close(c.channels)
-			c.channels = make(chan *amqp.Channel, c.config.PoolSize)
-			for i := 0; i < c.config.PoolSize; i++ {
-				ch, err := c.conn.Channel()
-				if err != nil {
-					log.Printf("RabbitMQ: Failed to create channel: %v", err)
-					c.mu.Unlock()
-					continue
-				}
-				c.channels <- ch
-			}
-			c.mu.Unlock()
-
-			log.Println("RabbitMQ: Reconnected successfully")
-			break
+			c.channels <- ch
 		}
+		c.mu.Unlock()
+
+		logger.Info(ctx, "✅ RabbitMQ connection restored")
+		break
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 // Config holds RabbitMQ configuration
 type Config struct {
 	Host       string
-	Port       string
+	Port       int
 	Username   string
 	Password   string
 	Vhost      string

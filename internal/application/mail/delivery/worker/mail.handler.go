@@ -1,4 +1,4 @@
-package messaging
+package worker
 
 import (
 	"context"
@@ -22,26 +22,24 @@ func NewMailHandler(mailUsecase mail.MailUsecase) mail.MailHandler {
 	}
 }
 
-func (h *mailHandler) Send(ctx context.Context, msg mail.MailSendMessage) (err error) {
-	ctx, span := tracer.Start(ctx, msg)
+func (h *mailHandler) Send(ctx context.Context, payload any, headers map[string]any) (err error) {
+	ctx, span := tracer.Start(ctx, payload)
 	defer func() {
 		span.Stop(err)
 	}()
 
-	logger.Infof(ctx, "📧 Processing email send request to: %s", msg.To)
+	body := payload.(mail.MailSendMessage)
 
-	if errs := validator.Validate(msg); errs != nil {
-		logger.Errorf(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request to: %s", msg.To)
+	if errs := validator.Validate(body); errs != nil {
+		logger.Errorf(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request to: %s", body.To)
 		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
 	}
 
-	err = h.mailUsecase.Send(ctx, msg)
+	err = h.mailUsecase.Send(ctx, body)
 	if err != nil {
-		logger.Errorf(ctx, err, "❌ Failed to send email to: %s", msg.To)
+		logger.Errorf(ctx, err, "❌ Failed to send email to: %s", body.To)
 		return
 	}
-
-	logger.Infof(ctx, "✅ Successfully sent email to: %s", msg.To)
 
 	return
 }

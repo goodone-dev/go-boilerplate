@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -31,7 +33,7 @@ type ConsumerConfig struct {
 }
 
 // NewConsumer creates a new direct exchange consumer with DLX support
-func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, error) {
+func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerConfig) *Consumer {
 	// Declare the direct exchange
 	err := client.DeclareExchange(rabbitmq.ExchangeConfig{
 		Name:       config.ExchangeName,
@@ -43,7 +45,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		Args:       nil,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare exchange: %w", err)
+		logger.Fatal(ctx, err, "failed to declare exchange")
+		return nil
 	}
 
 	consumer := &Consumer{
@@ -69,7 +72,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 			Args:       nil,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to declare DLX: %w", err)
+			logger.Fatal(ctx, err, "failed to declare DLX")
+			return nil
 		}
 
 		// Declare Dead Letter Queue
@@ -82,13 +86,15 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 			Args:       nil,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to declare DLQ: %w", err)
+			logger.Fatal(ctx, err, "failed to declare DLQ")
+			return nil
 		}
 
 		// Bind DLQ to DLX
 		err = client.BindQueue(dlqName, config.RoutingKey, dlxName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to bind DLQ: %w", err)
+			logger.Fatal(ctx, err, "failed to bind DLQ")
+			return nil
 		}
 
 		consumer.dlxName = dlxName
@@ -110,16 +116,18 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		Args:       queueArgs,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare queue: %w", err)
+		logger.Fatal(ctx, err, "failed to declare queue")
+		return nil
 	}
 
 	// Bind queue to exchange
 	err = client.BindQueue(config.QueueName, config.RoutingKey, config.ExchangeName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to bind queue: %w", err)
+		logger.Fatal(ctx, err, "failed to bind queue")
+		return nil
 	}
 
-	return consumer, nil
+	return consumer
 }
 
 // Consume starts consuming messages from the queue
@@ -143,14 +151,23 @@ func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 }
 
 // ConsumeJSON consumes messages and unmarshals them into the provided type
-func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, payload interface{}, headers map[string]interface{}) error, payloadType interface{}) error {
-	messageHandler := func(ctx context.Context, body []byte, headers map[string]interface{}) error {
-		// Create a new instance of the payload type
-		payload := payloadType
+func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, payload any, headers map[string]any) error, payloadType any) error {
+	messageHandler := func(ctx context.Context, body []byte, headers map[string]any) error {
+		// Use reflection to create a new instance of the payload type
+		t := reflect.TypeOf(payloadType)
+		if t.Kind() == reflect.Ptr {
+			t = t.Elem()
+		}
 
-		if err := json.Unmarshal(body, &payload); err != nil {
+		// Create a pointer to the type to allow json.Unmarshal to fill it
+		ptr := reflect.New(t).Interface()
+
+		if err := json.Unmarshal(body, ptr); err != nil {
 			return fmt.Errorf("failed to unmarshal message: %w", err)
 		}
+
+		// Get the actual value to pass to the handler
+		payload := reflect.ValueOf(ptr).Elem().Interface()
 
 		return handler(ctx, payload, headers)
 	}
