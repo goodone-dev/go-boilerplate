@@ -29,14 +29,14 @@ func NewOrderUsecase(
 	productRepo product.ProductRepository,
 	orderRepo order.OrderRepository,
 	orderItemRepo order.OrderItemRepository,
-	directPub *direct.Publisher,
+	rmqDirectPub *direct.Publisher,
 ) order.OrderUsecase {
 	return &orderUsecase{
 		customerRepo:  customerRepo,
 		productRepo:   productRepo,
 		orderRepo:     orderRepo,
 		orderItemRepo: orderItemRepo,
-		rmqDirectPub:  directPub,
+		rmqDirectPub:  rmqDirectPub,
 	}
 }
 

@@ -23,21 +23,21 @@ func NewMailHandler(mailUsecase mail.MailUsecase) mail.MailHandler {
 }
 
 func (h *mailHandler) Send(ctx context.Context, payload any, headers map[string]any) (err error) {
-	ctx, span := tracer.Start(ctx, payload)
+	ctx, span := tracer.Start(ctx, payload, headers)
 	defer func() {
 		span.Stop(err)
 	}()
 
-	body := payload.(mail.MailSendMessage)
+	req := payload.(mail.MailSendMessage)
 
-	if errs := validator.Validate(body); errs != nil {
-		logger.Errorf(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request to: %s", body.To)
+	if errs := validator.Validate(req); errs != nil {
+		logger.Error(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request")
 		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
 	}
 
-	err = h.mailUsecase.Send(ctx, body)
+	err = h.mailUsecase.Send(ctx, req)
 	if err != nil {
-		logger.Errorf(ctx, err, "❌ Failed to send email to: %s", body.To)
+		logger.Error(ctx, err, "❌ Failed to send email")
 		return
 	}
 
