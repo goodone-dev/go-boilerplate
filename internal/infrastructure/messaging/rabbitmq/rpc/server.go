@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -27,7 +27,7 @@ type ServerConfig struct {
 }
 
 // NewServer creates a new RPC server
-func NewServer(client rabbitmq.Client, config ServerConfig) (*Server, error) {
+func NewServer(ctx context.Context, client rabbitmq.Client, config ServerConfig) *Server {
 	// Declare RPC queue
 	_, err := client.DeclareQueue(rabbitmq.QueueConfig{
 		Name:       config.QueueName,
@@ -38,24 +38,25 @@ func NewServer(client rabbitmq.Client, config ServerConfig) (*Server, error) {
 		Args:       nil,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare RPC queue: %w", err)
+		logger.Fatalf(ctx, err, "❌ Failed to declare RPC queue")
+		return nil
 	}
 
 	return &Server{
 		client:    client,
 		queueName: config.QueueName,
-	}, nil
+	}
 }
 
 // Serve starts serving RPC requests
 func (s *Server) Serve(ctx context.Context, handler RequestHandler) error {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
-		log.Printf("RPC Server: Received request with correlation ID %s", delivery.CorrelationId)
+		logger.Infof(ctx, "✉️ Received request from queue %s with correlation ID %s", s.queueName, delivery.CorrelationId)
 
 		// Process the request
 		response, err := handler(ctx, delivery.Body, delivery.Headers)
 		if err != nil {
-			log.Printf("RPC Server: Error processing request: %v", err)
+			logger.Errorf(ctx, err, "❌ Error processing request")
 			// Send error response
 			return s.sendResponse(ctx, delivery.ReplyTo, delivery.CorrelationId, nil, err)
 		}

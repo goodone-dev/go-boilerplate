@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -35,7 +35,7 @@ type ConsumerConfig struct {
 // - "logs.*" matches "logs.error", "logs.info", but not "logs.error.critical"
 // - "logs.#" matches "logs.error", "logs.error.critical", "logs.info.debug"
 // - "events.customer.*" matches "events.customer.created", "events.customer.updated"
-func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, error) {
+func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerConfig) *Consumer {
 	// Declare the topic exchange
 	err := client.DeclareExchange(rabbitmq.ExchangeConfig{
 		Name:       config.ExchangeName,
@@ -47,7 +47,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		Args:       nil,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare exchange: %w", err)
+		logger.Fatalf(ctx, err, "❌ Failed to declare exchange")
+		return nil
 	}
 
 	consumer := &Consumer{
@@ -73,7 +74,8 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 			Args:       nil,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to declare DLX: %w", err)
+			logger.Fatalf(ctx, err, "❌ Failed to declare DLX")
+			return nil
 		}
 
 		// Declare Dead Letter Queue
@@ -86,13 +88,15 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 			Args:       nil,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to declare DLQ: %w", err)
+			logger.Fatalf(ctx, err, "❌ Failed to declare DLQ")
+			return nil
 		}
 
 		// Bind DLQ to DLX with the same routing pattern
 		err = client.BindQueue(dlqName, config.RoutingPattern, dlxName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to bind DLQ: %w", err)
+			logger.Fatalf(ctx, err, "❌ Failed to bind DLQ")
+			return nil
 		}
 
 		consumer.dlxName = dlxName
@@ -113,22 +117,24 @@ func NewConsumer(client rabbitmq.Client, config ConsumerConfig) (*Consumer, erro
 		Args:       queueArgs,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare queue: %w", err)
+		logger.Fatalf(ctx, err, "❌ Failed to declare queue")
+		return nil
 	}
 
 	// Bind queue to exchange with routing pattern
 	err = client.BindQueue(config.QueueName, config.RoutingPattern, config.ExchangeName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to bind queue: %w", err)
+		logger.Fatalf(ctx, err, "❌ Failed to bind queue")
+		return nil
 	}
 
-	return consumer, nil
+	return consumer
 }
 
 // Consume starts consuming messages from the queue
 func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
-		log.Printf("Topic Consumer: Received message from queue %s with routing key %s", c.queueName, delivery.RoutingKey)
+		logger.Infof(ctx, "✉️ Received message from queue %s with routing key %s", c.queueName, delivery.RoutingKey)
 		return handler(ctx, delivery.RoutingKey, delivery.Body, delivery.Headers)
 	}
 

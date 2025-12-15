@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -27,7 +28,7 @@ type ClientConfig struct {
 }
 
 // NewClient creates a new RPC client
-func NewClient(client rabbitmq.Client, config ClientConfig) (*Client, error) {
+func NewClient(ctx context.Context, client rabbitmq.Client, config ClientConfig) *Client {
 	// Declare exclusive reply queue
 	replyQueue, err := client.DeclareQueue(rabbitmq.QueueConfig{
 		Name:       "",
@@ -38,7 +39,8 @@ func NewClient(client rabbitmq.Client, config ClientConfig) (*Client, error) {
 		Args:       nil,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to declare reply queue: %w", err)
+		logger.Fatalf(ctx, err, "❌ Failed to declare reply queue")
+		return nil
 	}
 
 	if config.Timeout == 0 {
@@ -53,14 +55,12 @@ func NewClient(client rabbitmq.Client, config ClientConfig) (*Client, error) {
 	}
 
 	// Start consuming replies
-	go rpcClient.consumeReplies()
+	go rpcClient.consumeReplies(ctx)
 
-	return rpcClient, nil
+	return rpcClient
 }
 
-func (c *Client) consumeReplies() {
-	ctx := context.Background()
-
+func (c *Client) consumeReplies(ctx context.Context) {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
 		c.mu.RLock()
 		ch, ok := c.pending[delivery.CorrelationId]
@@ -84,7 +84,7 @@ func (c *Client) consumeReplies() {
 	}
 
 	if err := c.client.Consume(ctx, consumeConfig, deliveryHandler); err != nil {
-		panic(fmt.Sprintf("failed to consume replies: %v", err))
+		logger.Fatalf(ctx, err, "❌ Failed to consume replies")
 	}
 }
 
@@ -97,6 +97,8 @@ func (c *Client) Call(ctx context.Context, queueName string, request any) ([]byt
 
 	correlationID := uuid.New().String()
 	replyChan := make(chan *amqp.Delivery, 1)
+
+	logger.Infof(ctx, "✉️ Making RPC call to queue %s with correlation ID %s", queueName, correlationID)
 
 	c.mu.Lock()
 	c.pending[correlationID] = replyChan
