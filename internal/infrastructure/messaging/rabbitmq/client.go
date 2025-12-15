@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -15,10 +14,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-)
-
-const (
-	reconnectDelay = 5 * time.Second
 )
 
 // client implements the Client interface with connection pooling
@@ -62,7 +57,7 @@ func NewClient(ctx context.Context) Client {
 	for i := 0; i < config.PoolSize; i++ {
 		ch, err := c.conn.Channel()
 		if err != nil {
-			c.Close()
+			c.Shutdown()
 
 			logger.Fatal(ctx, err, "❌ Failed to create channel")
 			return nil
@@ -115,33 +110,27 @@ func (c *client) Monitor(ctx context.Context) {
 }
 
 func (c *client) reconnect(ctx context.Context) {
-	for {
-		time.Sleep(reconnectDelay)
-		logger.Info(ctx, "🔄 RabbitMQ reconnecting...")
+	_, err := retry.RetryWithBackoff(ctx, "RabbitMQ reconnection", func() (any, error) {
+		return nil, c.connect()
+	})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ Failed to establish RabbitMQ connection after retries")
+	}
 
-		if err := c.connect(); err != nil {
-			logger.Error(ctx, err, "❌ RabbitMQ reconnection failed")
+	// Recreate channel pool
+	c.mu.Lock()
+	close(c.channels)
+	c.channels = make(chan *amqp.Channel, c.config.PoolSize)
+	for i := 0; i < c.config.PoolSize; i++ {
+		ch, err := c.conn.Channel()
+		if err != nil {
+			logger.Error(ctx, err, "❌ RabbitMQ channel creation failed")
+			c.mu.Unlock()
 			continue
 		}
-
-		// Recreate channel pool
-		c.mu.Lock()
-		close(c.channels)
-		c.channels = make(chan *amqp.Channel, c.config.PoolSize)
-		for i := 0; i < c.config.PoolSize; i++ {
-			ch, err := c.conn.Channel()
-			if err != nil {
-				logger.Error(ctx, err, "❌ RabbitMQ channel creation failed")
-				c.mu.Unlock()
-				continue
-			}
-			c.channels <- ch
-		}
-		c.mu.Unlock()
-
-		logger.Info(ctx, "✅ RabbitMQ connection restored")
-		break
+		c.channels <- ch
 	}
+	c.mu.Unlock()
 }
 
 func (c *client) GetChannel() (*amqp.Channel, error) {
@@ -310,11 +299,9 @@ func (c *client) Consume(ctx context.Context, config ConsumeConfig, handler Deli
 		for {
 			select {
 			case <-ctx.Done():
-				log.Printf("RabbitMQ: Consumer stopped for queue %s", config.Queue)
 				return
 			case delivery, ok := <-deliveries:
 				if !ok {
-					log.Printf("RabbitMQ: Delivery channel closed for queue %s", config.Queue)
 					return
 				}
 
@@ -346,15 +333,15 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		log.Printf("RabbitMQ: Error handling message: %v", err)
+		logger.Error(ctx, err, "❌ Error handling message")
 
 		if retryCount < c.config.MaxRetry {
 			// Nack and requeue with incremented retry count
-			log.Printf("RabbitMQ: Requeuing message (retry %d/%d)", retryCount+1, c.config.MaxRetry)
+			logger.Infof(ctx, "Requeuing message (retry %d/%d)", retryCount+1, c.config.MaxRetry)
 			delivery.Nack(false, true)
 		} else {
 			// Max retries reached, reject without requeue (goes to DLX if configured)
-			log.Printf("RabbitMQ: Max retries reached, rejecting message")
+			logger.Info(ctx, "Max retries reached, rejecting message")
 			delivery.Nack(false, false)
 		}
 		return
@@ -380,7 +367,7 @@ func (c *client) getRetryCount(headers amqp.Table) int {
 	return 0
 }
 
-func (c *client) Close() error {
+func (c *client) Shutdown() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

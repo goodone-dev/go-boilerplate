@@ -172,7 +172,7 @@ func (c *Client) CallJSON(ctx context.Context, queueName string, request any, re
 	return nil
 }
 
-// Close closes the client
-func (c *Client) Close() error {
+// Shutdown closes the client
+func (c *Client) Shutdown() error {
 	return nil // Client is shared, don't close it
 }

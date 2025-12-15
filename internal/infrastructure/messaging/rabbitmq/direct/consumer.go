@@ -174,7 +174,7 @@ func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Con
 	return c.Consume(ctx, messageHandler)
 }
 
-// Close closes the consumer
-func (c *Consumer) Close() error {
+// Shutdown closes the consumer
+func (c *Consumer) Shutdown() error {
 	return nil // Client is shared, don't close it
 }

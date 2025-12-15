@@ -130,7 +130,7 @@ func (s *Server) sendResponse(ctx context.Context, replyTo, correlationID string
 	return s.client.Publish(ctx, config, msg)
 }
 
-// Close closes the server
-func (s *Server) Close() error {
+// Shutdown closes the server
+func (s *Server) Shutdown() error {
 	return nil // Client is shared, don't close it
 }

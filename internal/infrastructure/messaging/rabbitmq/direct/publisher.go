@@ -93,7 +93,7 @@ func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, p
 	return p.client.Publish(ctx, config, msg)
 }
 
-// Close closes the publisher
-func (p *Publisher) Close() error {
+// Shutdown closes the publisher
+func (p *Publisher) Shutdown() error {
 	return nil // Client is shared, don't close it
 }

@@ -91,13 +91,13 @@ type DeliveryHandler func(ctx context.Context, delivery amqp.Delivery) error
 // Publisher interface for publishing messages
 type Publisher interface {
 	Publish(ctx context.Context, config PublishConfig, msg Message) error
-	Close() error
+	Shutdown() error
 }
 
 // Consumer interface for consuming messages
 type Consumer interface {
 	Consume(ctx context.Context, config ConsumeConfig, handler DeliveryHandler) error
-	Close() error
+	Shutdown() error
 }
 
 // Client is the main RabbitMQ client interface
@@ -108,5 +108,5 @@ type Client interface {
 	DeclareQueue(config QueueConfig) (amqp.Queue, error)
 	BindQueue(queueName, routingKey, exchangeName string, args amqp.Table) error
 	GetChannel() (*amqp.Channel, error)
-	Close() error
+	Shutdown() error
 }

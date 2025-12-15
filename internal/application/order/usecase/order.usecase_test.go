@@ -18,45 +18,12 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 	"github.com/google/uuid"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
+
+	rabbitmqmock "github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/mocks"
 )
-
-// MockRabbitMQClient is a mock implementation of rabbitmq.Client
-type MockRabbitMQClient struct {
-	mock.Mock
-}
-
-func (m *MockRabbitMQClient) Publish(ctx context.Context, config rabbitmq.PublishConfig, msg rabbitmq.Message) error {
-	args := m.Called(ctx, config, msg)
-	return args.Error(0)
-}
-func (m *MockRabbitMQClient) Close() error {
-	args := m.Called()
-	return args.Error(0)
-}
-func (m *MockRabbitMQClient) Consume(ctx context.Context, config rabbitmq.ConsumeConfig, handler rabbitmq.DeliveryHandler) error {
-	args := m.Called(ctx, config, handler)
-	return args.Error(0)
-}
-func (m *MockRabbitMQClient) DeclareExchange(config rabbitmq.ExchangeConfig) error {
-	args := m.Called(config)
-	return args.Error(0)
-}
-func (m *MockRabbitMQClient) DeclareQueue(config rabbitmq.QueueConfig) (amqp.Queue, error) {
-	args := m.Called(config)
-	return args.Get(0).(amqp.Queue), args.Error(1)
-}
-func (m *MockRabbitMQClient) BindQueue(queueName, routingKey, exchangeName string, args amqp.Table) error {
-	argsRet := m.Called(queueName, routingKey, exchangeName, args)
-	return argsRet.Error(0)
-}
-func (m *MockRabbitMQClient) GetChannel() (*amqp.Channel, error) {
-	args := m.Called()
-	return args.Get(0).(*amqp.Channel), args.Error(1)
-}
 
 func TestMain(m *testing.M) {
 	logger.Disabled()
@@ -71,7 +38,7 @@ func TestNewOrderUsecase(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 
 	directPub := direct.NewPublisher(context.Background(), mockRmqClient, "test.exchange")
@@ -100,7 +67,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -199,7 +166,7 @@ func TestOrderUsecase_Create_CustomerNotFound(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -244,7 +211,7 @@ func TestOrderUsecase_Create_CustomerRepoError(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -292,7 +259,7 @@ func TestOrderUsecase_Create_ProductsNotFound(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -357,7 +324,7 @@ func TestOrderUsecase_Create_ProductRepoError(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -411,7 +378,7 @@ func TestOrderUsecase_Create_BeginTransactionError(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -474,7 +441,7 @@ func TestOrderUsecase_Create_InsertOrderError(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -541,7 +508,7 @@ func TestOrderUsecase_Create_InsertOrderItemsError(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
@@ -618,7 +585,7 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
 
-	mockRmqClient := new(MockRabbitMQClient)
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 

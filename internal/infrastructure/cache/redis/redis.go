@@ -64,11 +64,6 @@ func NewClient(ctx context.Context) cache.Cache {
 }
 
 func (c *redisClient) Ping(ctx context.Context) (err error) {
-	ctx, span := tracer.Start(ctx)
-	defer func() {
-		span.Stop(err)
-	}()
-
 	return c.client.Ping(ctx).Err()
 }
 
