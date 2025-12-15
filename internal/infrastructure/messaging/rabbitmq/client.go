@@ -367,6 +367,21 @@ func (c *client) getRetryCount(headers amqp.Table) int {
 	return 0
 }
 
+func (c *client) Ping(ctx context.Context) error {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if c.closed {
+		return fmt.Errorf("connection is closed")
+	}
+
+	if c.conn == nil || c.conn.IsClosed() {
+		return fmt.Errorf("connection is not established or closed")
+	}
+
+	return nil
+}
+
 func (c *client) Shutdown(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()

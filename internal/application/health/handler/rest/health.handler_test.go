@@ -13,6 +13,8 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	rabbitmqmock "github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/mocks"
 )
 
 func TestMain(m *testing.M) {
@@ -66,6 +68,29 @@ func TestHealthHandler_ReadyCheck_AllServicesUp(t *testing.T) {
 
 	mockService1.AssertExpectations(t)
 	mockService2.AssertExpectations(t)
+	mockService1.AssertExpectations(t)
+	mockService2.AssertExpectations(t)
+}
+
+func TestHealthHandler_ReadyCheck_WithRabbitMQ(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockRmq := rabbitmqmock.NewClientMock(t)
+	mockRmq.On("Ping", mock.Anything).Return(nil)
+
+	handler := NewHealthHandler(mockRmq)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/health/ready", nil)
+
+	handler.ReadyCheck(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	// The mock type is *rabbitmq.ClientMock. parsePackageName uses regex `\*?([^.]+)`
+	// reflect type string is "*rabbitmq.ClientMock"
+	// match should be "rabbitmq"
+	assert.Contains(t, w.Body.String(), `"rabbitmq":{"status":"up"}`)
 }
 
 func TestHealthHandler_ReadyCheck_ServiceDown(t *testing.T) {

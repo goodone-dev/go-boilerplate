@@ -77,7 +77,7 @@ func main() {
 	)
 
 	// ========== HTTP Handler Setup ==========
-	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient)
+	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient, rmqClient)
 	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
 
 	// ========== Consumer Setup ==========

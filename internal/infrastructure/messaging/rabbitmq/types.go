@@ -108,5 +108,6 @@ type Client interface {
 	DeclareQueue(config QueueConfig) (amqp.Queue, error)
 	BindQueue(queueName, routingKey, exchangeName string, args amqp.Table) error
 	GetChannel() (*amqp.Channel, error)
+	Ping(ctx context.Context) error
 	Shutdown(ctx context.Context) error
 }

@@ -337,6 +337,57 @@ func (_c *ClientMock_GetChannel_Call) RunAndReturn(run func() (*amqp091.Channel,
 	return _c
 }
 
+// Ping provides a mock function for the type ClientMock
+func (_mock *ClientMock) Ping(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Ping")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ClientMock_Ping_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Ping'
+type ClientMock_Ping_Call struct {
+	*mock.Call
+}
+
+// Ping is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *ClientMock_Expecter) Ping(ctx interface{}) *ClientMock_Ping_Call {
+	return &ClientMock_Ping_Call{Call: _e.mock.On("Ping", ctx)}
+}
+
+func (_c *ClientMock_Ping_Call) Run(run func(ctx context.Context)) *ClientMock_Ping_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *ClientMock_Ping_Call) Return(err error) *ClientMock_Ping_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *ClientMock_Ping_Call) RunAndReturn(run func(ctx context.Context) error) *ClientMock_Ping_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Publish provides a mock function for the type ClientMock
 func (_mock *ClientMock) Publish(ctx context.Context, config rabbitmq.PublishConfig, msg rabbitmq.Message) error {
 	ret := _mock.Called(ctx, config, msg)
