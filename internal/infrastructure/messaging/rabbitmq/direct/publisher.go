@@ -41,7 +41,7 @@ func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName stri
 }
 
 // Publish publishes a message to the direct exchange with a specific routing key
-func (p *Publisher) Publish(ctx context.Context, routingKey string, payload interface{}) error {
+func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
@@ -65,7 +65,7 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, payload inte
 }
 
 // PublishWithHeaders publishes a message with custom headers
-func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload interface{}, headers map[string]interface{}) error {
+func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload any, headers map[string]any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)

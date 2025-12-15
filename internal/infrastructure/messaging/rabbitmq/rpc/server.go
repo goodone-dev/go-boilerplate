@@ -13,7 +13,7 @@ import (
 )
 
 // RequestHandler is a function that processes RPC requests and returns a response
-type RequestHandler func(ctx context.Context, body []byte, headers map[string]interface{}) (interface{}, error)
+type RequestHandler func(ctx context.Context, body []byte, headers map[string]any) (any, error)
 
 // Server handles RPC server operations
 type Server struct {
@@ -78,8 +78,8 @@ func (s *Server) Serve(ctx context.Context, handler RequestHandler) error {
 }
 
 // ServeJSON serves RPC requests with JSON marshaling/unmarshaling
-func (s *Server) ServeJSON(ctx context.Context, handler func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error), requestType interface{}) error {
-	requestHandler := func(ctx context.Context, body []byte, headers map[string]interface{}) (interface{}, error) {
+func (s *Server) ServeJSON(ctx context.Context, handler func(ctx context.Context, request any, headers map[string]any) (any, error), requestType any) error {
+	requestHandler := func(ctx context.Context, body []byte, headers map[string]any) (any, error) {
 		// Create a new instance of the request type
 		request := requestType
 
@@ -93,13 +93,13 @@ func (s *Server) ServeJSON(ctx context.Context, handler func(ctx context.Context
 	return s.Serve(ctx, requestHandler)
 }
 
-func (s *Server) sendResponse(ctx context.Context, replyTo, correlationID string, response interface{}, err error) error {
+func (s *Server) sendResponse(ctx context.Context, replyTo, correlationID string, response any, err error) error {
 	var body []byte
 	var responseErr error
 
 	if err != nil {
 		// Create error response
-		errorResponse := map[string]interface{}{
+		errorResponse := map[string]any{
 			"error": err.Error(),
 		}
 		body, responseErr = json.Marshal(errorResponse)

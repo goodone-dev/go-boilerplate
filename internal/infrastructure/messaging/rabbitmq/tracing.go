@@ -3,7 +3,7 @@ package rabbitmq
 import "go.opentelemetry.io/otel/propagation"
 
 // HeaderCarrier adapts amqp.Table to propagation.TextMapCarrier
-type HeaderCarrier map[string]interface{}
+type HeaderCarrier map[string]any
 
 // Get returns the value associated with the passed key.
 func (h HeaderCarrier) Get(key string) string {
@@ -30,9 +30,9 @@ func (h HeaderCarrier) Keys() []string {
 }
 
 // NewHeaderCarrier creates a new HeaderCarrier
-func NewHeaderCarrier(headers map[string]interface{}) propagation.TextMapCarrier {
+func NewHeaderCarrier(headers map[string]any) propagation.TextMapCarrier {
 	if headers == nil {
-		headers = make(map[string]interface{})
+		headers = make(map[string]any)
 	}
 	return HeaderCarrier(headers)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 // MessageHandler is a function that processes messages
-type MessageHandler func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error
+type MessageHandler func(ctx context.Context, routingKey string, body []byte, headers map[string]any) error
 
 // Consumer handles topic exchange consumption
 type Consumer struct {
@@ -146,8 +146,8 @@ func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 }
 
 // ConsumeJSON consumes messages and unmarshals them into the provided type
-func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, routingKey string, payload interface{}, headers map[string]interface{}) error, payloadType interface{}) error {
-	messageHandler := func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
+func (c *Consumer) ConsumeJSON(ctx context.Context, handler func(ctx context.Context, routingKey string, payload any, headers map[string]any) error, payloadType any) error {
+	messageHandler := func(ctx context.Context, routingKey string, body []byte, headers map[string]any) error {
 		// Create a new instance of the payload type
 		payload := payloadType
 

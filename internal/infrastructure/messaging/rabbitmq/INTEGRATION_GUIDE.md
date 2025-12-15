@@ -183,7 +183,7 @@ func NewService(rabbitClient rabbitmq.Client) (*Service, error) {
 }
 
 func (s *Service) Start(ctx context.Context) error {
-    return s.consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
+    return s.consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]any) error {
         var event CustomerCreatedEvent
         if err := json.Unmarshal(body, &event); err != nil {
             return err // Will retry
@@ -231,7 +231,7 @@ func NewMessageBrokerLogger(rabbitClient rabbitmq.Client) (*MessageBrokerLogger,
 }
 
 func (l *MessageBrokerLogger) LogError(ctx context.Context, service, message string) {
-    l.publisher.Publish(ctx, "logs."+service+".error", map[string]interface{}{
+    l.publisher.Publish(ctx, "logs."+service+".error", map[string]any{
         "service": service,
         "level":   "error",
         "message": message,
@@ -239,7 +239,7 @@ func (l *MessageBrokerLogger) LogError(ctx context.Context, service, message str
 }
 
 func (l *MessageBrokerLogger) LogInfo(ctx context.Context, service, message string) {
-    l.publisher.Publish(ctx, "logs."+service+".info", map[string]interface{}{
+    l.publisher.Publish(ctx, "logs."+service+".info", map[string]any{
         "service": service,
         "level":   "info",
         "message": message,
@@ -270,7 +270,7 @@ func StartErrorLogConsumer(ctx context.Context, rabbitClient rabbitmq.Client) er
         return err
     }
 
-    return consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
+    return consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]any) error {
         // Send to monitoring system (e.g., Sentry, DataDog)
         log.Printf("Error log from %s: %s", routingKey, string(body))
         return nil
@@ -312,7 +312,7 @@ func NewValidationService(rabbitClient rabbitmq.Client, repo CustomerRepository)
 }
 
 func (s *ValidationService) Start(ctx context.Context) error {
-    return s.server.ServeJSON(ctx, func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error) {
+    return s.server.ServeJSON(ctx, func(ctx context.Context, request any, headers map[string]any) (any, error) {
         req := request.(*ValidateCustomerRequest)
 
         // Validate customer

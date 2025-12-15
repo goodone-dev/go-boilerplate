@@ -99,7 +99,7 @@ if err != nil {
 defer consumer.Close()
 
 // Start consuming
-err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
+err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]any) error {
     log.Printf("Received: %s", string(body))
 
     // Process message
@@ -155,7 +155,7 @@ consumerAll, err := topic.NewConsumer(client, topic.ConsumerConfig{
 })
 
 // Start consuming
-err = consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
+err = consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]any) error {
     log.Printf("Received from %s: %s", routingKey, string(body))
     return nil
 })
@@ -180,7 +180,7 @@ if err != nil {
 defer server.Close()
 
 // Serve requests
-err = server.ServeJSON(ctx, func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error) {
+err = server.ServeJSON(ctx, func(ctx context.Context, request any, headers map[string]any) (any, error) {
     req := request.(*GetCustomerRequest)
 
     // Process request
@@ -234,7 +234,7 @@ The infrastructure automatically handles errors with the following behavior:
 ### Example Error Handling
 
 ```go
-err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
+err = consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]any) error {
     // If this returns an error, the message will be retried
     if err := processMessage(body); err != nil {
         return fmt.Errorf("processing failed: %w", err)

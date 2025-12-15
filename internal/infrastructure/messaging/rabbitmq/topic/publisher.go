@@ -40,7 +40,7 @@ func NewPublisher(client rabbitmq.Client, exchangeName string) (*Publisher, erro
 
 // Publish publishes a message to the topic exchange with a routing pattern
 // Routing key examples: "logs.error", "events.customer.created", "notifications.email.sent"
-func (p *Publisher) Publish(ctx context.Context, routingKey string, payload interface{}) error {
+func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
@@ -64,7 +64,7 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, payload inte
 }
 
 // PublishWithPriority publishes a message with priority
-func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, payload interface{}, priority uint8) error {
+func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, payload any, priority uint8) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
@@ -89,7 +89,7 @@ func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, 
 }
 
 // PublishWithHeaders publishes a message with custom headers
-func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload interface{}, headers map[string]interface{}) error {
+func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload any, headers map[string]any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)

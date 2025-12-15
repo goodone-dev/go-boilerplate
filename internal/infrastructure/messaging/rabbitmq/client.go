@@ -240,7 +240,7 @@ func (c *client) Publish(ctx context.Context, config PublishConfig, msg Message)
 
 	// Inject trace context into headers
 	if msg.Headers == nil {
-		msg.Headers = make(map[string]interface{})
+		msg.Headers = make(map[string]any)
 	}
 	carrier := NewHeaderCarrier(msg.Headers)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)

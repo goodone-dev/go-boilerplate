@@ -89,7 +89,7 @@ func (c *Client) consumeReplies() {
 }
 
 // Call makes an RPC call and waits for the response
-func (c *Client) Call(ctx context.Context, queueName string, request interface{}) ([]byte, error) {
+func (c *Client) Call(ctx context.Context, queueName string, request any) ([]byte, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
@@ -133,7 +133,7 @@ func (c *Client) Call(ctx context.Context, queueName string, request interface{}
 	select {
 	case delivery := <-replyChan:
 		// Check if response contains an error
-		var errorResponse map[string]interface{}
+		var errorResponse map[string]any
 		if err := json.Unmarshal(delivery.Body, &errorResponse); err == nil {
 			if errMsg, ok := errorResponse["error"].(string); ok {
 				return nil, fmt.Errorf("RPC error: %s", errMsg)
@@ -148,7 +148,7 @@ func (c *Client) Call(ctx context.Context, queueName string, request interface{}
 }
 
 // CallWithTimeout makes an RPC call with a custom timeout
-func (c *Client) CallWithTimeout(ctx context.Context, queueName string, request interface{}, timeout time.Duration) ([]byte, error) {
+func (c *Client) CallWithTimeout(ctx context.Context, queueName string, request any, timeout time.Duration) ([]byte, error) {
 	oldTimeout := c.timeout
 	c.timeout = timeout
 	defer func() { c.timeout = oldTimeout }()
@@ -157,7 +157,7 @@ func (c *Client) CallWithTimeout(ctx context.Context, queueName string, request 
 }
 
 // CallJSON makes an RPC call and unmarshals the response into the provided type
-func (c *Client) CallJSON(ctx context.Context, queueName string, request interface{}, response interface{}) error {
+func (c *Client) CallJSON(ctx context.Context, queueName string, request any, response any) error {
 	body, err := c.Call(ctx, queueName, request)
 	if err != nil {
 		return err

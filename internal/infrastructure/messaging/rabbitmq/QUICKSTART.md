@@ -72,7 +72,7 @@ consumer, _ := direct.NewConsumer(client, direct.ConsumerConfig{
     DLXEnabled:   true,
 })
 
-consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
+consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]any) error {
     // Process message
     return nil
 })
@@ -101,7 +101,7 @@ consumer, _ := topic.NewConsumer(client, topic.ConsumerConfig{
     DLXEnabled:     true,
 })
 
-consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]interface{}) error {
+consumer.Consume(ctx, func(ctx context.Context, routingKey string, body []byte, headers map[string]any) error {
     log.Printf("Received %s event", routingKey)
     return nil
 })
@@ -119,7 +119,7 @@ server, _ := rpc.NewServer(client, rpc.ServerConfig{
     QueueName: "customer.get.rpc",
 })
 
-server.ServeJSON(ctx, func(ctx context.Context, request interface{}, headers map[string]interface{}) (interface{}, error) {
+server.ServeJSON(ctx, func(ctx context.Context, request any, headers map[string]any) (any, error) {
     req := request.(*GetCustomerRequest)
     // Process request
     return GetCustomerResponse{...}, nil
@@ -162,7 +162,7 @@ examples.RunRPCOnly()
 ## Error Handling
 
 ```go
-consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]interface{}) error {
+consumer.Consume(ctx, func(ctx context.Context, body []byte, headers map[string]any) error {
     // Return error to retry
     if err := process(body); err != nil {
         return err // Message will be retried

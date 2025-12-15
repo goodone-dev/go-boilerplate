@@ -55,7 +55,7 @@ type PublishConfig struct {
 	RoutingKey string
 	Mandatory  bool
 	Immediate  bool
-	Headers    map[string]interface{}
+	Headers    map[string]any
 	Priority   uint8
 	Expiration string
 }
@@ -75,7 +75,7 @@ type ConsumeConfig struct {
 type Message struct {
 	Body          []byte
 	ContentType   string
-	Headers       map[string]interface{}
+	Headers       map[string]any
 	Priority      uint8
 	Expiration    string
 	MessageID     string

@@ -13,7 +13,7 @@ import (
 )
 
 // MessageHandler is a function that processes messages
-type MessageHandler func(ctx context.Context, body []byte, headers map[string]interface{}) error
+type MessageHandler func(ctx context.Context, body []byte, headers map[string]any) error
 
 // Consumer handles direct exchange consumption
 type Consumer struct {
