@@ -57,7 +57,7 @@ func NewClient(ctx context.Context) Client {
 	for i := 0; i < config.PoolSize; i++ {
 		ch, err := c.conn.Channel()
 		if err != nil {
-			c.Shutdown()
+			c.Shutdown(ctx)
 
 			logger.Fatal(ctx, err, "❌ Failed to create channel")
 			return nil
@@ -99,11 +99,11 @@ func (c *client) Monitor(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case err := <-c.notifyClose:
-			logger.Error(ctx, err, "🛑 RabbitMQ connection lost")
 			if c.closed {
 				return
 			}
 
+			logger.Error(ctx, err, "🛑 RabbitMQ connection lost")
 			c.reconnect(ctx)
 		}
 	}
@@ -367,7 +367,7 @@ func (c *client) getRetryCount(headers amqp.Table) int {
 	return 0
 }
 
-func (c *client) Shutdown() error {
+func (c *client) Shutdown(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

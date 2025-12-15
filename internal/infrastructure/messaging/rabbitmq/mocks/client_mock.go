@@ -401,16 +401,16 @@ func (_c *ClientMock_Publish_Call) RunAndReturn(run func(ctx context.Context, co
 }
 
 // Shutdown provides a mock function for the type ClientMock
-func (_mock *ClientMock) Shutdown() error {
-	ret := _mock.Called()
+func (_mock *ClientMock) Shutdown(ctx context.Context) error {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Shutdown")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func() error); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -423,13 +423,20 @@ type ClientMock_Shutdown_Call struct {
 }
 
 // Shutdown is a helper method to define mock.On call
-func (_e *ClientMock_Expecter) Shutdown() *ClientMock_Shutdown_Call {
-	return &ClientMock_Shutdown_Call{Call: _e.mock.On("Shutdown")}
+//   - ctx context.Context
+func (_e *ClientMock_Expecter) Shutdown(ctx interface{}) *ClientMock_Shutdown_Call {
+	return &ClientMock_Shutdown_Call{Call: _e.mock.On("Shutdown", ctx)}
 }
 
-func (_c *ClientMock_Shutdown_Call) Run(run func()) *ClientMock_Shutdown_Call {
+func (_c *ClientMock_Shutdown_Call) Run(run func(ctx context.Context)) *ClientMock_Shutdown_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
@@ -439,7 +446,7 @@ func (_c *ClientMock_Shutdown_Call) Return(err error) *ClientMock_Shutdown_Call 
 	return _c
 }
 
-func (_c *ClientMock_Shutdown_Call) RunAndReturn(run func() error) *ClientMock_Shutdown_Call {
+func (_c *ClientMock_Shutdown_Call) RunAndReturn(run func(ctx context.Context) error) *ClientMock_Shutdown_Call {
 	_c.Call.Return(run)
 	return _c
 }

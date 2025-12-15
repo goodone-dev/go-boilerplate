@@ -131,6 +131,6 @@ func (s *Server) sendResponse(ctx context.Context, replyTo, correlationID string
 }
 
 // Shutdown closes the server
-func (s *Server) Shutdown() error {
+func (s *Server) Shutdown(ctx context.Context) error {
 	return nil // Client is shared, don't close it
 }

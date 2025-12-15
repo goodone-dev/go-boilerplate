@@ -122,6 +122,6 @@ func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, p
 }
 
 // Shutdown closes the publisher
-func (p *Publisher) Shutdown() error {
+func (p *Publisher) Shutdown(ctx context.Context) error {
 	return nil // Client is shared, don't close it
 }
