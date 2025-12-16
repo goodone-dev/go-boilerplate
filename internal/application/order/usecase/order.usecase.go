@@ -10,6 +10,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
@@ -118,7 +119,7 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		return nil, err
 	}
 
-	u.rmqDirectPub.Publish(ctx, "mail.send", mail.MailSendMessage{
+	err = u.rmqDirectPub.Publish(ctx, "mail.send", mail.MailSendMessage{
 		To:       customer.Email,
 		Subject:  "Thank You for Your Purchase!",
 		Template: "order_created.html",
@@ -130,6 +131,9 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 			"YearNow":     time.Now().Year(),
 		},
 	})
+	if err != nil {
+		logger.Error(ctx, err, "❌ Failed to publish mail.send")
+	}
 
 	return &order.CreateOrderResponse{
 		ID:          createdOrder.ID,

@@ -57,7 +57,7 @@ func NewClient(ctx context.Context) Client {
 	for i := 0; i < config.PoolSize; i++ {
 		ch, err := c.conn.Channel()
 		if err != nil {
-			c.Shutdown(ctx)
+			_ = c.Shutdown(ctx)
 
 			logger.Fatal(ctx, err, "❌ Failed to create channel")
 			return nil
@@ -154,14 +154,14 @@ func (c *client) returnChannel(ch *amqp.Channel) {
 	defer c.mu.RUnlock()
 
 	if c.closed {
-		ch.Close()
+		_ = ch.Close()
 		return
 	}
 
 	select {
 	case c.channels <- ch:
 	default:
-		ch.Close()
+		_ = ch.Close()
 	}
 }
 
@@ -338,17 +338,17 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 		if retryCount < c.config.MaxRetry {
 			// Nack and requeue with incremented retry count
 			logger.Infof(ctx, "Requeuing message (retry %d/%d)", retryCount+1, c.config.MaxRetry)
-			delivery.Nack(false, true)
+			_ = delivery.Nack(false, true)
 		} else {
 			// Max retries reached, reject without requeue (goes to DLX if configured)
 			logger.Info(ctx, "Max retries reached, rejecting message")
-			delivery.Nack(false, false)
+			_ = delivery.Nack(false, false)
 		}
 		return
 	}
 
 	span.SetStatus(codes.Ok, "message processed successfully")
-	delivery.Ack(false)
+	_ = delivery.Ack(false)
 }
 
 func (c *client) getRetryCount(headers amqp.Table) int {
@@ -395,7 +395,7 @@ func (c *client) Shutdown(ctx context.Context) error {
 	// Close all channels in the pool
 	close(c.channels)
 	for ch := range c.channels {
-		ch.Close()
+		_ = ch.Close()
 	}
 
 	if c.conn != nil {

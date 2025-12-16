@@ -6,6 +6,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/application/mail/handler/worker"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 )
@@ -30,5 +31,8 @@ func (c *consumer) Consume(ctx context.Context) {
 		DLXEnabled:   true,
 	})
 
-	mailConsumer.ConsumeJSON(ctx, c.mailHandler.Send, mail.MailSendMessage{})
+	err := mailConsumer.ConsumeJSON(ctx, c.mailHandler.Send, mail.MailSendMessage{})
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ Failed to consume mail.send queue")
+	}
 }
