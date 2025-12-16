@@ -11,25 +11,25 @@ import (
 
 	"github.com/goodone-dev/go-boilerplate/cmd/utils"
 	customerrepo "github.com/goodone-dev/go-boilerplate/internal/application/customer/repository"
-	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/delivery/http"
+	healthhandler "github.com/goodone-dev/go-boilerplate/internal/application/health/handler/rest"
 	mailuc "github.com/goodone-dev/go-boilerplate/internal/application/mail/usecase"
-	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/delivery/http"
+	orderhandler "github.com/goodone-dev/go-boilerplate/internal/application/order/handler/rest"
 	orderrepo "github.com/goodone-dev/go-boilerplate/internal/application/order/repository"
 	orderuc "github.com/goodone-dev/go-boilerplate/internal/application/order/usecase"
 	productrepo "github.com/goodone-dev/go-boilerplate/internal/application/product/repository"
 	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
-	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/cache/redis"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database/postgres"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	mailsender "github.com/goodone-dev/go-boilerplate/internal/infrastructure/mail"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
-	buslistener "github.com/goodone-dev/go-boilerplate/internal/presentation/messaging/bus"
 	"github.com/goodone-dev/go-boilerplate/internal/presentation/rest/router"
+	"github.com/goodone-dev/go-boilerplate/internal/presentation/worker/consumer"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -51,6 +51,7 @@ func main() {
 	postgresConn := postgres.Open(ctx)
 	redisClient := redis.NewClient(ctx)
 	mailSender := mailsender.NewMailSender()
+	rmqClient := rabbitmq.NewClient(ctx)
 
 	// ========== Repositories Setup ==========
 	customerBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, customer.Customer](postgresConn)
@@ -62,8 +63,8 @@ func main() {
 	orderItemBaseRepo := postgres.NewBaseRepository[gorm.DB, uuid.UUID, order.OrderItem](postgresConn)
 	orderItemRepo := orderrepo.NewOrderItemRepository(orderItemBaseRepo)
 
-	// ========== Bus Setup ==========
-	mailBus := bus.NewBus[mail.MailSendMessage]()
+	// ========== Publisher Setup ==========
+	rmqDirectPub := direct.NewPublisher(ctx, rmqClient, config.RabbitMQConfig.DirectExchangeName)
 
 	// ========== Usecase Setup ==========
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
@@ -72,15 +73,16 @@ func main() {
 		productRepo,
 		orderRepo,
 		orderItemRepo,
-		mailBus,
+		rmqDirectPub,
 	)
 
 	// ========== HTTP Handler Setup ==========
-	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient)
+	healthHandler := healthhandler.NewHealthHandler(postgresConn, redisClient, rmqClient)
 	orderHandler := orderhandler.NewOrderHandler(orderUsecase)
 
-	// ========== Bus Listener Setup ==========
-	buslistener.NewBusListener(mailBus, mailUsecase)
+	// ========== Consumer Setup ==========
+	consumer := consumer.NewConsumer(rmqClient, mailUsecase)
+	consumer.Consume(ctx)
 
 	// ========== HTTP Server Setup ==========
 	r := router.NewRouter(healthHandler, orderHandler, redisClient)
@@ -120,5 +122,5 @@ func main() {
 
 	logger.Info(ctx, "✅ Server shutdown gracefully")
 
-	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient, mailBus)
+	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient, rmqClient)
 }

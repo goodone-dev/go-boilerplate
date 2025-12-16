@@ -13,6 +13,7 @@ var RedisConfig RedisConfigMap
 var PostgresConfig PostgresConfigMap
 var MySQLConfig MySQLConfigMap
 var MongoConfig MongoConfigMap
+var RabbitMQConfig RabbitMQConfigMap
 var TracerConfig TracerConfigMap
 var LoggerConfig LoggerConfigMap
 var MailConfig MailConfigMap
@@ -114,6 +115,19 @@ type MongoConfigMap struct {
 	InsertBatchSize   int    `mapstructure:"MONGO_INSERT_BATCH_SIZE"`
 }
 
+type RabbitMQConfigMap struct {
+	Host               string        `mapstructure:"RABBITMQ_HOST"`
+	Port               int           `mapstructure:"RABBITMQ_PORT"`
+	Username           string        `mapstructure:"RABBITMQ_USERNAME"`
+	Password           string        `mapstructure:"RABBITMQ_PASSWORD"`
+	Vhost              string        `mapstructure:"RABBITMQ_VHOST"`
+	PoolSize           int           `mapstructure:"RABBITMQ_POOL_SIZE"`
+	MaxRetry           int           `mapstructure:"RABBITMQ_MAX_RETRY"`
+	RetryDelay         time.Duration `mapstructure:"RABBITMQ_RETRY_DELAY"`
+	DirectExchangeName string        `mapstructure:"RABBITMQ_DIRECT_EXCHANGE_NAME"`
+	TopicExchangeName  string        `mapstructure:"RABBITMQ_TOPIC_EXCHANGE_NAME"`
+}
+
 type TracerConfigMap struct {
 	Enabled bool   `mapstructure:"TRACER_ENABLED"`
 	Host    string `mapstructure:"TRACER_EXPORTER_HOST"`
@@ -207,6 +221,9 @@ func Load() (err error) {
 	if err = viper.Unmarshal(&MongoConfig); err != nil {
 		return
 	}
+	if err = viper.Unmarshal(&RabbitMQConfig); err != nil {
+		return
+	}
 	if err = viper.Unmarshal(&LoggerConfig); err != nil {
 		return
 	}
@@ -263,6 +280,13 @@ func setDefaultConfig() {
 	viper.SetDefault("MONGO_MAX_CONN_POOL_SIZE", 100)
 	viper.SetDefault("MONGO_CONN_IDLE_TIMEOUT_MS", 60000)
 	viper.SetDefault("MONGO_INSERT_BATCH_SIZE", 100)
+
+	// RabbitMQ defaults
+	viper.SetDefault("RABBITMQ_POOL_SIZE", 10)
+	viper.SetDefault("RABBITMQ_MAX_RETRY", 3)
+	viper.SetDefault("RABBITMQ_RETRY_DELAY", "5s")
+	viper.SetDefault("RABBITMQ_DIRECT_EXCHANGE_NAME", "direct.exchange")
+	viper.SetDefault("RABBITMQ_TOPIC_EXCHANGE_NAME", "topic.exchange")
 
 	// HTTP Server defaults (in seconds)
 	viper.SetDefault("HTTP_SERVER_READ_TIMEOUT", "5s")

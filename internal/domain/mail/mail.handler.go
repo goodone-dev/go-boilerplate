@@ -3,5 +3,5 @@ package mail
 import "context"
 
 type MailHandler interface {
-	Send(ctx context.Context, msg MailSendMessage) error
+	Send(ctx context.Context, payload any, headers map[string]any) error
 }

@@ -116,15 +116,15 @@ This project is structured following the principles of **Clean Architecture**. T
 ├── .github/                    # GitHub-specific configurations including Actions workflows and issue templates.
 │   └── workflow/               # GitHub Actions workflows.
 ├── cmd/                        # Server commands.
-│   ├── api/                    # API server.
+│   ├── rest/                   # REST API server.
 │   │   └── main.go             # Entry point of the application. Initializes and starts the server.
 │   └── utils/                  # Utility functions shared across the server.
 ├── internal/                   # Internal packages.
 │   ├── application/            # Implements use cases by orchestrating domain logic.
 │   │   ├── <domain_name>/      # Groups application logic for a specific domain.
-│   │   │   ├── delivery/       # Adapters for handling incoming requests (e.g., HTTP, messaging).
-│   │   │   │   ├── http/       # HTTP handlers for the domain.
-│   │   │   │   └── messaging/  # Message handlers for the domain.
+│   │   │   ├── handler/        # Adapters for handling incoming requests (e.g., HTTP, messaging).
+│   │   │   │   ├── rest/       # REST API handlers for the domain.
+│   │   │   │   └── worker/     # Background worker handlers.
 │   │   │   ├── repository/     # Repository implementations for the domain.
 │   │   │   └── usecase/        # Business logic and use cases for the domain.
 │   │   └── ...
@@ -146,9 +146,8 @@ This project is structured following the principles of **Clean Architecture**. T
 │   │   ├── rest/               # REST API handlers, router, and middleware.
 │   │   │   ├── middleware/     # REST API middleware.
 │   │   │   └── router/         # REST API router setup.
-│   │   └── messaging/          # Message bus/broker handlers.
-│   │       ├── middleware/     # Messaging middleware.
-│   │       └── listener/       # Message bus/broker listener.
+│   │   └── worker/             # Background worker handlers.
+│   │       └── consumer/       # Message consumer handlers.
 │   └── utils/                  # Utility functions shared across the application.
 │       ├── breaker/            # Circuit breaker utilities.
 │       ├── html/               # HTML template utilities.

@@ -1,4 +1,4 @@
-package messaging
+package worker
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func TestMailHandler_Send_Success(t *testing.T) {
 
 	mockUsecase.On("Send", mock.Anything, msg).Return(nil)
 
-	err := handler.Send(context.Background(), msg)
+	err := handler.Send(context.Background(), msg, nil)
 
 	assert.NoError(t, err)
 	mockUsecase.AssertExpectations(t)
@@ -60,7 +60,7 @@ func TestMailHandler_Send_UsecaseError(t *testing.T) {
 	expectedError := errors.New("usecase error")
 	mockUsecase.On("Send", mock.Anything, msg).Return(expectedError)
 
-	err := handler.Send(context.Background(), msg)
+	err := handler.Send(context.Background(), msg, nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
@@ -79,7 +79,7 @@ func TestMailHandler_Send_ValidationError(t *testing.T) {
 		Data:     nil,
 	}
 
-	err := handler.Send(context.Background(), msg)
+	err := handler.Send(context.Background(), msg, nil)
 
 	// Should fail validation before reaching usecase
 	assert.Error(t, err)
@@ -137,7 +137,7 @@ func TestMailHandler_Send_MultipleMessages(t *testing.T) {
 				mockUsecase.On("Send", mock.Anything, tc.msg).Return(tc.mockReturn)
 			}
 
-			err := handler.Send(context.Background(), tc.msg)
+			err := handler.Send(context.Background(), tc.msg, nil)
 
 			if tc.expectError {
 				assert.Error(t, err)
