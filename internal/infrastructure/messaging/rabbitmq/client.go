@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"maps"
 	"sync"
 	"time"
 
@@ -336,9 +337,11 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 		logger.Error(ctx, err, "❌ Error handling message")
 
 		if retryCount < c.config.MaxRetry {
-			// Nack and requeue with incremented retry count
-			logger.Infof(ctx, "Requeuing message (retry %d/%d)", retryCount+1, c.config.MaxRetry)
-			_ = delivery.Nack(false, true)
+			// Republish with incremented retry count
+			retryCount++
+
+			logger.Infof(ctx, "Retrying message (attempt %d/%d) after %v", retryCount, c.config.MaxRetry, c.config.RetryDelay)
+			_ = c.republish(ctx, delivery, retryCount)
 		} else {
 			// Max retries reached, reject without requeue (goes to DLX if configured)
 			logger.Info(ctx, "Max retries reached, rejecting message")
@@ -349,6 +352,45 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 
 	span.SetStatus(codes.Ok, "message processed successfully")
 	_ = delivery.Ack(false)
+}
+
+func (c *client) republish(ctx context.Context, delivery amqp.Delivery, retryCount int) error {
+	time.Sleep(c.config.RetryDelay)
+
+	// Clone headers and increment retry count
+	newHeaders := make(map[string]any)
+	maps.Copy(newHeaders, delivery.Headers)
+	newHeaders["x-retry-count"] = retryCount
+
+	// Republish message with updated headers
+	err := c.Publish(ctx,
+		PublishConfig{
+			Exchange:   delivery.Exchange,
+			RoutingKey: delivery.RoutingKey,
+			Mandatory:  false,
+			Immediate:  false,
+		}, Message{
+			Body:          delivery.Body,
+			ContentType:   delivery.ContentType,
+			Headers:       newHeaders,
+			Priority:      delivery.Priority,
+			Expiration:    delivery.Expiration,
+			MessageID:     delivery.MessageId,
+			Timestamp:     delivery.Timestamp,
+			Type:          delivery.Type,
+			ReplyTo:       delivery.ReplyTo,
+			CorrelationID: delivery.CorrelationId,
+		},
+	)
+
+	if err != nil {
+		logger.Error(ctx, err, "❌ Failed to republish retry message, requeuing original")
+		_ = delivery.Nack(false, true) // Fallback to simple requeue if publish fails
+		return err
+	}
+
+	// Ack the original message since we successfully republished it
+	return delivery.Ack(false)
 }
 
 func (c *client) getRetryCount(headers amqp.Table) int {
