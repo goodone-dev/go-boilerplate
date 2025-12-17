@@ -43,11 +43,11 @@ func createClient(ctx context.Context) (client *redis.Client) {
 		return nil, client.Ping(ctx).Err()
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish Redis connection")
+		logger.Fatal(ctx, err, "❌ Redis failed to establish connection")
 	}
 
 	if err := redisotel.InstrumentTracing(client); err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to instrument Redis connection")
+		logger.Fatal(ctx, err, "❌ Redis failed to instrument connection")
 	}
 
 	return client

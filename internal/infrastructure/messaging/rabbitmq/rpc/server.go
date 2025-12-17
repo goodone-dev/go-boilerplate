@@ -38,7 +38,7 @@ func NewServer(ctx context.Context, client rabbitmq.Client, config ServerConfig)
 		Args:       nil,
 	})
 	if err != nil {
-		logger.Fatalf(ctx, err, "❌ Failed to declare RPC queue")
+		logger.Fatalf(ctx, err, "❌ RabbitMQ failed to declare RPC queue")
 		return nil
 	}
 
@@ -51,12 +51,12 @@ func NewServer(ctx context.Context, client rabbitmq.Client, config ServerConfig)
 // Serve starts serving RPC requests
 func (s *Server) Serve(ctx context.Context, handler RequestHandler) error {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
-		logger.Infof(ctx, "✉️ Received request from queue %s with correlation ID %s", s.queueName, delivery.CorrelationId)
+		logger.Infof(ctx, "📥 RabbitMQ received request from queue %s with correlation ID %s", s.queueName, delivery.CorrelationId)
 
 		// Process the request
 		response, err := handler(ctx, delivery.Body, delivery.Headers)
 		if err != nil {
-			logger.Errorf(ctx, err, "❌ Error processing request")
+			logger.Errorf(ctx, err, "❌ RabbitMQ error processing request")
 			// Send error response
 			return s.sendResponse(ctx, delivery.ReplyTo, delivery.CorrelationId, nil, err)
 		}

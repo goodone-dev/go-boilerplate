@@ -78,16 +78,16 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection after retries")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to establish connection after retries")
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL tracing plugin")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize tracing plugin")
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to access PostgreSQL connection pool")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to access connection pool")
 	}
 
 	sqlDB.SetMaxOpenConns(config.PostgresConfig.MaxOpenConnections)
@@ -107,17 +107,17 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 
 	migrateDriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL migration driver")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize migration driver")
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/postgres", "postgres", migrateDriver)
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to create migration instance from PostgreSQL driver")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to create migration instance")
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		logger.Fatal(ctx, err, "❌ PostgreSQL migration failed")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed migration")
 	}
 
 	return db

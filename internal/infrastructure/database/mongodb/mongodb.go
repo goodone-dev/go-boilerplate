@@ -95,7 +95,7 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		return mongo.Connect(opts)
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish MongoDB connection after retries")
+		logger.Fatal(ctx, err, "❌ MongoDB failed to establish connection after retries")
 	}
 
 	_, err = retry.RetryWithBackoff(ctx, "MongoDB connection test", func() (any, error) {
