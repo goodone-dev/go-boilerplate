@@ -22,7 +22,7 @@ func init() {
 		"FormatDate":   formatDate,
 	}).ParseFS(templates.FS, "email/*.html", "pdf/*.html")
 	if err != nil {
-		logger.Fatal(context.Background(), err, "❌ Failed to parse template")
+		logger.Fatal(context.Background(), err, "❌ Failed to parse templates")
 	}
 }
 

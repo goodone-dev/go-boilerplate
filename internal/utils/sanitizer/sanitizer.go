@@ -11,7 +11,7 @@ import (
 func NewSanitizer() *sanitize.Sanitizer {
 	s, err := sanitize.New()
 	if err != nil {
-		logger.Fatal(context.Background(), err, "❌ Failed to create sanitizer")
+		logger.Fatal(context.Background(), err, "❌ Failed to initialize sanitizer")
 		return nil
 	}
 

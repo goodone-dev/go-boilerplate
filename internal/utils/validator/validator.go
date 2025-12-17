@@ -23,13 +23,13 @@ func NewValidator() *CustomValidator {
 	vl := validator.New()
 	tr, ok := un.GetTranslator("en")
 	if !ok {
-		logger.Fatal(context.Background(), nil, "❌ Failed to get translator")
+		logger.Fatal(context.Background(), nil, "❌ Failed to initialize translator")
 		return nil
 	}
 
 	err := translations.RegisterDefaultTranslations(vl, tr)
 	if err != nil {
-		logger.Fatal(context.Background(), err, "❌ Failed to register default translations")
+		logger.Fatal(context.Background(), err, "❌ Failed to register translations")
 		return nil
 	}
 
