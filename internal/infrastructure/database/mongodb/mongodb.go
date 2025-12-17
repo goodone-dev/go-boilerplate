@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo"
 )
 
 type mongoConfig struct {
@@ -74,10 +75,7 @@ func Open(ctx context.Context) *mongoConnection {
 }
 
 func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPref) *mongo.Database {
-	// TODO: Enable MongoDB OpenTelemetry monitoring once otelmongo supports mongo-driver v2
-	// Currently blocked by: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/
-	// The otelmongo package only supports mongo-driver v1.x
-	// opts.SetMonitor(otelmongo.NewMonitor())
+	opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
 	opts.SetMaxConnIdleTime(time.Duration(config.MongoConfig.ConnIdleTimeoutMS) * time.Millisecond)
