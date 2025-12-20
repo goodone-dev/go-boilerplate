@@ -51,7 +51,7 @@ func NewClient(ctx context.Context) Client {
 		return nil, c.connect()
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ RabbitMQ failed to establish connection after retries")
+		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to establish connection after retries")
 	}
 
 	// Initialize channel pool
@@ -60,7 +60,7 @@ func NewClient(ctx context.Context) Client {
 		if err != nil {
 			_ = c.Shutdown(ctx)
 
-			logger.Fatal(ctx, err, "❌ RabbitMQ failed to create channel")
+			logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to create channel")
 			return nil
 		}
 		c.channels <- ch
@@ -104,7 +104,7 @@ func (c *client) Monitor(ctx context.Context) {
 				return
 			}
 
-			logger.Error(ctx, err, "🛑 RabbitMQ connection lost")
+			logger.With().Error(ctx, err, "🛑 RabbitMQ connection lost")
 			c.reconnect(ctx)
 		}
 	}
@@ -115,7 +115,7 @@ func (c *client) reconnect(ctx context.Context) {
 		return nil, c.connect()
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ RabbitMQ failed to establish connection after retries")
+		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to establish connection after retries")
 	}
 
 	// Recreate channel pool
@@ -125,7 +125,7 @@ func (c *client) reconnect(ctx context.Context) {
 	for i := 0; i < c.config.PoolSize; i++ {
 		ch, err := c.conn.Channel()
 		if err != nil {
-			logger.Error(ctx, err, "❌ RabbitMQ channel creation failed")
+			logger.With().Error(ctx, err, "❌ RabbitMQ channel creation failed")
 			c.mu.Unlock()
 			continue
 		}
@@ -334,17 +334,17 @@ func (c *client) handleDelivery(ctx context.Context, delivery amqp.Delivery, han
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		logger.Error(ctx, err, "❌ RabbitMQ error handling message")
+		logger.With().Error(ctx, err, "❌ RabbitMQ error handling message")
 
 		if retryCount < c.config.MaxRetry {
 			// Republish with incremented retry count
 			retryCount++
 
-			logger.Infof(ctx, "🔁 RabbitMQ retrying message (attempt %d/%d) after %v", retryCount, c.config.MaxRetry, c.config.RetryDelay)
+			logger.With().Infof(ctx, "🔁 RabbitMQ retrying message (attempt %d/%d) after %v", retryCount, c.config.MaxRetry, c.config.RetryDelay)
 			_ = c.republish(ctx, delivery, retryCount)
 		} else {
 			// Max retries reached, reject without requeue (goes to DLX if configured)
-			logger.Info(ctx, "🚫 RabbitMQ max retries reached, rejecting message")
+			logger.With().Info(ctx, "🚫 RabbitMQ max retries reached, rejecting message")
 			_ = delivery.Nack(false, false)
 		}
 		return
@@ -384,7 +384,7 @@ func (c *client) republish(ctx context.Context, delivery amqp.Delivery, retryCou
 	)
 
 	if err != nil {
-		logger.Error(ctx, err, "❌ RabbitMQ failed to republish retry message, requeuing original")
+		logger.With().Error(ctx, err, "❌ RabbitMQ failed to republish retry message, requeuing original")
 		_ = delivery.Nack(false, true) // Fallback to simple requeue if publish fails
 		return err
 	}

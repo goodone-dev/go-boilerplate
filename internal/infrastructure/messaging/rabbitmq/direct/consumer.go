@@ -44,7 +44,7 @@ func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerCon
 		Args:       nil,
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ RabbitMQ failed to declare exchange")
+		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to declare exchange")
 		return nil
 	}
 
@@ -71,7 +71,7 @@ func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerCon
 			Args:       nil,
 		})
 		if err != nil {
-			logger.Fatal(ctx, err, "❌ RabbitMQ failed to declare DLX")
+			logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to declare DLX")
 			return nil
 		}
 
@@ -85,14 +85,14 @@ func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerCon
 			Args:       nil,
 		})
 		if err != nil {
-			logger.Fatal(ctx, err, "❌ RabbitMQ failed to declare DLQ")
+			logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to declare DLQ")
 			return nil
 		}
 
 		// Bind DLQ to DLX
 		err = client.BindQueue(dlqName, config.RoutingKey, dlxName, nil)
 		if err != nil {
-			logger.Fatal(ctx, err, "❌ RabbitMQ failed to bind DLQ")
+			logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to bind DLQ")
 			return nil
 		}
 
@@ -115,14 +115,14 @@ func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerCon
 		Args:       queueArgs,
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ RabbitMQ failed to declare queue")
+		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to declare queue")
 		return nil
 	}
 
 	// Bind queue to exchange
 	err = client.BindQueue(config.QueueName, config.RoutingKey, config.ExchangeName, nil)
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ RabbitMQ failed to bind queue")
+		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to bind queue")
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func NewConsumer(ctx context.Context, client rabbitmq.Client, config ConsumerCon
 // Consume starts consuming messages from the queue
 func (c *Consumer) Consume(ctx context.Context, handler MessageHandler) error {
 	deliveryHandler := func(ctx context.Context, delivery amqp.Delivery) error {
-		logger.Infof(ctx, "📩 RabbitMQ received message from queue %s with routing key %s", c.queueName, delivery.RoutingKey)
+		logger.With().Infof(ctx, "📩 RabbitMQ received message from queue %s with routing key %s", c.queueName, delivery.RoutingKey)
 		return handler(ctx, delivery.Body, delivery.Headers)
 	}
 

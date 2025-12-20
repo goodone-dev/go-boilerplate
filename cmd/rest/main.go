@@ -98,9 +98,9 @@ func main() {
 	}
 
 	go func() {
-		logger.Infof(ctx, "🚀 Starting server on %s", addr)
+		logger.With().Infof(ctx, "🚀 Starting server on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal(ctx, err, "❌ Failed to start server")
+			logger.With().Fatal(ctx, err, "❌ Failed to start server")
 		}
 	}()
 
@@ -110,17 +110,17 @@ func main() {
 
 	<-quit
 	fmt.Println()
-	logger.Info(ctx, "🛑 Initiating server shutdown...")
-	logger.Info(ctx, "⏳ Waiting for in-flight requests to complete...")
+	logger.With().Info(ctx, "🛑 Initiating server shutdown...")
+	logger.With().Info(ctx, "⏳ Waiting for in-flight requests to complete...")
 
 	ctx, cancel := context.WithTimeout(ctx, config.ContextTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal(ctx, err, "❌ Server forced to shutdown due to error")
+		logger.With().Fatal(ctx, err, "❌ Server forced to shutdown due to error")
 	}
 
-	logger.Info(ctx, "✅ Server shutdown gracefully")
+	logger.With().Info(ctx, "✅ Server shutdown gracefully")
 
 	utils.GracefulShutdown(ctx, loggerProvider, tracerProvider, postgresConn, redisClient, rmqClient)
 }

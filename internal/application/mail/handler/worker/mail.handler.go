@@ -31,13 +31,13 @@ func (h *mailHandler) Send(ctx context.Context, payload any, headers map[string]
 	req := payload.(mail.MailSendMessage)
 
 	if errs := validator.Validate(req); errs != nil {
-		logger.Error(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request")
+		logger.With().Error(ctx, errors.New(strings.Join(errs, ", ")), "❌ Failed to validate email send request")
 		return fmt.Errorf("request contains invalid or missing fields: %v", errs)
 	}
 
 	err = h.mailUsecase.Send(ctx, req)
 	if err != nil {
-		logger.Error(ctx, err, "❌ Failed to send email")
+		logger.With().Error(ctx, err, "❌ Failed to send email")
 		return
 	}
 

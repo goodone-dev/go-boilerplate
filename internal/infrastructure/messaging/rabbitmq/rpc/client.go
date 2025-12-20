@@ -39,7 +39,7 @@ func NewClient(ctx context.Context, client rabbitmq.Client, config ClientConfig)
 		Args:       nil,
 	})
 	if err != nil {
-		logger.Fatalf(ctx, err, "❌ RabbitMQ failed to declare reply queue")
+		logger.With().Fatalf(ctx, err, "❌ RabbitMQ failed to declare reply queue")
 		return nil
 	}
 
@@ -84,7 +84,7 @@ func (c *Client) consumeReplies(ctx context.Context) {
 	}
 
 	if err := c.client.Consume(ctx, consumeConfig, deliveryHandler); err != nil {
-		logger.Fatalf(ctx, err, "❌ RabbitMQ failed to consume replies")
+		logger.With().Fatalf(ctx, err, "❌ RabbitMQ failed to consume replies")
 	}
 }
 
@@ -98,7 +98,7 @@ func (c *Client) Call(ctx context.Context, queueName string, request any) ([]byt
 	correlationID := uuid.New().String()
 	replyChan := make(chan *amqp.Delivery, 1)
 
-	logger.Infof(ctx, "🔄 RabbitMQ making RPC call to queue %s with correlation ID %s", queueName, correlationID)
+	logger.With().Infof(ctx, "🔄 RabbitMQ making RPC call to queue %s with correlation ID %s", queueName, correlationID)
 
 	c.mu.Lock()
 	c.pending[correlationID] = replyChan
