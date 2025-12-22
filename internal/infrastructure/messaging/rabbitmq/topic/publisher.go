@@ -30,7 +30,7 @@ func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName stri
 		Args:       nil,
 	})
 	if err != nil {
-		logger.With().Fatalf(ctx, err, "❌ RabbitMQ failed to declare exchange")
+		logger.Fatalf(ctx, err, "❌ RabbitMQ failed to declare exchange").Write()
 		return nil
 	}
 
@@ -43,7 +43,7 @@ func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName stri
 // Publish publishes a message to the topic exchange with a routing pattern
 // Routing key examples: "logs.error", "events.customer.created", "notifications.email.sent"
 func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any) error {
-	logger.With().Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey)
+	logger.Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey).Write()
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -69,7 +69,7 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any)
 
 // PublishWithPriority publishes a message with priority
 func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, payload any, priority uint8) error {
-	logger.With().Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey)
+	logger.Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey).Write()
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -96,7 +96,7 @@ func (p *Publisher) PublishWithPriority(ctx context.Context, routingKey string, 
 
 // PublishWithHeaders publishes a message with custom headers
 func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload any, headers map[string]any) error {
-	logger.With().Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey)
+	logger.Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey).Write()
 
 	body, err := json.Marshal(payload)
 	if err != nil {

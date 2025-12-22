@@ -132,7 +132,7 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		},
 	})
 	if err != nil {
-		logger.With().Error(ctx, err, "❌ Failed to publish email")
+		logger.Error(ctx, err, "❌ Failed to publish email").Write()
 	}
 
 	return &order.CreateOrderResponse{

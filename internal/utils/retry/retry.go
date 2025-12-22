@@ -15,7 +15,7 @@ func RetryWithBackoff[D any](ctx context.Context, operation string, fn func() (D
 
 	for attempt := 0; attempt <= config.RetryConfig.MaxRetries; attempt++ {
 		if attempt > 0 {
-			logger.With().Warnf(ctx, "🔁 Retrying %s (attempt %d/%d) after %v", operation, attempt, config.RetryConfig.MaxRetries, backoff)
+			logger.Warnf(ctx, "🔁 Retrying %s (attempt %d/%d) after %v", operation, attempt, config.RetryConfig.MaxRetries, backoff).Write()
 			select {
 			case <-time.After(backoff):
 			case <-ctx.Done():
@@ -26,7 +26,7 @@ func RetryWithBackoff[D any](ctx context.Context, operation string, fn func() (D
 		res, err = fn()
 		if err == nil {
 			if attempt > 0 {
-				logger.With().Infof(ctx, "✅ %s succeeded after %d attempts", operation, attempt+1)
+				logger.Infof(ctx, "✅ %s succeeded after %d attempts", operation, attempt+1).Write()
 			}
 			return res, nil
 		}

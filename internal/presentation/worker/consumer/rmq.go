@@ -33,6 +33,6 @@ func (c *consumer) Consume(ctx context.Context) {
 
 	err := mailConsumer.ConsumeJSON(ctx, c.mailHandler.Send, mail.MailSendMessage{})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ Failed to start email consumer")
+		logger.Fatal(ctx, err, "❌ Failed to start email consumer").Write()
 	}
 }

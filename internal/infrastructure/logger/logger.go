@@ -19,10 +19,8 @@ var oLogger otellog.Logger
 
 func init() {
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
-	zLogger = zerolog.New(output).
-		With().
-		Timestamp().
-		Logger()
+	zLogger = zerolog.New(output).With().Timestamp().Logger()
+	zLogger = zLogger.Hook(TracingHook{})
 }
 
 func Disabled() {
@@ -30,71 +28,161 @@ func Disabled() {
 	zLogger = zerolog.Nop()
 }
 
+type TracingHook struct{}
+
+func (h TracingHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	ctx := e.GetCtx()
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().HasTraceID() {
+		e.Str("trace_id", span.SpanContext().TraceID().String())
+	}
+}
+
 type LogBuilder struct {
+	ctx      context.Context
+	level    zerolog.Level
+	msg      string
+	err      error
+	fields   map[string]any
 	metadata map[string]any
 }
 
-func With() *LogBuilder {
+func Trace(ctx context.Context, msg string) *LogBuilder {
 	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.TraceLevel,
+		msg:      msg,
+		fields:   make(map[string]any),
 		metadata: make(map[string]any),
 	}
 }
 
-func (b *LogBuilder) Metadata(key string, val any) *LogBuilder {
+func Tracef(ctx context.Context, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.TraceLevel,
+		msg:      fmt.Sprintf(format, args...),
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Debug(ctx context.Context, msg string) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.DebugLevel,
+		msg:      msg,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Debugf(ctx context.Context, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.DebugLevel,
+		msg:      fmt.Sprintf(format, args...),
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Info(ctx context.Context, msg string) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.InfoLevel,
+		msg:      msg,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Infof(ctx context.Context, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.InfoLevel,
+		msg:      fmt.Sprintf(format, args...),
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Warn(ctx context.Context, msg string) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.WarnLevel,
+		msg:      msg,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Warnf(ctx context.Context, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.WarnLevel,
+		msg:      fmt.Sprintf(format, args...),
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Error(ctx context.Context, err error, msg string) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.ErrorLevel,
+		msg:      msg,
+		err:      err,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Errorf(ctx context.Context, err error, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.ErrorLevel,
+		msg:      fmt.Sprintf(format, args...),
+		err:      err,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Fatal(ctx context.Context, err error, msg string) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.FatalLevel,
+		msg:      msg,
+		err:      err,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func Fatalf(ctx context.Context, err error, format string, args ...any) *LogBuilder {
+	return &LogBuilder{
+		ctx:      ctx,
+		level:    zerolog.FatalLevel,
+		msg:      fmt.Sprintf(format, args...),
+		err:      err,
+		fields:   make(map[string]any),
+		metadata: make(map[string]any),
+	}
+}
+
+func (b *LogBuilder) AddMetadata(key string, val any) *LogBuilder {
 	b.metadata[key] = val
 	return b
 }
 
-func (b *LogBuilder) Trace(ctx context.Context, msg string) {
-	b.writeLog(ctx, zerolog.TraceLevel, msg, nil)
+func (b *LogBuilder) AddField(key string, val any) *LogBuilder {
+	b.fields[key] = val
+	return b
 }
 
-func (b *LogBuilder) Tracef(ctx context.Context, format string, args ...any) {
-	b.writeLog(ctx, zerolog.TraceLevel, fmt.Sprintf(format, args...), nil)
-}
-
-func (b *LogBuilder) Debug(ctx context.Context, msg string) {
-	b.writeLog(ctx, zerolog.DebugLevel, msg, nil)
-}
-
-func (b *LogBuilder) Debugf(ctx context.Context, format string, args ...any) {
-	b.writeLog(ctx, zerolog.DebugLevel, fmt.Sprintf(format, args...), nil)
-}
-
-func (b *LogBuilder) Info(ctx context.Context, msg string) {
-	b.writeLog(ctx, zerolog.InfoLevel, msg, nil)
-}
-
-func (b *LogBuilder) Infof(ctx context.Context, format string, args ...any) {
-	b.writeLog(ctx, zerolog.InfoLevel, fmt.Sprintf(format, args...), nil)
-}
-
-func (b *LogBuilder) Warn(ctx context.Context, msg string) {
-	b.writeLog(ctx, zerolog.WarnLevel, msg, nil)
-}
-
-func (b *LogBuilder) Warnf(ctx context.Context, format string, args ...any) {
-	b.writeLog(ctx, zerolog.WarnLevel, fmt.Sprintf(format, args...), nil)
-}
-
-func (b *LogBuilder) Error(ctx context.Context, err error, msg string) {
-	b.writeLog(ctx, zerolog.ErrorLevel, msg, err)
-}
-
-func (b *LogBuilder) Errorf(ctx context.Context, err error, format string, args ...any) {
-	b.writeLog(ctx, zerolog.ErrorLevel, fmt.Sprintf(format, args...), err)
-}
-
-func (b *LogBuilder) Fatal(ctx context.Context, err error, msg string) {
-	b.writeLog(ctx, zerolog.FatalLevel, msg, err)
-}
-
-func (b *LogBuilder) Fatalf(ctx context.Context, err error, format string, args ...any) {
-	b.writeLog(ctx, zerolog.FatalLevel, fmt.Sprintf(format, args...), err)
-}
-
-func (b *LogBuilder) writeLog(ctx context.Context, level zerolog.Level, msg string, err error) {
-	file, line, fn := getCaller(3)
+func (b *LogBuilder) Write() {
+	file, line, fn := getCaller(2)
 
 	var metadata []byte
 	if len(b.metadata) > 0 {
@@ -103,7 +191,7 @@ func (b *LogBuilder) writeLog(ctx context.Context, level zerolog.Level, msg stri
 	}
 
 	var zlog *zerolog.Event
-	switch level {
+	switch b.level {
 	case zerolog.TraceLevel:
 		zlog = zLogger.Trace()
 	case zerolog.DebugLevel:
@@ -120,30 +208,29 @@ func (b *LogBuilder) writeLog(ctx context.Context, level zerolog.Level, msg stri
 		zlog = zLogger.Info()
 	}
 
-	span := trace.SpanFromContext(ctx)
-	if span.SpanContext().HasTraceID() {
-		zlog.Str("request_id", span.SpanContext().TraceID().String())
-	}
-
 	if metadata != nil {
-		zlog.Interface("metadata", string(metadata))
+		zlog.RawJSON("metadata", metadata)
 	}
 
-	if err != nil {
-		zlog.Err(err)
-		zlog.Str("filepath", fmt.Sprintf("%s:%d", file, line))
+	for k, v := range b.fields {
+		zlog.Any(k, v)
 	}
 
-	zlog.Msg(msg)
+	if b.err != nil {
+		zlog.Err(b.err)
+		zlog.Str("error_caller", fmt.Sprintf("%s:%d", file, line))
+	}
+
+	zlog.Ctx(b.ctx).Msg(b.msg)
 
 	if oLogger == nil {
 		return
 	}
 
 	record := otellog.Record{}
-	record.SetSeverity(otellog.Severity(level))
-	record.SetSeverityText(level.String())
-	record.SetBody(otellog.StringValue(msg))
+	record.SetSeverity(otellog.Severity(b.level))
+	record.SetSeverityText(b.level.String())
+	record.SetBody(otellog.StringValue(b.msg))
 	record.SetTimestamp(time.Now())
 	record.AddAttributes(
 		otellog.String("code_filepath", file),
@@ -157,14 +244,20 @@ func (b *LogBuilder) writeLog(ctx context.Context, level zerolog.Level, msg stri
 		)
 	}
 
-	if err != nil {
+	for k, v := range b.fields {
 		record.AddAttributes(
-			otellog.String("error_message", err.Error()),
-			otellog.String("error_type", fmt.Sprintf("%T", err)),
+			otellog.String(k, fmt.Sprintf("%v", v)),
 		)
 	}
 
-	oLogger.Emit(ctx, record)
+	if b.err != nil {
+		record.AddAttributes(
+			otellog.String("error_message", b.err.Error()),
+			otellog.String("error_type", fmt.Sprintf("%T", b.err)),
+		)
+	}
+
+	oLogger.Emit(b.ctx, record)
 }
 
 func getCaller(skip int) (file string, line int, function string) {

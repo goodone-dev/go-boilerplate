@@ -95,14 +95,14 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		return mongo.Connect(opts)
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MongoDB failed to establish connection after retries")
+		logger.Fatal(ctx, err, "❌ MongoDB failed to establish connection after retries").Write()
 	}
 
 	_, err = retry.RetryWithBackoff(ctx, "MongoDB connection test", func() (any, error) {
 		return nil, client.Ping(ctx, rp)
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MongoDB connection test failed")
+		logger.Fatal(ctx, err, "❌ MongoDB connection test failed").Write()
 	}
 
 	mongoDB := client.Database(config.MongoConfig.Database)
@@ -120,17 +120,17 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	// 	DatabaseName: config.MongoConfig.Database,
 	// })
 	// if err != nil {
-	// 	logger.With().Fatal(ctx, err, "❌ Failed to initialize MongoDB migration driver")
+	// 	logger.Fatal(ctx, err, "❌ Failed to initialize MongoDB migration driver").Write()
 	// }
 	//
 	// m, err := migrate.NewWithDatabaseInstance("file://migrations/mongodb", "mongodb", migrateDriver)
 	// if err != nil {
-	// 	logger.With().Fatal(ctx, err, "❌ Failed to create migration instance from MongoDB driver")
+	// 	logger.Fatal(ctx, err, "❌ Failed to create migration instance from MongoDB driver").Write()
 	// }
 	//
 	// err = m.Up()
 	// if err != nil && err != migrate.ErrNoChange {
-	// 	logger.With().Fatal(ctx, err, "❌ MongoDB migration failed")
+	// 	logger.Fatal(ctx, err, "❌ MongoDB migration failed").Write()
 	// }
 
 	return mongoDB
@@ -178,12 +178,12 @@ func (c *mongoConnection) Monitor(ctx context.Context) {
 			err := c.Ping(ctx)
 			if err != nil {
 				if !wasLost {
-					logger.With().Errorf(ctx, err, "🛑 MongoDB connection lost")
+					logger.Errorf(ctx, err, "🛑 MongoDB connection lost").Write()
 					wasLost = true
 				}
 			} else {
 				if wasLost {
-					logger.With().Info(ctx, "✅ MongoDB connection restored")
+					logger.Info(ctx, "✅ MongoDB connection restored").Write()
 					wasLost = false
 				}
 			}

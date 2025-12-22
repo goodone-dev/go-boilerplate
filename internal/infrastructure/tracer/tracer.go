@@ -31,7 +31,7 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 		),
 	)
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ Could not create tracer exporter")
+		logger.Fatal(ctx, err, "❌ Could not create tracer exporter").Write()
 	}
 
 	traceProvider := trace.NewTracerProvider(

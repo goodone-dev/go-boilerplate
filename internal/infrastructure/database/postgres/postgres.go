@@ -78,16 +78,16 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed to establish connection after retries")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to establish connection after retries").Write()
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed to initialize tracing plugin")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize tracing plugin").Write()
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed to access connection pool")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to access connection pool").Write()
 	}
 
 	sqlDB.SetMaxOpenConns(config.PostgresConfig.MaxOpenConnections)
@@ -98,7 +98,7 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		return nil, sqlDB.Ping()
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL connection test failed")
+		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed").Write()
 	}
 
 	if !config.PostgresConfig.AutoMigrate {
@@ -107,17 +107,17 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 
 	migrateDriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed to initialize migration driver")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize migration driver").Write()
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/postgres", "postgres", migrateDriver)
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed to create migration instance")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to create migration instance").Write()
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		logger.With().Fatal(ctx, err, "❌ PostgreSQL failed migration")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed migration").Write()
 	}
 
 	return db
@@ -176,12 +176,12 @@ func (c *postgresConnection) Monitor(ctx context.Context) {
 			err := c.Ping(ctx)
 			if err != nil {
 				if !wasLost {
-					logger.With().Errorf(ctx, err, "🛑 PostgreSQL connection lost")
+					logger.Errorf(ctx, err, "🛑 PostgreSQL connection lost").Write()
 					wasLost = true
 				}
 			} else {
 				if wasLost {
-					logger.With().Info(ctx, "✅ PostgreSQL connection restored")
+					logger.Info(ctx, "✅ PostgreSQL connection restored").Write()
 					wasLost = false
 				}
 			}

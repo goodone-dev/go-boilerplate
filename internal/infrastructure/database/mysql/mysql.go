@@ -76,16 +76,16 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		return gorm.Open(mysql.New(mysqlConfig), gormConfig)
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed to establish connection after retries")
+		logger.Fatal(ctx, err, "❌ MySQL failed to establish connection after retries").Write()
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed to initialize tracing plugin")
+		logger.Fatal(ctx, err, "❌ MySQL failed to initialize tracing plugin").Write()
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed to access connection pool")
+		logger.Fatal(ctx, err, "❌ MySQL failed to access connection pool").Write()
 	}
 
 	sqlDB.SetMaxOpenConns(config.MySQLConfig.MaxOpenConnections)
@@ -96,7 +96,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		return nil, sqlDB.Ping()
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL connection test failed")
+		logger.Fatal(ctx, err, "❌ MySQL connection test failed").Write()
 	}
 
 	if !config.MySQLConfig.AutoMigrate {
@@ -105,17 +105,17 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 
 	migrateDriver, err := migratemysql.WithInstance(sqlDB, &migratemysql.Config{})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed to initialize migration driver")
+		logger.Fatal(ctx, err, "❌ MySQL failed to initialize migration driver").Write()
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/mysql", "mysql", migrateDriver)
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed to create migration instance")
+		logger.Fatal(ctx, err, "❌ MySQL failed to create migration instance").Write()
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		logger.With().Fatal(ctx, err, "❌ MySQL failed migration")
+		logger.Fatal(ctx, err, "❌ MySQL failed migration").Write()
 	}
 
 	return db
@@ -174,12 +174,12 @@ func (c *mysqlConnection) Monitor(ctx context.Context) {
 			err := c.Ping(ctx)
 			if err != nil {
 				if !wasLost {
-					logger.With().Errorf(ctx, err, "🛑 MySQL connection lost")
+					logger.Errorf(ctx, err, "🛑 MySQL connection lost").Write()
 					wasLost = true
 				}
 			} else {
 				if wasLost {
-					logger.With().Info(ctx, "✅ MySQL connection restored")
+					logger.Info(ctx, "✅ MySQL connection restored").Write()
 					wasLost = false
 				}
 			}

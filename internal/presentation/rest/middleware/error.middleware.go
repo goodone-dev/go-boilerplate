@@ -24,7 +24,7 @@ func ErrorHandler() gin.HandlerFunc {
 					res["errors"] = e.Errors
 				}
 
-				logger.With().Errorf(c.Request.Context(), errors.New(strings.Join(e.Errors, ", ")), "❌ Failed to process %s %s: %s", c.Request.Method, c.Request.URL.Path, e.Message)
+				logger.Errorf(c.Request.Context(), errors.New(strings.Join(e.Errors, ", ")), "❌ Failed to process %s %s: %s", c.Request.Method, c.Request.URL.Path, e.Message).Write()
 
 				c.JSON(e.Status, res)
 			} else {
@@ -33,7 +33,7 @@ func ErrorHandler() gin.HandlerFunc {
 					res["errors"] = []string{err.Error()}
 				}
 
-				logger.With().Errorf(c.Request.Context(), err, "❌ Failed to process %s %s: An unexpected error occurred", c.Request.Method, c.Request.URL.Path)
+				logger.Errorf(c.Request.Context(), err, "❌ Failed to process %s %s: An unexpected error occurred", c.Request.Method, c.Request.URL.Path).Write()
 
 				c.JSON(http.StatusInternalServerError, res)
 			}

@@ -30,7 +30,7 @@ func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName stri
 		Args:       nil,
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ RabbitMQ failed to declare exchange")
+		logger.Fatal(ctx, err, "❌ RabbitMQ failed to declare exchange").Write()
 		return nil
 	}
 
@@ -42,7 +42,7 @@ func NewPublisher(ctx context.Context, client rabbitmq.Client, exchangeName stri
 
 // Publish publishes a message to the direct exchange with a specific routing key
 func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any) error {
-	logger.With().Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey)
+	logger.Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey).Write()
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -68,7 +68,7 @@ func (p *Publisher) Publish(ctx context.Context, routingKey string, payload any)
 
 // PublishWithHeaders publishes a message with custom headers
 func (p *Publisher) PublishWithHeaders(ctx context.Context, routingKey string, payload any, headers map[string]any) error {
-	logger.With().Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey)
+	logger.Infof(ctx, "✉️ RabbitMQ publishing message to exchange %s with routing key %s", p.exchangeName, routingKey).Write()
 
 	body, err := json.Marshal(payload)
 	if err != nil {

@@ -43,11 +43,11 @@ func createClient(ctx context.Context) (client *redis.Client) {
 		return nil, client.Ping(ctx).Err()
 	})
 	if err != nil {
-		logger.With().Fatal(ctx, err, "❌ Redis failed to establish connection")
+		logger.Fatal(ctx, err, "❌ Redis failed to establish connection").Write()
 	}
 
 	if err := redisotel.InstrumentTracing(client); err != nil {
-		logger.With().Fatal(ctx, err, "❌ Redis failed to instrument connection")
+		logger.Fatal(ctx, err, "❌ Redis failed to instrument connection").Write()
 	}
 
 	return client
@@ -174,12 +174,12 @@ func (c *redisClient) Monitor(ctx context.Context) {
 			err := c.Ping(ctx)
 			if err != nil {
 				if !wasLost {
-					logger.With().Errorf(ctx, err, "🛑 Redis connection lost")
+					logger.Errorf(ctx, err, "🛑 Redis connection lost").Write()
 					wasLost = true
 				}
 			} else {
 				if wasLost {
-					logger.With().Info(ctx, "✅ Redis connection restored")
+					logger.Info(ctx, "✅ Redis connection restored").Write()
 					wasLost = false
 				}
 			}
