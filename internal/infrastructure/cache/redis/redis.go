@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/config"
@@ -46,7 +47,11 @@ func createClient(ctx context.Context) (client *redis.Client) {
 		logger.Fatal(ctx, err, "❌ Redis failed to establish connection").Write()
 	}
 
-	if err := redisotel.InstrumentTracing(client); err != nil {
+	traceOpts := redisotel.WithCommandFilter(func(cmd redis.Cmder) bool {
+		return !strings.EqualFold(cmd.Name(), "ping") // Skip tracing PING commands
+	})
+
+	if err := redisotel.InstrumentTracing(client, traceOpts); err != nil {
 		logger.Fatal(ctx, err, "❌ Redis failed to instrument connection").Write()
 	}
 
