@@ -135,9 +135,9 @@ type TracerConfigMap struct {
 }
 
 type LoggerConfigMap struct {
-	Enabled bool   `mapstructure:"LOGGER_ENABLED"`
-	Host    string `mapstructure:"LOGGER_EXPORTER_HOST"`
-	Port    int    `mapstructure:"LOGGER_EXPORTER_PORT"`
+	Host  string `mapstructure:"LOGGER_EXPORTER_HOST"`
+	Port  int    `mapstructure:"LOGGER_EXPORTER_PORT"`
+	Level int    `mapstructure:"LOGGER_LEVEL"`
 }
 
 type MailConfigMap struct {

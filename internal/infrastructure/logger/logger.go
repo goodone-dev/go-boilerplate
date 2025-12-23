@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/goodone-dev/go-boilerplate/internal/config"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/masker"
 	"github.com/rs/zerolog"
 	otellog "go.opentelemetry.io/otel/log"
@@ -182,6 +183,10 @@ func (b *LogBuilder) AddField(key string, val any) *LogBuilder {
 }
 
 func (b *LogBuilder) Write() {
+	if int(b.level) < config.LoggerConfig.Level {
+		return
+	}
+
 	file, line, fn := getCaller(2)
 
 	var metadata []byte

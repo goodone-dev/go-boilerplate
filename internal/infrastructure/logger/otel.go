@@ -13,7 +13,7 @@ import (
 )
 
 func NewProvider(ctx context.Context) *otelsdklog.LoggerProvider {
-	if !config.LoggerConfig.Enabled {
+	if config.LoggerConfig.Host == "" || config.LoggerConfig.Port == 0 {
 		return nil
 	}
 
