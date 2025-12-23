@@ -20,11 +20,11 @@ type mailSender struct {
 }
 
 func NewMailSender() MailSender {
-	d := gomail.NewDialer(config.MailConfig.Host, config.MailConfig.Port, config.MailConfig.Username, config.MailConfig.Password)
+	d := gomail.NewDialer(config.Mail.Host, config.Mail.Port, config.Mail.Username, config.Mail.Password)
 
-	if config.MailConfig.TLS {
+	if config.Mail.TLS {
 		d.TLSConfig = &tls.Config{
-			ServerName: config.MailConfig.Host,
+			ServerName: config.Mail.Host,
 			MinVersion: tls.VersionTLS13,
 		}
 	}
@@ -46,7 +46,7 @@ func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, da
 	}
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", config.MailConfig.Username)
+	m.SetHeader("From", config.Mail.Username)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body.String())

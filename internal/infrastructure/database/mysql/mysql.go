@@ -24,7 +24,7 @@ type mysqlConfig struct {
 }
 
 func setConfig() mysqlConfig {
-	cfg := config.MySQLConfig
+	cfg := config.MySQL
 	dsn := "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local"
 
 	masterConfig := mysql.Config{
@@ -88,9 +88,9 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		logger.Fatal(ctx, err, "❌ MySQL failed to access connection pool").Write()
 	}
 
-	sqlDB.SetMaxOpenConns(config.MySQLConfig.MaxOpenConnections)
-	sqlDB.SetMaxIdleConns(config.MySQLConfig.MaxIdleConnections)
-	sqlDB.SetConnMaxLifetime(config.MySQLConfig.ConnMaxLifetime)
+	sqlDB.SetMaxOpenConns(config.MySQL.MaxOpenConnections)
+	sqlDB.SetMaxIdleConns(config.MySQL.MaxIdleConnections)
+	sqlDB.SetConnMaxLifetime(config.MySQL.ConnMaxLifetime)
 
 	_, err = retry.RetryWithBackoff(ctx, "MySQL connection test", func() (any, error) {
 		return nil, sqlDB.Ping()
@@ -99,7 +99,7 @@ func open(ctx context.Context, mysqlConfig mysql.Config) *gorm.DB {
 		logger.Fatal(ctx, err, "❌ MySQL connection test failed").Write()
 	}
 
-	if !config.MySQLConfig.AutoMigrate {
+	if !config.MySQL.AutoMigrate {
 		return db
 	}
 

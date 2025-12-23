@@ -23,29 +23,29 @@ type mongoConfig struct {
 func setConfig() mongoConfig {
 	uriMaster := url.URL{
 		Scheme: "mongodb",
-		Host:   fmt.Sprintf("%s:%d", config.MongoConfig.Host, config.MongoConfig.Port),
-		User:   url.UserPassword(config.MongoConfig.Username, config.MongoConfig.Password),
+		Host:   fmt.Sprintf("%s:%d", config.Mongo.Host, config.Mongo.Port),
+		User:   url.UserPassword(config.Mongo.Username, config.Mongo.Password),
 	}
 
-	if len(config.MongoConfig.MasterHost) > 0 {
+	if len(config.Mongo.MasterHost) > 0 {
 		uriMaster = url.URL{
 			Scheme: "mongodb",
-			Host:   fmt.Sprintf("%s:%d", config.MongoConfig.MasterHost, config.MongoConfig.MasterPort),
-			User:   url.UserPassword(config.MongoConfig.MasterUsername, config.MongoConfig.MasterPassword),
+			Host:   fmt.Sprintf("%s:%d", config.Mongo.MasterHost, config.Mongo.MasterPort),
+			User:   url.UserPassword(config.Mongo.MasterUsername, config.Mongo.MasterPassword),
 		}
 	}
 
 	uriSlave := url.URL{
 		Scheme: "mongodb",
-		Host:   fmt.Sprintf("%s:%d", config.MongoConfig.Host, config.MongoConfig.Port),
-		User:   url.UserPassword(config.MongoConfig.Username, config.MongoConfig.Password),
+		Host:   fmt.Sprintf("%s:%d", config.Mongo.Host, config.Mongo.Port),
+		User:   url.UserPassword(config.Mongo.Username, config.Mongo.Password),
 	}
 
-	if len(config.MongoConfig.SlaveHost) > 0 {
+	if len(config.Mongo.SlaveHost) > 0 {
 		uriSlave = url.URL{
 			Scheme: "mongodb",
-			Host:   fmt.Sprintf("%s:%d", config.MongoConfig.SlaveHost, config.MongoConfig.SlavePort),
-			User:   url.UserPassword(config.MongoConfig.SlaveUsername, config.MongoConfig.SlavePassword),
+			Host:   fmt.Sprintf("%s:%d", config.Mongo.SlaveHost, config.Mongo.SlavePort),
+			User:   url.UserPassword(config.Mongo.SlaveUsername, config.Mongo.SlavePassword),
 		}
 	}
 
@@ -80,15 +80,15 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	// opts.SetMonitor(otelmongo.NewMonitor())
 	opts.SetDirect(true)
 	opts.SetRetryWrites(false)
-	opts.SetMaxConnIdleTime(time.Duration(config.MongoConfig.ConnIdleTimeoutMS) * time.Millisecond)
+	opts.SetMaxConnIdleTime(time.Duration(config.Mongo.ConnIdleTimeoutMS) * time.Millisecond)
 	opts.SetBSONOptions(&options.BSONOptions{
 		UseLocalTimeZone: true,
 	})
-	if config.MongoConfig.MaxConnPoolSize >= 0 {
-		opts.SetMaxPoolSize(uint64(config.MongoConfig.MaxConnPoolSize))
+	if config.Mongo.MaxConnPoolSize >= 0 {
+		opts.SetMaxPoolSize(uint64(config.Mongo.MaxConnPoolSize))
 	}
-	if config.MongoConfig.MinConnPoolSize >= 0 {
-		opts.SetMinPoolSize(uint64(config.MongoConfig.MinConnPoolSize))
+	if config.Mongo.MinConnPoolSize >= 0 {
+		opts.SetMinPoolSize(uint64(config.Mongo.MinConnPoolSize))
 	}
 
 	client, err := retry.RetryWithBackoff(ctx, "MongoDB connection", func() (*mongo.Client, error) {
@@ -105,8 +105,8 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 		logger.Fatal(ctx, err, "❌ MongoDB connection test failed").Write()
 	}
 
-	mongoDB := client.Database(config.MongoConfig.Database)
-	if !config.MongoConfig.AutoMigrate {
+	mongoDB := client.Database(config.Mongo.Database)
+	if !config.Mongo.AutoMigrate {
 		return mongoDB
 	}
 
@@ -117,7 +117,7 @@ func open(ctx context.Context, opts *options.ClientOptions, rp *readpref.ReadPre
 	//
 	// Example implementation:
 	// migrateDriver, err := migratemongo.WithInstance(client, &migratemongo.Config{
-	// 	DatabaseName: config.MongoConfig.Database,
+	// 	DatabaseName: config.Mongo.Database,
 	// })
 	// if err != nil {
 	// 	logger.Fatal(ctx, err, "❌ Failed to initialize MongoDB migration driver").Write()

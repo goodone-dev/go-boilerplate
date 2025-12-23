@@ -183,7 +183,7 @@ func (b *LogBuilder) AddField(key string, val any) *LogBuilder {
 }
 
 func (b *LogBuilder) Write() {
-	if int(b.level) < config.LoggerConfig.Level {
+	if int(b.level) < config.Logger.Level {
 		return
 	}
 

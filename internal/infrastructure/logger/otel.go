@@ -13,12 +13,12 @@ import (
 )
 
 func NewProvider(ctx context.Context) *otelsdklog.LoggerProvider {
-	if config.LoggerConfig.Host == "" || config.LoggerConfig.Port == 0 {
+	if config.Logger.Host == "" || config.Logger.Port == 0 {
 		return nil
 	}
 
 	exporter, err := otlploghttp.New(ctx,
-		otlploghttp.WithEndpoint(fmt.Sprintf("%s:%d", config.LoggerConfig.Host, config.LoggerConfig.Port)),
+		otlploghttp.WithEndpoint(fmt.Sprintf("%s:%d", config.Logger.Host, config.Logger.Port)),
 		otlploghttp.WithInsecure(),
 	)
 	if err != nil {
@@ -32,12 +32,12 @@ func NewProvider(ctx context.Context) *otelsdklog.LoggerProvider {
 		otelsdklog.WithResource(
 			resource.NewWithAttributes(
 				semconv.SchemaURL,
-				semconv.ServiceNameKey.String(config.ApplicationConfig.Name),
-				semconv.ServiceInstanceIDKey.String(config.ApplicationConfig.URL),
+				semconv.ServiceNameKey.String(config.Application.Name),
+				semconv.ServiceInstanceIDKey.String(config.Application.URL),
 			),
 		),
 	)
 
-	oLogger = provider.Logger(config.ApplicationConfig.Name)
+	oLogger = provider.Logger(config.Application.Name)
 	return provider
 }

@@ -7,22 +7,22 @@ import (
 )
 
 var ContextTimeout time.Duration
-var CorsConfig CorsConfigMap
-var ApplicationConfig ApplicationConfigMap
-var RedisConfig RedisConfigMap
-var PostgresConfig PostgresConfigMap
-var MySQLConfig MySQLConfigMap
-var MongoConfig MongoConfigMap
-var RabbitMQConfig RabbitMQConfigMap
-var TracerConfig TracerConfigMap
-var LoggerConfig LoggerConfigMap
-var MailConfig MailConfigMap
-var HttpServerConfig HttpServerConfigMap
-var HttpClientConfig HttpClientConfigMap
-var CircuitBreakerConfig CircuitBreakerConfigMap
-var RateLimiterConfig RateLimiterConfigMap
 var IdempotencyDuration time.Duration
-var RetryConfig RetryConfigMap
+var Cors CorsConfig
+var Application ApplicationConfig
+var Redis RedisConfig
+var Postgres PostgresConfig
+var MySQL MySQLConfig
+var Mongo MongoConfig
+var RabbitMQ RabbitMQConfig
+var Tracer TracerConfig
+var Logger LoggerConfig
+var Mail MailConfig
+var HttpServer HttpServerConfig
+var HttpClient HttpClientConfig
+var CircuitBreaker CircuitBreakerConfig
+var RateLimiter RateLimiterConfig
+var RetryBackoff RetryBackoffConfig
 
 type Environment string
 
@@ -33,14 +33,14 @@ const (
 	EnvProd  Environment = "production"
 )
 
-type ApplicationConfigMap struct {
+type ApplicationConfig struct {
 	Name string      `mapstructure:"APP_NAME"`
 	Env  Environment `mapstructure:"APP_ENV"`
 	Port int         `mapstructure:"APP_PORT"`
 	URL  string      `mapstructure:"APP_URL"`
 }
 
-type RedisConfigMap struct {
+type RedisConfig struct {
 	Host     string `mapstructure:"REDIS_HOST"`
 	Port     int    `mapstructure:"REDIS_PORT"`
 	TLS      bool   `mapstructure:"REDIS_TLS"`
@@ -48,7 +48,7 @@ type RedisConfigMap struct {
 	DB       int    `mapstructure:"REDIS_DB"`
 }
 
-type PostgresConfigMap struct {
+type PostgresConfig struct {
 	MasterHost         string        `mapstructure:"POSTGRES_MASTER_HOST"`
 	MasterUsername     string        `mapstructure:"POSTGRES_MASTER_USERNAME"`
 	MasterPassword     string        `mapstructure:"POSTGRES_MASTER_PASSWORD"`
@@ -73,7 +73,7 @@ type PostgresConfigMap struct {
 	InsertBatchSize    int           `mapstructure:"POSTGRES_INSERT_BATCH_SIZE"`
 }
 
-type MySQLConfigMap struct {
+type MySQLConfig struct {
 	MasterHost         string        `mapstructure:"MYSQL_MASTER_HOST"`
 	MasterUsername     string        `mapstructure:"MYSQL_MASTER_USERNAME"`
 	MasterPassword     string        `mapstructure:"MYSQL_MASTER_PASSWORD"`
@@ -94,7 +94,7 @@ type MySQLConfigMap struct {
 	InsertBatchSize    int           `mapstructure:"MYSQL_INSERT_BATCH_SIZE"`
 }
 
-type MongoConfigMap struct {
+type MongoConfig struct {
 	MasterHost        string `mapstructure:"MONGO_MASTER_HOST"`
 	MasterPort        int    `mapstructure:"MONGO_MASTER_PORT"`
 	MasterUsername    string `mapstructure:"MONGO_MASTER_USERNAME"`
@@ -115,7 +115,7 @@ type MongoConfigMap struct {
 	InsertBatchSize   int    `mapstructure:"MONGO_INSERT_BATCH_SIZE"`
 }
 
-type RabbitMQConfigMap struct {
+type RabbitMQConfig struct {
 	Host               string        `mapstructure:"RABBITMQ_HOST"`
 	Port               int           `mapstructure:"RABBITMQ_PORT"`
 	Username           string        `mapstructure:"RABBITMQ_USERNAME"`
@@ -128,19 +128,19 @@ type RabbitMQConfigMap struct {
 	TopicExchangeName  string        `mapstructure:"RABBITMQ_TOPIC_EXCHANGE_NAME"`
 }
 
-type TracerConfigMap struct {
+type TracerConfig struct {
 	Enabled bool   `mapstructure:"TRACER_ENABLED"`
 	Host    string `mapstructure:"TRACER_EXPORTER_HOST"`
 	Port    int    `mapstructure:"TRACER_EXPORTER_PORT"`
 }
 
-type LoggerConfigMap struct {
+type LoggerConfig struct {
 	Host  string `mapstructure:"LOGGER_EXPORTER_HOST"`
 	Port  int    `mapstructure:"LOGGER_EXPORTER_PORT"`
 	Level int    `mapstructure:"LOGGER_LEVEL"`
 }
 
-type MailConfigMap struct {
+type MailConfig struct {
 	Host     string `mapstructure:"MAIL_HOST"`
 	Port     int    `mapstructure:"MAIL_PORT"`
 	Username string `mapstructure:"MAIL_USERNAME"`
@@ -148,38 +148,38 @@ type MailConfigMap struct {
 	TLS      bool   `mapstructure:"MAIL_TLS"`
 }
 
-type CorsConfigMap struct {
+type CorsConfig struct {
 	AllowOrigins []string `mapstructure:"CORS_ALLOW_ORIGINS"`
 	AllowMethods []string `mapstructure:"CORS_ALLOW_METHODS"`
 }
 
-type HttpServerConfigMap struct {
+type HttpServerConfig struct {
 	ReadTimeout       time.Duration `mapstructure:"HTTP_SERVER_READ_TIMEOUT"`
 	ReadHeaderTimeout time.Duration `mapstructure:"HTTP_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `mapstructure:"HTTP_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `mapstructure:"HTTP_SERVER_IDLE_TIMEOUT"`
 }
 
-type HttpClientConfigMap struct {
+type HttpClientConfig struct {
 	RetryCount    int           `mapstructure:"HTTP_CLIENT_RETRY_COUNT"`
 	RetryWaitTime time.Duration `mapstructure:"HTTP_CLIENT_RETRY_WAIT_TIME"`
 }
 
-type CircuitBreakerConfigMap struct {
+type CircuitBreakerConfig struct {
 	MinRequests  int           `mapstructure:"CIRCUIT_BREAKER_MIN_REQUESTS"`
 	FailureRatio float64       `mapstructure:"CIRCUIT_BREAKER_FAILURE_RATIO"`
 	Timeout      time.Duration `mapstructure:"CIRCUIT_BREAKER_TIMEOUT"`
 	MaxRequests  int           `mapstructure:"CIRCUIT_BREAKER_MAX_REQUESTS"`
 }
 
-type RateLimiterConfigMap struct {
+type RateLimiterConfig struct {
 	SingleLimit    int           `mapstructure:"RATE_LIMITER_SINGLE_LIMIT"`
 	SingleDuration time.Duration `mapstructure:"RATE_LIMITER_SINGLE_DURATION"`
 	GlobalLimit    int           `mapstructure:"RATE_LIMITER_GLOBAL_LIMIT"`
 	GlobalDuration time.Duration `mapstructure:"RATE_LIMITER_GLOBAL_DURATION"`
 }
 
-type RetryConfigMap struct {
+type RetryBackoffConfig struct {
 	MaxRetries     int           `mapstructure:"RETRY_MAX_RETRIES"`
 	InitialBackoff time.Duration `mapstructure:"RETRY_INITIAL_BACKOFF"`
 	MaxBackoff     time.Duration `mapstructure:"RETRY_MAX_BACKOFF"`
@@ -200,49 +200,49 @@ func Load() (err error) {
 	}
 
 	// Unmarshal each section explicitly
-	if err = viper.Unmarshal(&ApplicationConfig); err != nil {
+	if err = viper.Unmarshal(&Application); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&PostgresConfig); err != nil {
+	if err = viper.Unmarshal(&Postgres); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&MailConfig); err != nil {
+	if err = viper.Unmarshal(&Mail); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&TracerConfig); err != nil {
+	if err = viper.Unmarshal(&Tracer); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&RedisConfig); err != nil {
+	if err = viper.Unmarshal(&Redis); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&MySQLConfig); err != nil {
+	if err = viper.Unmarshal(&MySQL); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&MongoConfig); err != nil {
+	if err = viper.Unmarshal(&Mongo); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&RabbitMQConfig); err != nil {
+	if err = viper.Unmarshal(&RabbitMQ); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&LoggerConfig); err != nil {
+	if err = viper.Unmarshal(&Logger); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&CorsConfig); err != nil {
+	if err = viper.Unmarshal(&Cors); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&HttpServerConfig); err != nil {
+	if err = viper.Unmarshal(&HttpServer); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&HttpClientConfig); err != nil {
+	if err = viper.Unmarshal(&HttpClient); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&CircuitBreakerConfig); err != nil {
+	if err = viper.Unmarshal(&CircuitBreaker); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&RateLimiterConfig); err != nil {
+	if err = viper.Unmarshal(&RateLimiter); err != nil {
 		return
 	}
-	if err = viper.Unmarshal(&RetryConfig); err != nil {
+	if err = viper.Unmarshal(&RetryBackoff); err != nil {
 		return
 	}
 

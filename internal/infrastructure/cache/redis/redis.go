@@ -24,18 +24,18 @@ func createClient(ctx context.Context) (client *redis.Client) {
 	redis.SetLogger(&noLogger{})
 
 	options := &redis.Options{
-		Addr: fmt.Sprintf("%v:%v", config.RedisConfig.Host, config.RedisConfig.Port),
-		DB:   config.RedisConfig.DB,
+		Addr: fmt.Sprintf("%v:%v", config.Redis.Host, config.Redis.Port),
+		DB:   config.Redis.DB,
 	}
 
-	if config.RedisConfig.TLS {
+	if config.Redis.TLS {
 		options.TLSConfig = &tls.Config{
 			MinVersion: tls.VersionTLS13,
 		}
 	}
 
-	if config.RedisConfig.Password != "" {
-		options.Password = config.RedisConfig.Password
+	if config.Redis.Password != "" {
+		options.Password = config.Redis.Password
 	}
 
 	client = redis.NewClient(options)

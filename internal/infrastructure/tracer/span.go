@@ -58,7 +58,7 @@ func Start(ctx context.Context, params ...any) (context.Context, *customTracerSp
 }
 
 func startSpan(ctx context.Context, spanName string, funcName string, params ...any) (context.Context, *customTracerSpan) {
-	if !config.TracerConfig.Enabled {
+	if !config.Tracer.Enabled {
 		return ctx, nil
 	}
 
@@ -80,7 +80,7 @@ func startSpan(ctx context.Context, spanName string, funcName string, params ...
 }
 
 func (s *customTracerSpan) Stop(err error, returns ...any) {
-	if !config.TracerConfig.Enabled {
+	if !config.Tracer.Enabled {
 		return
 	}
 

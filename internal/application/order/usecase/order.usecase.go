@@ -127,7 +127,7 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 			"Name":        customer.Name,
 			"OrderItems":  orderItems,
 			"TotalAmount": totalAmount,
-			"InvoiceURL":  fmt.Sprintf("%s/file/order/receipt/%s", config.ApplicationConfig.URL, createdOrder.ID.String()),
+			"InvoiceURL":  fmt.Sprintf("%s/file/order/receipt/%s", config.Application.URL, createdOrder.ID.String()),
 			"YearNow":     time.Now().Year(),
 		},
 	})

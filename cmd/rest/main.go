@@ -64,7 +64,7 @@ func main() {
 	orderItemRepo := orderrepo.NewOrderItemRepository(orderItemBaseRepo)
 
 	// ========== Publisher Setup ==========
-	rmqDirectPub := direct.NewPublisher(ctx, rmqClient, config.RabbitMQConfig.DirectExchangeName)
+	rmqDirectPub := direct.NewPublisher(ctx, rmqClient, config.RabbitMQ.DirectExchangeName)
 
 	// ========== Usecase Setup ==========
 	mailUsecase := mailuc.NewMailUsecase(mailSender)
@@ -86,15 +86,15 @@ func main() {
 
 	// ========== HTTP Server Setup ==========
 	r := router.NewRouter(healthHandler, orderHandler, redisClient)
-	addr := fmt.Sprintf(":%d", config.ApplicationConfig.Port)
+	addr := fmt.Sprintf(":%d", config.Application.Port)
 
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           r,
-		ReadTimeout:       config.HttpServerConfig.ReadTimeout,
-		ReadHeaderTimeout: config.HttpServerConfig.ReadHeaderTimeout,
-		WriteTimeout:      config.HttpServerConfig.WriteTimeout,
-		IdleTimeout:       config.HttpServerConfig.IdleTimeout,
+		ReadTimeout:       config.HttpServer.ReadTimeout,
+		ReadHeaderTimeout: config.HttpServer.ReadHeaderTimeout,
+		WriteTimeout:      config.HttpServer.WriteTimeout,
+		IdleTimeout:       config.HttpServer.IdleTimeout,
 	}
 
 	go func() {

@@ -17,8 +17,8 @@ var httpClient *resty.Client
 func init() {
 	httpClient = resty.New().
 		SetDebug(false).
-		SetRetryCount(config.HttpClientConfig.RetryCount).
-		SetRetryWaitTime(config.HttpClientConfig.RetryWaitTime).
+		SetRetryCount(config.HttpClient.RetryCount).
+		SetRetryWaitTime(config.HttpClient.RetryWaitTime).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
 				return r.StatusCode() >= 500 && r.StatusCode() <= 599

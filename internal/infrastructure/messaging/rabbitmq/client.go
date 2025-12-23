@@ -31,14 +31,14 @@ type client struct {
 // NewClient creates a new RabbitMQ client with connection pooling
 func NewClient(ctx context.Context) Client {
 	config := Config{
-		Host:       config.RabbitMQConfig.Host,
-		Port:       config.RabbitMQConfig.Port,
-		Username:   config.RabbitMQConfig.Username,
-		Password:   config.RabbitMQConfig.Password,
-		Vhost:      config.RabbitMQConfig.Vhost,
-		PoolSize:   config.RabbitMQConfig.PoolSize,
-		MaxRetry:   config.RabbitMQConfig.MaxRetry,
-		RetryDelay: config.RabbitMQConfig.RetryDelay,
+		Host:       config.RabbitMQ.Host,
+		Port:       config.RabbitMQ.Port,
+		Username:   config.RabbitMQ.Username,
+		Password:   config.RabbitMQ.Password,
+		Vhost:      config.RabbitMQ.Vhost,
+		PoolSize:   config.RabbitMQ.PoolSize,
+		MaxRetry:   config.RabbitMQ.MaxRetry,
+		RetryDelay: config.RabbitMQ.RetryDelay,
 	}
 
 	c := &client{

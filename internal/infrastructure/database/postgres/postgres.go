@@ -24,7 +24,7 @@ type postgresConfig struct {
 }
 
 func setConfig() postgresConfig {
-	cfg := config.PostgresConfig
+	cfg := config.Postgres
 	dsn := "host=%s user=%s password=%s dbname=%s port=%d sslmode=%s timezone=%s"
 
 	masterConfig := postgres.Config{
@@ -90,9 +90,9 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		logger.Fatal(ctx, err, "❌ PostgreSQL failed to access connection pool").Write()
 	}
 
-	sqlDB.SetMaxOpenConns(config.PostgresConfig.MaxOpenConnections)
-	sqlDB.SetMaxIdleConns(config.PostgresConfig.MaxIdleConnections)
-	sqlDB.SetConnMaxLifetime(config.PostgresConfig.ConnMaxLifetime)
+	sqlDB.SetMaxOpenConns(config.Postgres.MaxOpenConnections)
+	sqlDB.SetMaxIdleConns(config.Postgres.MaxIdleConnections)
+	sqlDB.SetConnMaxLifetime(config.Postgres.ConnMaxLifetime)
 
 	_, err = retry.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
 		return nil, sqlDB.Ping()
@@ -101,7 +101,7 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed").Write()
 	}
 
-	if !config.PostgresConfig.AutoMigrate {
+	if !config.Postgres.AutoMigrate {
 		return db
 	}
 

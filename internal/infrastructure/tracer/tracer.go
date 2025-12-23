@@ -16,14 +16,14 @@ import (
 )
 
 func NewProvider(ctx context.Context) *trace.TracerProvider {
-	if !config.TracerConfig.Enabled {
+	if !config.Tracer.Enabled {
 		return nil
 	}
 
 	traceExporter, err := otlptrace.New(
 		ctx,
 		otlptracehttp.NewClient(
-			otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%d", config.TracerConfig.Host, config.TracerConfig.Port)),
+			otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%d", config.Tracer.Host, config.Tracer.Port)),
 			otlptracehttp.WithHeaders(map[string]string{
 				"content-type": "application/json",
 			}),
@@ -43,8 +43,8 @@ func NewProvider(ctx context.Context) *trace.TracerProvider {
 		trace.WithResource(
 			resource.NewWithAttributes(
 				semconv.SchemaURL,
-				semconv.ServiceNameKey.String(config.ApplicationConfig.Name),
-				semconv.ServiceInstanceIDKey.String(config.ApplicationConfig.URL),
+				semconv.ServiceNameKey.String(config.Application.Name),
+				semconv.ServiceInstanceIDKey.String(config.Application.URL),
 			),
 		),
 	)

@@ -25,7 +25,7 @@ func NewConsumer(rmqClient rabbitmq.Client, mailUsecase mail.MailUsecase) *consu
 
 func (c *consumer) Consume(ctx context.Context) {
 	mailConsumer := direct.NewConsumer(ctx, c.client, direct.ConsumerConfig{
-		ExchangeName: config.RabbitMQConfig.DirectExchangeName,
+		ExchangeName: config.RabbitMQ.DirectExchangeName,
 		QueueName:    "mail.send.queue",
 		RoutingKey:   "mail.send",
 		DLXEnabled:   true,
