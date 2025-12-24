@@ -25,7 +25,7 @@ func (h *orderHandler) Create(c *gin.Context) {
 
 	ctx, span := tracer.Start(c.Request.Context())
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	var req order.CreateOrderRequest

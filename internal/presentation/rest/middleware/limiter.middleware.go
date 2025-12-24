@@ -29,7 +29,7 @@ func RateLimiterHandler(cache cache.Cache, config RateLimitConfig) gin.HandlerFu
 
 		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.Stop(err)
+			span.End(err)
 		}()
 
 		key := fmt.Sprintf("rate_limit:%s", c.ClientIP())

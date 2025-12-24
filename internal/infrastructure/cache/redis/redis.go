@@ -48,7 +48,7 @@ func createClient(ctx context.Context) (client *redis.Client) {
 	}
 
 	traceOpts := redisotel.WithCommandFilter(func(cmd redis.Cmder) bool {
-		return !strings.EqualFold(cmd.Name(), "ping") // Skip tracing PING commands
+		return strings.EqualFold(cmd.Name(), "ping") // Skip tracing PING commands
 	})
 
 	if err := redisotel.InstrumentTracing(client, traceOpts); err != nil {
@@ -73,9 +73,15 @@ func (c *redisClient) Ping(ctx context.Context) (err error) {
 }
 
 func (c *redisClient) Get(ctx context.Context, key string) (res *cache.CacheValue, err error) {
-	ctx, span := tracer.Start(ctx, key)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	str, err := c.client.Get(ctx, key).Result()
@@ -90,72 +96,119 @@ func (c *redisClient) Get(ctx context.Context, key string) (res *cache.CacheValu
 }
 
 func (c *redisClient) Set(ctx context.Context, key string, val any, ttl time.Duration) (err error) {
-	ctx, span := tracer.Start(ctx, key, val, ttl)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+		"val": val,
+		"ttl": ttl,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	return c.client.Set(ctx, key, val, ttl).Err()
 }
 
 func (c *redisClient) TTL(ctx context.Context, key string) (ttl time.Duration, err error) {
-	ctx, span := tracer.Start(ctx, key)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+	})
+
 	defer func() {
-		span.Stop(err, ttl)
+		span.SetFunctionOutput(tracer.Metadata{
+			"ttl": ttl,
+		}).End(err)
 	}()
 
 	return c.client.TTL(ctx, key).Result()
 }
 
 func (c *redisClient) Del(ctx context.Context, keys ...string) (err error) {
-	ctx, span := tracer.Start(ctx, keys)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"keys": keys,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	return c.client.Del(ctx, keys...).Err()
 }
 
 func (c *redisClient) Incr(ctx context.Context, key string) (res int64, err error) {
-	ctx, span := tracer.Start(ctx, key)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	return c.client.Incr(ctx, key).Result()
 }
 
 func (c *redisClient) Decr(ctx context.Context, key string) (res int64, err error) {
-	ctx, span := tracer.Start(ctx, key)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	return c.client.Decr(ctx, key).Result()
 }
 
 func (c *redisClient) IncrBy(ctx context.Context, key string, value int64) (res int64, err error) {
-	ctx, span := tracer.Start(ctx, key, value)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key":   key,
+		"value": value,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	return c.client.IncrBy(ctx, key, value).Result()
 }
 
 func (c *redisClient) DecrBy(ctx context.Context, key string, value int64) (res int64, err error) {
-	ctx, span := tracer.Start(ctx, key, value)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key":   key,
+		"value": value,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	return c.client.DecrBy(ctx, key, value).Result()
 }
 
 func (c *redisClient) Expire(ctx context.Context, key string, ttl time.Duration) (err error) {
-	ctx, span := tracer.Start(ctx, key, ttl)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"key": key,
+		"ttl": ttl,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	return c.client.ExpireNX(ctx, key, ttl).Err()

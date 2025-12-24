@@ -35,9 +35,16 @@ func NewMailSender() MailSender {
 }
 
 func (s *mailSender) SendEmail(ctx context.Context, to, subject, file string, data any) (err error) {
-	_, span := tracer.Start(ctx, to, subject, file, data)
+	_, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"to":      to,
+		"subject": subject,
+		"file":    file,
+		"data":    data,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	var body bytes.Buffer

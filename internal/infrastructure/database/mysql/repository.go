@@ -33,9 +33,15 @@ func (r *baseRepo[D, I, E]) SlaveDB() *D {
 }
 
 func (r *baseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	filter["deleted_at"] = nil
@@ -59,9 +65,15 @@ func (r *baseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) 
 }
 
 func (r *baseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": ID,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	builder := sq.
@@ -86,9 +98,15 @@ func (r *baseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err err
 }
 
 func (r *baseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (res *E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": ID,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	builder := sq.
@@ -119,9 +137,15 @@ func (r *baseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (
 }
 
 func (r *baseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids": IDs,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	builder := sq.
@@ -146,9 +170,18 @@ func (r *baseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 }
 
 func (r *baseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, page)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+		"sort":   sort,
+		"size":   size,
+		"page":   page,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	if size <= 0 {
@@ -210,9 +243,18 @@ func (r *baseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]
 }
 
 func (r *baseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, next)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+		"sort":   sort,
+		"size":   size,
+		"next":   next,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	if size <= 0 {
@@ -272,10 +314,16 @@ func (r *baseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]
 }
 
 // TODO: Check 'res' is still necessary
-func (r *baseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
+func (r *baseRepo[D, I, E]) Insert(ctx context.Context, payload E, trx *D) (res E, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	db := r.dbMaster
@@ -283,19 +331,25 @@ func (r *baseRepo[D, I, E]) Insert(ctx context.Context, req E, trx *D) (res E, e
 		db = trx
 	}
 
-	err = db.WithContext(ctx).Create(&req).Error
+	err = db.WithContext(ctx).Create(&payload).Error
 	if err != nil {
-		return req, err
+		return payload, err
 	}
 
-	return req, nil
+	return payload, nil
 }
 
 // TODO: Check 'res' is still necessary
-func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
+func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, payload []E, trx *D) (res []E, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	db := r.dbMaster
@@ -303,18 +357,22 @@ func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, req []E, trx *D) (re
 		db = trx
 	}
 
-	err = db.WithContext(ctx).CreateInBatches(req, config.MySQL.InsertBatchSize).Error
+	err = db.WithContext(ctx).CreateInBatches(payload, config.MySQL.InsertBatchSize).Error
 	if err != nil {
-		return req, err
+		return payload, err
 	}
 
-	return req, nil
+	return payload, nil
 }
 
-func (r *baseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, req)
+func (r *baseRepo[D, I, E]) Update(ctx context.Context, payload E, trx *D) (err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster
@@ -322,7 +380,7 @@ func (r *baseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err erro
 		db = trx
 	}
 
-	err = db.WithContext(ctx).Save(&req).Error
+	err = db.WithContext(ctx).Save(&payload).Error
 	if err != nil {
 		return err
 	}
@@ -330,10 +388,17 @@ func (r *baseRepo[D, I, E]) Update(ctx context.Context, req E, trx *D) (err erro
 	return nil
 }
 
-func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string]any, trx *D) (res E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID, req)
+func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[string]any, trx *D) (res E, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id":      ID,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	db := r.dbMaster
@@ -341,7 +406,7 @@ func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string
 		db = trx
 	}
 
-	err = db.WithContext(ctx).Model(&res).Where("id=?", ID).Updates(req).Scan(&res).Error
+	err = db.WithContext(ctx).Model(&res).Where("id=?", ID).Updates(payload).Scan(&res).Error
 	if err != nil {
 		return res, err
 	}
@@ -350,10 +415,15 @@ func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, req map[string
 }
 
 // TODO: Check 'res' is needed
-func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs, req)
+func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload map[string]any, trx *D) (err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids":     IDs,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster
@@ -361,7 +431,7 @@ func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[st
 		db = trx
 	}
 
-	err = db.WithContext(ctx).Model(&r.Entity).Where("id IN ?", IDs).Updates(req).Error
+	err = db.WithContext(ctx).Model(&r.Entity).Where("id IN ?", IDs).Updates(payload).Error
 	if err != nil {
 		return err
 	}
@@ -370,10 +440,15 @@ func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, req map[st
 }
 
 // TODO: Check 'res' is needed
-func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, req map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, req)
+func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, payload map[string]any, trx *D) (err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter":  filter,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster
@@ -381,7 +456,7 @@ func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]an
 		db = trx
 	}
 
-	err = db.WithContext(ctx).Model(&r.Entity).Where(filter).Updates(req).Error
+	err = db.WithContext(ctx).Model(&r.Entity).Where(filter).Updates(payload).Error
 	if err != nil {
 		return err
 	}
@@ -390,9 +465,13 @@ func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]an
 }
 
 func (r *baseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": ID,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster
@@ -409,9 +488,13 @@ func (r *baseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err e
 }
 
 func (r *baseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids": IDs,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster
@@ -428,9 +511,13 @@ func (r *baseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 }
 
 func (r *baseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	db := r.dbMaster

@@ -129,7 +129,7 @@ type RabbitMQConfig struct {
 }
 
 type TracerConfig struct {
-	Enabled bool   `mapstructure:"TRACER_ENABLED"`
+	Enabled bool
 	Host    string `mapstructure:"TRACER_EXPORTER_HOST"`
 	Port    int    `mapstructure:"TRACER_EXPORTER_PORT"`
 }

@@ -27,7 +27,7 @@ func ETagHandler() gin.HandlerFunc {
 
 		_, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.Stop(err)
+			span.End(err)
 		}()
 
 		// Only apply ETag for GET requests

@@ -32,7 +32,7 @@ func IdempotencyHandler(cache cache.Cache, duration time.Duration) gin.HandlerFu
 
 		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.Stop(err)
+			span.End(err)
 		}()
 
 		key := fmt.Sprintf("idempotency:%s:%s %s", idempotencyKey, c.Request.Method, c.Request.URL.Path)

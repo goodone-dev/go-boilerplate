@@ -23,9 +23,14 @@ func NewMailHandler(mailUsecase mail.MailUsecase) mail.MailHandler {
 }
 
 func (h *mailHandler) Send(ctx context.Context, payload any, headers map[string]any) (err error) {
-	ctx, span := tracer.Start(ctx, payload, headers)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+		"headers": headers,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	req := payload.(mail.MailSendMessage)
