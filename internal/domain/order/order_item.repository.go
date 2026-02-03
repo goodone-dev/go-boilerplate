@@ -10,5 +10,5 @@ import (
 
 type OrderItemRepository interface {
 	database.BaseRepository[gorm.DB, uuid.UUID, OrderItem]
-	FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []OrderItem, err error)
+	FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []DetailOrderItem, err error)
 }

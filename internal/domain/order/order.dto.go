@@ -20,11 +20,11 @@ type CreateOrderResponse struct {
 }
 
 type DetailOrderResponse struct {
-	ID          uuid.UUID         `json:"id"`
-	CustomerID  uuid.UUID         `json:"customer_id"`
-	TotalAmount float64           `json:"total_amount"`
-	Status      string            `json:"status"`
-	OrderItems  []DetailOrderItem `json:"order_items"`
+	ID          uuid.UUID           `json:"id"`
+	Customer    DetailOrderCustomer `json:"customer"`
+	OrderItems  []DetailOrderItem   `json:"order_items"`
+	TotalAmount float64             `json:"total_amount"`
+	Status      string              `json:"status"`
 }
 
 type DetailOrderItem struct {
@@ -32,5 +32,11 @@ type DetailOrderItem struct {
 	ProductName string    `json:"product_name"`
 	Quantity    int       `json:"quantity"`
 	Price       float64   `json:"price"`
-	Total       float64   `json:"total"`
+	SubTotal    float64   `json:"sub_total"`
+}
+
+type DetailOrderCustomer struct {
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
 }

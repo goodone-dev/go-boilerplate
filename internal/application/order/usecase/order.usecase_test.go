@@ -653,7 +653,9 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 			return false
 		}
 		// Verify individual item totals
-		return items[0].Total == 150.0 && items[1].Total == 151.0 && items[2].Total == 120.25
+		return items[0].Price == 50.0 && items[0].Quantity == 3 &&
+			items[1].Price == 75.5 && items[1].Quantity == 2 &&
+			items[2].Price == 120.25 && items[2].Quantity == 1
 	}), mockTrx).Return([]order.OrderItem{}, nil)
 	mockOrderRepo.EXPECT().Commit(mockTrx).Return(mockTrx)
 

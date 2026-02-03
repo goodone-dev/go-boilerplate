@@ -792,23 +792,23 @@ func (_c *OrderItemRepositoryMock_FindByOffset_Call) RunAndReturn(run func(ctx c
 }
 
 // FindByOrderID provides a mock function for the type OrderItemRepositoryMock
-func (_mock *OrderItemRepositoryMock) FindByOrderID(ctx context.Context, orderID uuid.UUID) ([]order.OrderItem, error) {
+func (_mock *OrderItemRepositoryMock) FindByOrderID(ctx context.Context, orderID uuid.UUID) ([]order.DetailOrderItem, error) {
 	ret := _mock.Called(ctx, orderID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindByOrderID")
 	}
 
-	var r0 []order.OrderItem
+	var r0 []order.DetailOrderItem
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]order.OrderItem, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]order.DetailOrderItem, error)); ok {
 		return returnFunc(ctx, orderID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []order.OrderItem); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []order.DetailOrderItem); ok {
 		r0 = returnFunc(ctx, orderID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]order.OrderItem)
+			r0 = ret.Get(0).([]order.DetailOrderItem)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -849,12 +849,12 @@ func (_c *OrderItemRepositoryMock_FindByOrderID_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *OrderItemRepositoryMock_FindByOrderID_Call) Return(res []order.OrderItem, err error) *OrderItemRepositoryMock_FindByOrderID_Call {
+func (_c *OrderItemRepositoryMock_FindByOrderID_Call) Return(res []order.DetailOrderItem, err error) *OrderItemRepositoryMock_FindByOrderID_Call {
 	_c.Call.Return(res, err)
 	return _c
 }
 
-func (_c *OrderItemRepositoryMock_FindByOrderID_Call) RunAndReturn(run func(ctx context.Context, orderID uuid.UUID) ([]order.OrderItem, error)) *OrderItemRepositoryMock_FindByOrderID_Call {
+func (_c *OrderItemRepositoryMock_FindByOrderID_Call) RunAndReturn(run func(ctx context.Context, orderID uuid.UUID) ([]order.DetailOrderItem, error)) *OrderItemRepositoryMock_FindByOrderID_Call {
 	_c.Call.Return(run)
 	return _c
 }

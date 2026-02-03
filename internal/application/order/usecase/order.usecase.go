@@ -85,11 +85,9 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		p := productMap[item.ProductID]
 		totalAmount += p.Price * float64(item.Quantity)
 		orderItems = append(orderItems, order.OrderItem{
-			ProductID:   p.ID,
-			ProductName: p.Name,
-			Quantity:    item.Quantity,
-			Price:       p.Price,
-			Total:       p.Price * float64(item.Quantity),
+			ProductID: p.ID,
+			Quantity:  item.Quantity,
+			Price:     p.Price,
 		})
 	}
 
@@ -168,17 +166,26 @@ func (u *orderUsecase) GetDetail(ctx context.Context, id uuid.UUID) (res *order.
 		return nil, httperror.NewNotFoundError("order with the provided ID was not found")
 	}
 
+	customer, err := u.customerRepo.FindById(ctx, foundOrder.CustomerID)
+	if err != nil {
+		return nil, err
+	} else if customer == nil {
+		return nil, httperror.NewNotFoundError("customer with the provided ID was not found")
+	}
+
 	orderItems, err := u.orderItemRepo.FindByOrderID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	return &order.DetailOrderResponse{
-		ID:          foundOrder.ID,
-		CustomerID:  foundOrder.CustomerID,
-		TotalAmount: foundOrder.TotalAmount,
-		Status:      foundOrder.Status,
-		OrderItems: func(orderItems []order.OrderItem) []order.DetailOrderItem {
+		ID: foundOrder.ID,
+		Customer: order.DetailOrderCustomer{
+			ID:    customer.ID,
+			Name:  customer.Name,
+			Email: customer.Email,
+		},
+		OrderItems: func(orderItems []order.DetailOrderItem) []order.DetailOrderItem {
 			var detailOrderItems []order.DetailOrderItem
 			for _, item := range orderItems {
 				detailOrderItems = append(detailOrderItems, order.DetailOrderItem{
@@ -186,10 +193,12 @@ func (u *orderUsecase) GetDetail(ctx context.Context, id uuid.UUID) (res *order.
 					ProductName: item.ProductName,
 					Quantity:    item.Quantity,
 					Price:       item.Price,
-					Total:       item.Total,
+					SubTotal:    float64(item.Quantity) * item.Price,
 				})
 			}
 			return detailOrderItems
 		}(orderItems),
+		TotalAmount: foundOrder.TotalAmount,
+		Status:      foundOrder.Status,
 	}, nil
 }

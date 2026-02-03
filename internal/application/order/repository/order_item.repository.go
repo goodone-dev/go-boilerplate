@@ -21,7 +21,7 @@ func NewOrderItemRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID,
 	}
 }
 
-func (r *orderItemRepository) FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []order.OrderItem, err error) {
+func (r *orderItemRepository) FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []order.DetailOrderItem, err error) {
 	ctx, span := tracer.Start(ctx)
 	span.SetFunctionInput(tracer.Metadata{
 		"orderID": orderID,
@@ -34,12 +34,12 @@ func (r *orderItemRepository) FindByOrderID(ctx context.Context, orderID uuid.UU
 	}()
 
 	builder := sq.
-		Select("order_item.*, product.name as product_name").
-		From("order_item").
-		LeftJoin("product", "product.id = order_item.product_id").
+		Select("order_items.*, products.name as product_name").
+		From("order_items").
+		LeftJoin("products ON products.id = order_items.product_id").
 		Where(sq.Eq{
-			"order_item.order_id":   orderID,
-			"order_item.deleted_at": nil,
+			"order_items.order_id":   orderID,
+			"order_items.deleted_at": nil,
 		})
 
 	qry, args, err := builder.ToSql()
