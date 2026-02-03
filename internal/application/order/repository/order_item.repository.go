@@ -1,8 +1,12 @@
 package repository
 
 import (
+	"context"
+
+	sq "github.com/Masterminds/squirrel"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -15,4 +19,38 @@ func NewOrderItemRepository(baseRepo database.BaseRepository[gorm.DB, uuid.UUID,
 	return &orderItemRepository{
 		baseRepo,
 	}
+}
+
+func (r *orderItemRepository) FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []order.OrderItem, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"orderID": orderID,
+	})
+
+	defer func() {
+		span.SetFunctionOutput(tracer.Metadata{
+			"response": res,
+		}).End(err)
+	}()
+
+	builder := sq.
+		Select("order_item.*, product.name as product_name").
+		From("order_item").
+		LeftJoin("product", "product.id = order_item.product_id").
+		Where(sq.Eq{
+			"order_item.order_id":   orderID,
+			"order_item.deleted_at": nil,
+		})
+
+	qry, args, err := builder.ToSql()
+	if err != nil {
+		return
+	}
+
+	err = r.SlaveDB().WithContext(ctx).Raw(qry, args...).Scan(&res).Error
+	if err != nil {
+		return
+	}
+
+	return
 }

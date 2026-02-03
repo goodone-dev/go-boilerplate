@@ -791,6 +791,74 @@ func (_c *OrderItemRepositoryMock_FindByOffset_Call) RunAndReturn(run func(ctx c
 	return _c
 }
 
+// FindByOrderID provides a mock function for the type OrderItemRepositoryMock
+func (_mock *OrderItemRepositoryMock) FindByOrderID(ctx context.Context, orderID uuid.UUID) ([]order.OrderItem, error) {
+	ret := _mock.Called(ctx, orderID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByOrderID")
+	}
+
+	var r0 []order.OrderItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]order.OrderItem, error)); ok {
+		return returnFunc(ctx, orderID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []order.OrderItem); ok {
+		r0 = returnFunc(ctx, orderID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]order.OrderItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, orderID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// OrderItemRepositoryMock_FindByOrderID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindByOrderID'
+type OrderItemRepositoryMock_FindByOrderID_Call struct {
+	*mock.Call
+}
+
+// FindByOrderID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - orderID uuid.UUID
+func (_e *OrderItemRepositoryMock_Expecter) FindByOrderID(ctx interface{}, orderID interface{}) *OrderItemRepositoryMock_FindByOrderID_Call {
+	return &OrderItemRepositoryMock_FindByOrderID_Call{Call: _e.mock.On("FindByOrderID", ctx, orderID)}
+}
+
+func (_c *OrderItemRepositoryMock_FindByOrderID_Call) Run(run func(ctx context.Context, orderID uuid.UUID)) *OrderItemRepositoryMock_FindByOrderID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *OrderItemRepositoryMock_FindByOrderID_Call) Return(res []order.OrderItem, err error) *OrderItemRepositoryMock_FindByOrderID_Call {
+	_c.Call.Return(res, err)
+	return _c
+}
+
+func (_c *OrderItemRepositoryMock_FindByOrderID_Call) RunAndReturn(run func(ctx context.Context, orderID uuid.UUID) ([]order.OrderItem, error)) *OrderItemRepositoryMock_FindByOrderID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Insert provides a mock function for the type OrderItemRepositoryMock
 func (_mock *OrderItemRepositoryMock) Insert(ctx context.Context, model order.OrderItem, trx *gorm.DB) (order.OrderItem, error) {
 	ret := _mock.Called(ctx, model, trx)

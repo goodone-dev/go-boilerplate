@@ -78,6 +78,8 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 				}),
 				orderHandler.Create,
 			)
+
+			orders.GET("/:id", orderHandler.GetDetail)
 		}
 	}
 

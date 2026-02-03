@@ -8,6 +8,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/success"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/sanitizer"
 	"github.com/goodone-dev/go-boilerplate/internal/utils/validator"
+	"github.com/google/uuid"
 )
 
 type orderHandler struct {
@@ -45,6 +46,35 @@ func (h *orderHandler) Create(c *gin.Context) {
 	}
 
 	order, err := h.orderUsecase.Create(ctx, req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	success.Send(c, order)
+}
+
+func (h *orderHandler) GetDetail(c *gin.Context) {
+	var err error
+
+	ctx, span := tracer.Start(c.Request.Context())
+	defer func() {
+		span.End(err)
+	}()
+
+	idStr := c.Param("id")
+	if idStr == "" {
+		c.Error(httperror.NewBadRequestError("order ID is required", ""))
+		return
+	}
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.Error(httperror.NewBadRequestError("invalid order ID format", err.Error()))
+		return
+	}
+
+	order, err := h.orderUsecase.GetDetail(ctx, id)
 	if err != nil {
 		c.Error(err)
 		return

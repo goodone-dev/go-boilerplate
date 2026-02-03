@@ -148,3 +148,48 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		Status:      createdOrder.Status,
 	}, nil
 }
+
+func (u *orderUsecase) GetDetail(ctx context.Context, id uuid.UUID) (res *order.DetailOrderResponse, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": id,
+	})
+
+	defer func() {
+		span.SetFunctionOutput(tracer.Metadata{
+			"response": res,
+		}).End(err)
+	}()
+
+	foundOrder, err := u.orderRepo.FindById(ctx, id)
+	if err != nil {
+		return nil, err
+	} else if foundOrder == nil {
+		return nil, httperror.NewNotFoundError("order with the provided ID was not found")
+	}
+
+	orderItems, err := u.orderItemRepo.FindByOrderID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &order.DetailOrderResponse{
+		ID:          foundOrder.ID,
+		CustomerID:  foundOrder.CustomerID,
+		TotalAmount: foundOrder.TotalAmount,
+		Status:      foundOrder.Status,
+		OrderItems: func(orderItems []order.OrderItem) []order.DetailOrderItem {
+			var detailOrderItems []order.DetailOrderItem
+			for _, item := range orderItems {
+				detailOrderItems = append(detailOrderItems, order.DetailOrderItem{
+					ProductID:   item.ProductID,
+					ProductName: item.ProductName,
+					Quantity:    item.Quantity,
+					Price:       item.Price,
+					Total:       item.Total,
+				})
+			}
+			return detailOrderItems
+		}(orderItems),
+	}, nil
+}

@@ -1,6 +1,8 @@
 package order
 
 import (
+	"context"
+
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -8,4 +10,5 @@ import (
 
 type OrderItemRepository interface {
 	database.BaseRepository[gorm.DB, uuid.UUID, OrderItem]
+	FindByOrderID(ctx context.Context, orderID uuid.UUID) (res []OrderItem, err error)
 }
