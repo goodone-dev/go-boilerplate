@@ -60,8 +60,8 @@ github.com/ggwhite/go-masker v1.1.0 h1:kN/KIvktu2U+hd3KWrSlLj7xBGD1iBfc9/xdbVgFb
 github.com/ggwhite/go-masker v1.1.0/go.mod h1:xnTRHwrIU9FtBADwEjUC5Dy/BVedvoTxyOE7/d3CNwY=
 github.com/gin-contrib/cors v1.7.6 h1:3gQ8GMzs1Ylpf70y8bMw4fVpycXIeX1ZemuSQIsnQQY=
 github.com/gin-contrib/cors v1.7.6/go.mod h1:Ulcl+xN4jel9t1Ry8vqph23a60FwH9xVLd+3ykmTjOk=
-github.com/gin-contrib/gzip v1.2.4 h1:yNz4EhPC2kHSZJD1oc1zwp7MLEhEZ3goQeGM3a1b6jU=
-github.com/gin-contrib/gzip v1.2.4/go.mod h1:aomRgR7ftdZV3uWY0gW/m8rChfxau0n8YVvwlOHONzw=
+github.com/gin-contrib/gzip v1.2.5 h1:fIZs0S+l17pIu1P5XRJOo/YNqfIuPCrZZ3TWB7pjckI=
+github.com/gin-contrib/gzip v1.2.5/go.mod h1:aomRgR7ftdZV3uWY0gW/m8rChfxau0n8YVvwlOHONzw=
 github.com/gin-contrib/secure v1.1.2 h1:6G8/NCOTSywWY7TeaH/0Yfaa6bfkE5ukkqtIm7lK11U=
 github.com/gin-contrib/secure v1.1.2/go.mod h1:xI3jI5/BpOYMCBtjgmIVrMA3kI7y9LwCFxs+eLf5S3w=
 github.com/gin-contrib/sse v1.1.0 h1:n0w2GMuUpWDVp7qSpvze6fAu9iRxJY4Hmj6AmBOU05w=
