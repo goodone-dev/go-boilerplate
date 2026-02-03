@@ -20,13 +20,13 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 
 	// ========== Middleware Config ==========
 	corsConfig := cors.Config{
-		AllowOrigins: config.CorsConfig.AllowOrigins,
-		AllowMethods: config.CorsConfig.AllowMethods,
+		AllowOrigins: config.Cors.AllowOrigins,
+		AllowMethods: config.Cors.AllowMethods,
 	}
 
 	secureConfig := secure.DefaultConfig()
-	secureConfig.SSLRedirect = config.ApplicationConfig.Env == config.EnvProd // Only force HTTPS in production
-	if config.ApplicationConfig.Env != config.EnvProd {                       // Disable HSTS in non-production environments
+	secureConfig.SSLRedirect = config.Application.Env == config.EnvProd // Only force HTTPS in production
+	if config.Application.Env != config.EnvProd {                       // Disable HSTS in non-production environments
 		secureConfig.STSSeconds = 0
 		secureConfig.STSIncludeSubdomains = false
 	}
@@ -41,9 +41,10 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// Internal Middleware
-	router.Use(middleware.ErrorMiddleware())
-	router.Use(middleware.TimeoutMiddleware())
-	router.Use(middleware.ResponseMiddleware())
+	router.Use(middleware.ContextTimeoutHandler())
+	router.Use(middleware.RequestIdHandler())
+	router.Use(middleware.IdempotencyHandler(cacheClient, config.IdempotencyDuration))
+	router.Use(middleware.ErrorHandler())
 
 	router.Use(gin.Recovery())
 
@@ -70,8 +71,11 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		{
 			orders.POST(
 				"",
-				middleware.SingleLimiterMiddleware(cacheClient, config.RateLimiterConfig.SingleLimit, config.RateLimiterConfig.SingleDuration),
-				middleware.IdempotencyMiddleware(cacheClient, config.RateLimiterConfig.IdempotencyTTL),
+				middleware.RateLimiterHandler(cacheClient, middleware.RateLimitConfig{
+					Limit: config.RateLimiter.SingleLimit,
+					TTL:   config.RateLimiter.SingleDuration,
+					Mode:  middleware.SingleLimiter,
+				}),
 				orderHandler.Create,
 			)
 		}

@@ -21,13 +21,13 @@ func (r etagResponseWriter) Write(b []byte) (int, error) {
 
 // ETagMiddleware adds ETag support for GET requests
 // It generates an ETag based on the response body and handles If-None-Match headers
-func ETagMiddleware() gin.HandlerFunc {
+func ETagHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
 		_, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.Stop(err)
+			span.End(err)
 		}()
 
 		// Only apply ETag for GET requests

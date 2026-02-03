@@ -8,7 +8,7 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
-func TimeoutMiddleware() gin.HandlerFunc {
+func ContextTimeoutHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), config.ContextTimeout)
 		defer cancel()

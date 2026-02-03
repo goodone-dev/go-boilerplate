@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
@@ -12,26 +14,41 @@ import (
 	ordermock "github.com/goodone-dev/go-boilerplate/internal/domain/order/mocks"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	productmock "github.com/goodone-dev/go-boilerplate/internal/domain/product/mocks"
-	busmock "github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
+
+	rabbitmqmock "github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/mocks"
 )
+
+func TestMain(m *testing.M) {
+	logger.Disabled()
+	code := m.Run()
+
+	os.Exit(code)
+}
 
 func TestNewOrderUsecase(t *testing.T) {
 	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+
+	directPub := direct.NewPublisher(context.Background(), mockRmqClient, "test.exchange")
 
 	usecase := NewOrderUsecase(
 		mockCustomerRepo,
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	assert.NotNil(t, usecase)
@@ -49,7 +66,10 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	// Mock data
 	mockCustomer := &customer.Customer{
@@ -105,9 +125,15 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 		return len(items) == 2 && items[0].OrderID == orderID && items[1].OrderID == orderID
 	}), mockTrx).Return([]order.OrderItem{}, nil)
 	mockOrderRepo.EXPECT().Commit(mockTrx).Return(mockTrx)
-	mockMailBus.EXPECT().Publish(mail.MailSendTopic, mock.MatchedBy(func(msg mail.MailSendMessage) bool {
-		return msg.To == "john@example.com" && msg.Subject == "Thank You for Your Purchase!"
-	})).Return()
+
+	// Expect Publish call
+	mockRmqClient.On("Publish", ctx, mock.MatchedBy(func(cfg rabbitmq.PublishConfig) bool {
+		return cfg.Exchange == "test.exchange" && cfg.RoutingKey == "mail.send"
+	}), mock.MatchedBy(func(msg rabbitmq.Message) bool {
+		var payload mail.MailSendMessage
+		_ = json.Unmarshal(msg.Body, &payload)
+		return payload.To == "john@example.com" && payload.Subject == "Thank You for Your Purchase!"
+	})).Return(nil)
 
 	// Execute
 	usecase := NewOrderUsecase(
@@ -115,7 +141,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -139,7 +165,10 @@ func TestOrderUsecase_Create_CustomerNotFound(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	req := order.CreateOrderRequest{
 		CustomerID: customerID,
@@ -160,7 +189,7 @@ func TestOrderUsecase_Create_CustomerNotFound(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -181,7 +210,10 @@ func TestOrderUsecase_Create_CustomerRepoError(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	req := order.CreateOrderRequest{
 		CustomerID: customerID,
@@ -204,7 +236,7 @@ func TestOrderUsecase_Create_CustomerRepoError(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -226,7 +258,10 @@ func TestOrderUsecase_Create_ProductsNotFound(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -267,7 +302,7 @@ func TestOrderUsecase_Create_ProductsNotFound(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -288,7 +323,10 @@ func TestOrderUsecase_Create_ProductRepoError(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -318,7 +356,7 @@ func TestOrderUsecase_Create_ProductRepoError(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -339,7 +377,10 @@ func TestOrderUsecase_Create_BeginTransactionError(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -378,7 +419,7 @@ func TestOrderUsecase_Create_BeginTransactionError(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -399,7 +440,10 @@ func TestOrderUsecase_Create_InsertOrderError(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -441,7 +485,7 @@ func TestOrderUsecase_Create_InsertOrderError(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -463,7 +507,10 @@ func TestOrderUsecase_Create_InsertOrderItemsError(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -513,7 +560,7 @@ func TestOrderUsecase_Create_InsertOrderItemsError(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)
@@ -537,7 +584,10 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockProductRepo := productmock.NewProductRepositoryMock(t)
 	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
 	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
-	mockMailBus := busmock.NewBusMock[mail.MailSendMessage](t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockCustomer := &customer.Customer{
 		Name:  "John Doe",
@@ -606,7 +656,15 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 		return items[0].Total == 150.0 && items[1].Total == 151.0 && items[2].Total == 120.25
 	}), mockTrx).Return([]order.OrderItem{}, nil)
 	mockOrderRepo.EXPECT().Commit(mockTrx).Return(mockTrx)
-	mockMailBus.EXPECT().Publish(mail.MailSendTopic, mock.Anything).Return()
+
+	// Expect Publish call
+	mockRmqClient.On("Publish", ctx, mock.MatchedBy(func(cfg rabbitmq.PublishConfig) bool {
+		return cfg.Exchange == "test.exchange" && cfg.RoutingKey == "mail.send"
+	}), mock.MatchedBy(func(msg rabbitmq.Message) bool {
+		var payload mail.MailSendMessage
+		_ = json.Unmarshal(msg.Body, &payload)
+		return payload.To == "john@example.com" && payload.Subject == "Thank You for Your Purchase!"
+	})).Return(nil)
 
 	// Execute
 	usecase := NewOrderUsecase(
@@ -614,7 +672,7 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 		mockProductRepo,
 		mockOrderRepo,
 		mockOrderItemRepo,
-		mockMailBus,
+		directPub,
 	)
 
 	result, err := usecase.Create(ctx, req)

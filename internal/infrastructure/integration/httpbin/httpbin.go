@@ -16,19 +16,25 @@ type HttpbinIntegration interface {
 	GetSuccessStatus(ctx context.Context) (data any, err error)
 }
 
-type httpbinIntegration struct{}
+type httpbinIntegration struct {
+	http *httpclient.CustomHttpClient
+}
 
 func NewHttpBinIntegration() HttpbinIntegration {
-	return &httpbinIntegration{}
+	return &httpbinIntegration{
+		http: httpclient.NewHttpClient(),
+	}
 }
 
 func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.Start(ctx)
+	ctx, span := tracer.Start(ctx)
 	defer func() {
-		span.Stop(err, body)
+		span.SetFunctionOutput(tracer.Metadata{
+			"body": body,
+		}).End(err)
 	}()
 
-	http, err := httpclient.NewHttpClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +55,14 @@ func (i *httpbinIntegration) GetErrorStatus(ctx context.Context) (body any, err 
 }
 
 func (i *httpbinIntegration) GetSuccessStatus(ctx context.Context) (body any, err error) {
-	_, span := tracer.Start(ctx)
+	ctx, span := tracer.Start(ctx)
 	defer func() {
-		span.Stop(err, body)
+		span.SetFunctionOutput(tracer.Metadata{
+			"body": body,
+		}).End(err)
 	}()
 
-	http, err := httpclient.NewHttpClient().WithBreaker()
+	http, err := i.http.WithBreaker()
 	if err != nil {
 		return nil, err
 	}

@@ -11,15 +11,15 @@ import (
 func NewSanitizer() *sanitize.Sanitizer {
 	s, err := sanitize.New()
 	if err != nil {
-		logger.Fatal(context.Background(), err, "❌ Failed to create sanitizer")
+		logger.Fatal(context.Background(), err, "❌ Failed to initialize sanitizer").Write()
 		return nil
 	}
 
 	return s
 }
 
-var customSanitizer = NewSanitizer()
+var sanitizer = NewSanitizer()
 
 func Sanitize[S any](obj S) (err error) {
-	return customSanitizer.Sanitize(&obj)
+	return sanitizer.Sanitize(&obj)
 }

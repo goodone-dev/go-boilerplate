@@ -10,7 +10,8 @@ import (
 	"github.com/goodone-dev/go-boilerplate/internal/domain/mail"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/order"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
-	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/message/bus"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/tracer"
 	httperror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 	"github.com/google/uuid"
@@ -21,7 +22,7 @@ type orderUsecase struct {
 	productRepo   product.ProductRepository
 	orderRepo     order.OrderRepository
 	orderItemRepo order.OrderItemRepository
-	mailBus       bus.Bus[mail.MailSendMessage]
+	rmqDirectPub  *direct.Publisher
 }
 
 func NewOrderUsecase(
@@ -29,21 +30,27 @@ func NewOrderUsecase(
 	productRepo product.ProductRepository,
 	orderRepo order.OrderRepository,
 	orderItemRepo order.OrderItemRepository,
-	mailBus bus.Bus[mail.MailSendMessage],
+	rmqDirectPub *direct.Publisher,
 ) order.OrderUsecase {
 	return &orderUsecase{
 		customerRepo:  customerRepo,
 		productRepo:   productRepo,
 		orderRepo:     orderRepo,
 		orderItemRepo: orderItemRepo,
-		mailBus:       mailBus,
+		rmqDirectPub:  rmqDirectPub,
 	}
 }
 
 func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest) (res *order.CreateOrderResponse, err error) {
-	ctx, span := tracer.Start(ctx, req)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"request": req,
+	})
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"response": res,
+		}).End(err)
 	}()
 
 	customer, err := u.customerRepo.FindById(ctx, req.CustomerID)
@@ -118,7 +125,7 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		return nil, err
 	}
 
-	u.mailBus.Publish(mail.MailSendTopic, mail.MailSendMessage{
+	err = u.rmqDirectPub.Publish(ctx, "mail.send", mail.MailSendMessage{
 		To:       customer.Email,
 		Subject:  "Thank You for Your Purchase!",
 		Template: "order_created.html",
@@ -126,10 +133,13 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 			"Name":        customer.Name,
 			"OrderItems":  orderItems,
 			"TotalAmount": totalAmount,
-			"InvoiceURL":  fmt.Sprintf("%s/file/order/receipt/%s", config.ApplicationConfig.URL, createdOrder.ID.String()),
+			"InvoiceURL":  fmt.Sprintf("%s/file/order/receipt/%s", config.Application.URL, createdOrder.ID.String()),
 			"YearNow":     time.Now().Year(),
 		},
 	})
+	if err != nil {
+		logger.Error(ctx, err, "❌ Failed to publish email").Write()
+	}
 
 	return &order.CreateOrderResponse{
 		ID:          createdOrder.ID,
