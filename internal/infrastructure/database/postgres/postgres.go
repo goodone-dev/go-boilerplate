@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -23,7 +24,7 @@ type postgresConfig struct {
 }
 
 func setConfig() postgresConfig {
-	cfg := config.PostgresConfig
+	cfg := config.Postgres
 	dsn := "host=%s user=%s password=%s dbname=%s port=%d sslmode=%s timezone=%s"
 
 	masterConfig := postgres.Config{
@@ -58,10 +59,14 @@ type postgresConnection struct {
 func Open(ctx context.Context) *postgresConnection {
 	pgConfig := setConfig()
 
-	return &postgresConnection{
+	conn := &postgresConnection{
 		Master: open(ctx, pgConfig.Master),
 		Slave:  open(ctx, pgConfig.Slave),
 	}
+
+	go conn.Monitor(ctx)
+
+	return conn
 }
 
 func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
@@ -73,46 +78,46 @@ func open(ctx context.Context, pgConfig postgres.Config) *gorm.DB {
 		return gorm.Open(postgres.New(pgConfig), gormConfig)
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to establish PostgreSQL connection after retries")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to establish connection after retries").Write()
 	}
 
 	if err := db.Use(tracing.NewPlugin(tracing.WithAttributes())); err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL tracing plugin")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize tracing plugin").Write()
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to access PostgreSQL connection pool")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to access connection pool").Write()
 	}
 
-	sqlDB.SetMaxOpenConns(config.PostgresConfig.MaxOpenConnections)
-	sqlDB.SetMaxIdleConns(config.PostgresConfig.MaxIdleConnections)
-	sqlDB.SetConnMaxLifetime(config.PostgresConfig.ConnMaxLifetime)
+	sqlDB.SetMaxOpenConns(config.Postgres.MaxOpenConnections)
+	sqlDB.SetMaxIdleConns(config.Postgres.MaxIdleConnections)
+	sqlDB.SetConnMaxLifetime(config.Postgres.ConnMaxLifetime)
 
 	_, err = retry.RetryWithBackoff(ctx, "PostgreSQL connection test", func() (any, error) {
 		return nil, sqlDB.Ping()
 	})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed")
+		logger.Fatal(ctx, err, "❌ PostgreSQL connection test failed").Write()
 	}
 
-	if !config.PostgresConfig.AutoMigrate {
+	if !config.Postgres.AutoMigrate {
 		return db
 	}
 
 	migrateDriver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to initialize PostgreSQL migration driver")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to initialize migration driver").Write()
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://migrations/postgres", "postgres", migrateDriver)
 	if err != nil {
-		logger.Fatal(ctx, err, "❌ Failed to create migration instance from PostgreSQL driver")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed to create migration instance").Write()
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		logger.Fatal(ctx, err, "❌ PostgreSQL migration failed")
+		logger.Fatal(ctx, err, "❌ PostgreSQL failed migration").Write()
 	}
 
 	return db
@@ -155,4 +160,31 @@ func (c *postgresConnection) Ping(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *postgresConnection) Monitor(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	var wasLost bool
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			err := c.Ping(ctx)
+			if err != nil {
+				if !wasLost {
+					logger.Errorf(ctx, err, "🛑 PostgreSQL connection lost").Write()
+					wasLost = true
+				}
+			} else {
+				if wasLost {
+					logger.Info(ctx, "✅ PostgreSQL connection restored").Write()
+					wasLost = false
+				}
+			}
+		}
+	}
 }

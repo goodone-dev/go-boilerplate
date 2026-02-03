@@ -19,9 +19,13 @@ func NewMailUsecase(mailSender mailsender.MailSender) mail.MailUsecase {
 }
 
 func (u *mailUsecase) Send(ctx context.Context, req mail.MailSendMessage) (err error) {
-	ctx, span := tracer.Start(ctx, req)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"request": req,
+	})
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	err = u.mailSender.SendEmail(ctx, req.To, req.Subject, req.Template, req.Data)

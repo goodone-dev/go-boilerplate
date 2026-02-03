@@ -36,9 +36,15 @@ func (r *baseRepo[D, I, E]) SlaveDB() *D {
 }
 
 func (r *baseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
@@ -59,9 +65,15 @@ func (r *baseRepo[D, I, E]) FindAll(ctx context.Context, filter map[string]any) 
 }
 
 func (r *baseRepo[D, I, E]) FindById(ctx context.Context, ID I) (res *E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": ID,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
@@ -79,9 +91,15 @@ func (r *baseRepo[D, I, E]) FindByIdAndLock(ctx context.Context, ID I, trx *D) (
 }
 
 func (r *baseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids": IDs,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
@@ -100,9 +118,18 @@ func (r *baseRepo[D, I, E]) FindByIds(ctx context.Context, IDs []I) (res []E, er
 }
 
 func (r *baseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]any, sort []string, size int, page int) (res database.Pagination[E], err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, page)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+		"sort":   sort,
+		"size":   size,
+		"page":   page,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
@@ -149,9 +176,18 @@ func (r *baseRepo[D, I, E]) FindByOffset(ctx context.Context, filter map[string]
 }
 
 func (r *baseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]any, sort []string, size int, next *I) (res database.Pagination[E], err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, sort, size, next)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+		"sort":   sort,
+		"size":   size,
+		"next":   next,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbSlave.Collection(r.Entity.TableName())
@@ -196,15 +232,21 @@ func (r *baseRepo[D, I, E]) FindByCursor(ctx context.Context, filter map[string]
 	return
 }
 
-func (r *baseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, model)
+func (r *baseRepo[D, I, E]) Insert(ctx context.Context, payload E, trx *D) (res E, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	result, err := coll.InsertOne(ctx, model)
+	result, err := coll.InsertOne(ctx, payload)
 	if err != nil {
 		return
 	}
@@ -217,15 +259,21 @@ func (r *baseRepo[D, I, E]) Insert(ctx context.Context, model E, trx *D) (res E,
 	return
 }
 
-func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, models []E, trx *D) (res []E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, models)
+func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, payload []E, trx *D) (res []E, err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	result, err := coll.InsertMany(ctx, models)
+	result, err := coll.InsertMany(ctx, payload)
 	if err != nil {
 		return
 	}
@@ -243,15 +291,19 @@ func (r *baseRepo[D, I, E]) InsertMany(ctx context.Context, models []E, trx *D) 
 	return
 }
 
-func (r *baseRepo[D, I, E]) Update(ctx context.Context, model E, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, model)
+func (r *baseRepo[D, I, E]) Update(ctx context.Context, payload E, trx *D) (err error) {
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
 
-	data, err := json.Marshal(model)
+	data, err := json.Marshal(payload)
 	if err != nil {
 		return
 	}
@@ -262,7 +314,7 @@ func (r *baseRepo[D, I, E]) Update(ctx context.Context, model E, trx *D) (err er
 		return
 	}
 
-	_, err = coll.UpdateOne(ctx, bson.M{"_id": req.ID}, bson.M{"$set": model})
+	_, err = coll.UpdateOne(ctx, bson.M{"_id": req.ID}, bson.M{"$set": payload})
 	if err != nil {
 		return
 	}
@@ -271,9 +323,16 @@ func (r *baseRepo[D, I, E]) Update(ctx context.Context, model E, trx *D) (err er
 }
 
 func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[string]any, trx *D) (res E, err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, payload)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id":      ID,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err, res)
+		span.SetFunctionOutput(tracer.Metadata{
+			"result": res,
+		}).End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
@@ -287,9 +346,14 @@ func (r *baseRepo[D, I, E]) UpdateById(ctx context.Context, ID I, payload map[st
 }
 
 func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, payload)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids":     IDs,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
@@ -303,9 +367,14 @@ func (r *baseRepo[D, I, E]) UpdateByIds(ctx context.Context, IDs []I, payload ma
 }
 
 func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]any, payload map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter, payload)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter":  filter,
+		"payload": payload,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
@@ -319,9 +388,13 @@ func (r *baseRepo[D, I, E]) UpdateMany(ctx context.Context, filter map[string]an
 }
 
 func (r *baseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, ID)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"id": ID,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
@@ -335,9 +408,13 @@ func (r *baseRepo[D, I, E]) DeleteById(ctx context.Context, ID I, trx *D) (err e
 }
 
 func (r *baseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, IDs)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"ids": IDs,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
@@ -351,9 +428,13 @@ func (r *baseRepo[D, I, E]) DeleteByIds(ctx context.Context, IDs []I, trx *D) (e
 }
 
 func (r *baseRepo[D, I, E]) DeleteMany(ctx context.Context, filter map[string]any, trx *D) (err error) {
-	ctx, span := tracer.PrefixName(r.Entity.RepositoryName()).Start(ctx, filter)
+	ctx, span := tracer.Start(ctx)
+	span.SetFunctionInput(tracer.Metadata{
+		"filter": filter,
+	}).AddAttribute("table.name", r.Entity.TableName())
+
 	defer func() {
-		span.Stop(err)
+		span.End(err)
 	}()
 
 	coll := r.dbMaster.Collection(r.Entity.TableName())
