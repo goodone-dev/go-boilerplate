@@ -46,22 +46,34 @@ func Start(ctx context.Context) (context.Context, *tracer) {
 }
 
 func (t *tracer) AddAttribute(key string, value any) *tracer {
+	if t == nil {
+		return t
+	}
+
 	t.attributes[key] = value
 	return t
 }
 
 func (t *tracer) SetFunctionInput(metadata Metadata) *tracer {
+	if t == nil {
+		return t
+	}
+
 	t.funcInput = metadata
 	return t
 }
 
 func (t *tracer) SetFunctionOutput(metadata Metadata) *tracer {
+	if t == nil {
+		return t
+	}
+
 	t.funcOutput = metadata
 	return t
 }
 
 func (t *tracer) End(err error) {
-	if !config.Tracer.Enabled {
+	if t == nil || !config.Tracer.Enabled {
 		return
 	}
 
