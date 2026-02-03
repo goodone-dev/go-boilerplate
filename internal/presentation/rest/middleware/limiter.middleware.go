@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,40 +10,54 @@ import (
 	htterror "github.com/goodone-dev/go-boilerplate/internal/utils/http_response/error"
 )
 
-func SingleLimiterMiddleware(cache cache.Cache, limit int, duration time.Duration) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var err error
+type RateLimitMode string
 
-		ctx, span := tracer.Start(c.Request.Context())
-		defer func() {
-			span.Stop(err)
-		}()
+const (
+	SingleLimiter RateLimitMode = "single"
+	GlobalLimiter RateLimitMode = "global"
+)
 
-		key := fmt.Sprintf("rate_limit:%s:%s %s", c.ClientIP(), c.Request.Method, c.Request.URL.Path)
-
-		err = handleLimiter(ctx, cache, key, limit, duration)
-		if err != nil {
-			c.Error(err)
-			c.Abort()
-			return
-		}
-
-		c.Next()
-	}
+type RateLimitConfig struct {
+	Limit int
+	TTL   time.Duration
+	Mode  RateLimitMode
 }
 
-func GlobalLimiterMiddleware(cache cache.Cache, limit int, duration time.Duration) gin.HandlerFunc {
+func RateLimiterHandler(cache cache.Cache, config RateLimitConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var err error
 
 		ctx, span := tracer.Start(c.Request.Context())
 		defer func() {
-			span.Stop(err)
+			span.End(err)
 		}()
 
 		key := fmt.Sprintf("rate_limit:%s", c.ClientIP())
+		if config.Mode == SingleLimiter {
+			key = fmt.Sprintf("%s:%s %s", key, c.Request.Method, c.Request.URL.Path)
+		}
 
-		err = handleLimiter(ctx, cache, key, limit, duration)
+		val, err := cache.Get(ctx, key)
+		if err != nil {
+			c.Error(err)
+			c.Abort()
+			return
+		}
+
+		if val.ToInt() >= config.Limit {
+			c.Error(htterror.NewTooManyRequestError("rate limit exceeded, please try again later"))
+			c.Abort()
+			return
+		}
+
+		_, err = cache.Incr(ctx, key)
+		if err != nil {
+			c.Error(err)
+			c.Abort()
+			return
+		}
+
+		err = cache.Expire(ctx, key, config.TTL)
 		if err != nil {
 			c.Error(err)
 			c.Abort()
@@ -54,31 +66,4 @@ func GlobalLimiterMiddleware(cache cache.Cache, limit int, duration time.Duratio
 
 		c.Next()
 	}
-}
-
-func handleLimiter(ctx context.Context, cache cache.Cache, key string, limit int, duration time.Duration) error {
-	countStr, err := cache.Get(ctx, key)
-	if err != nil {
-		return err
-	}
-
-	if countStr == "" {
-		if err := cache.Set(ctx, key, 1, duration); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	countInt, _ := strconv.Atoi(countStr)
-	if countInt >= limit {
-		return htterror.NewTooManyRequestError("rate limit exceeded, please try again later")
-	}
-
-	_, err = cache.Incr(ctx, key)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

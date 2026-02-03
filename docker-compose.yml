@@ -21,12 +21,40 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  rabbitmq:
+    image: rabbitmq:4.2.1-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mailpit:
     image: axllent/mailpit:v1.27.9
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8025"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   grafana:
     image: grafana/otel-lgtm:0.11.11
@@ -85,8 +113,10 @@ services:
       - grafana
       - postgres
       - redis
+      - rabbitmq
       - mailpit
 
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:

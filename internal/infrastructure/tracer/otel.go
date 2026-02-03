@@ -1,0 +1,56 @@
+package tracer
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/goodone-dev/go-boilerplate/internal/config"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+)
+
+func NewProvider(ctx context.Context) *trace.TracerProvider {
+	if config.Tracer.Host == "" || config.Tracer.Port == 0 {
+		return nil
+	}
+
+	exporter, err := otlptrace.New(
+		ctx,
+		otlptracehttp.NewClient(
+			otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%d", config.Tracer.Host, config.Tracer.Port)),
+			otlptracehttp.WithHeaders(map[string]string{
+				"content-type": "application/json",
+			}),
+			otlptracehttp.WithInsecure(),
+		),
+	)
+	if err != nil {
+		logger.Fatal(ctx, err, "❌ Could not create tracer exporter").Write()
+	}
+
+	provider := trace.NewTracerProvider(
+		trace.WithBatcher(
+			exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
+		),
+		trace.WithResource(
+			resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String(config.Application.Name),
+				semconv.ServiceInstanceIDKey.String(config.Application.URL),
+			),
+		),
+	)
+
+	otel.SetTracerProvider(provider)
+	config.Tracer.Enabled = true
+
+	return provider
+}
