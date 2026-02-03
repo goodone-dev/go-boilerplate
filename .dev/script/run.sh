@@ -12,5 +12,5 @@ done
 if [ "$WATCH_MODE" = true ]; then
     air -c .air.toml
 else
-    go run ./cmd/api/main.go
+    go run ./cmd/rest/main.go
 fi
