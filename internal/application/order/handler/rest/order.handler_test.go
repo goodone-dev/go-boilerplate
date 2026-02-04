@@ -178,3 +178,89 @@ func TestOrderHandler_Create_ValidationError_EmptyOrderItems(t *testing.T) {
 
 	assert.NotEmpty(t, c.Errors, "Expected validation errors to be set in context")
 }
+
+func TestOrderHandler_GetDetail_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockUsecase := ordermock.NewOrderUsecaseMock(t)
+	handler := NewOrderHandler(mockUsecase)
+
+	orderID := uuid.New()
+	customerID := uuid.New()
+
+	expectedResponse := &order.DetailOrderResponse{
+		ID: orderID,
+		Customer: order.DetailOrderCustomer{
+			ID:   customerID,
+			Name: "John Doe",
+		},
+		TotalAmount: 200.0,
+		Status:      "paid",
+	}
+
+	mockUsecase.On("GetDetail", mock.Anything, orderID).Return(expectedResponse, nil)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/orders/"+orderID.String(), nil)
+	c.Params = gin.Params{{Key: "id", Value: orderID.String()}}
+
+	handler.GetDetail(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockUsecase.AssertExpectations(t)
+}
+
+func TestOrderHandler_GetDetail_MissingID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockUsecase := ordermock.NewOrderUsecaseMock(t)
+	handler := NewOrderHandler(mockUsecase)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/orders/", nil)
+	c.Params = gin.Params{{Key: "id", Value: ""}}
+
+	handler.GetDetail(c)
+
+	assert.NotEmpty(t, c.Errors, "Expected errors due to missing ID")
+}
+
+func TestOrderHandler_GetDetail_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockUsecase := ordermock.NewOrderUsecaseMock(t)
+	handler := NewOrderHandler(mockUsecase)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/orders/invalid-uuid", nil)
+	c.Params = gin.Params{{Key: "id", Value: "invalid-uuid"}}
+
+	handler.GetDetail(c)
+
+	assert.NotEmpty(t, c.Errors, "Expected errors due to invalid ID")
+}
+
+func TestOrderHandler_GetDetail_UsecaseError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockUsecase := ordermock.NewOrderUsecaseMock(t)
+	handler := NewOrderHandler(mockUsecase)
+
+	orderID := uuid.New()
+	expectedError := errors.New("usecase error")
+
+	mockUsecase.On("GetDetail", mock.Anything, orderID).Return(nil, expectedError)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/orders/"+orderID.String(), nil)
+	c.Params = gin.Params{{Key: "id", Value: orderID.String()}}
+
+	handler.GetDetail(c)
+
+	assert.NotEmpty(t, c.Errors, "Expected errors due to usecase failure")
+	mockUsecase.AssertExpectations(t)
+}
