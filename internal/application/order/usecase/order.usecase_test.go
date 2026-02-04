@@ -92,9 +92,9 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockProducts[1].ID = productID2
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 500.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      500.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -119,7 +119,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockProductRepo.EXPECT().FindByIds(ctx, []uuid.UUID{productID1, productID2}).Return(mockProducts, nil)
 	mockOrderRepo.EXPECT().Begin(ctx).Return(mockTrx, nil)
 	mockOrderRepo.EXPECT().Insert(ctx, mock.MatchedBy(func(o order.Order) bool {
-		return o.CustomerID == customerID && o.TotalAmount == 400.0 && o.Status == "paid"
+		return o.CustomerID == customerID && o.Total == 400.0 && o.Status == "paid"
 	}), mockTrx).Return(mockOrder, nil)
 	mockOrderItemRepo.EXPECT().InsertMany(ctx, mock.MatchedBy(func(items []order.OrderItem) bool {
 		return len(items) == 2 && items[0].OrderID == orderID && items[1].OrderID == orderID
@@ -151,7 +151,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Equal(t, orderID, result.ID)
 	assert.Equal(t, customerID, result.CustomerID)
-	assert.Equal(t, 500.0, result.TotalAmount)
+	assert.Equal(t, 500.0, result.Total)
 	assert.Equal(t, "paid", result.Status)
 }
 
@@ -527,9 +527,9 @@ func TestOrderUsecase_Create_InsertOrderItemsError(t *testing.T) {
 	mockProducts[0].ID = productID
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -614,9 +614,9 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockProducts[2].ID = productID3
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 421.25, // (50*3) + (75.5*2) + (120.25*1) = 150 + 151 + 120.25
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      421.25, // (50*3) + (75.5*2) + (120.25*1) = 150 + 151 + 120.25
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -646,7 +646,7 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockOrderRepo.EXPECT().Begin(ctx).Return(mockTrx, nil)
 	mockOrderRepo.EXPECT().Insert(ctx, mock.MatchedBy(func(o order.Order) bool {
 		// Verify total amount calculation: (50*3) + (75.5*2) + (120.25*1) = 421.25
-		return o.TotalAmount == 421.25
+		return o.Total == 421.25
 	}), mockTrx).Return(mockOrder, nil)
 	mockOrderItemRepo.EXPECT().InsertMany(ctx, mock.MatchedBy(func(items []order.OrderItem) bool {
 		if len(items) != 3 {
@@ -682,7 +682,7 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, 421.25, result.TotalAmount)
+	assert.Equal(t, 421.25, result.Total)
 }
 
 func TestOrderUsecase_GetDetail_Success(t *testing.T) {
@@ -702,9 +702,9 @@ func TestOrderUsecase_GetDetail_Success(t *testing.T) {
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockOrder := &order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -746,7 +746,7 @@ func TestOrderUsecase_GetDetail_Success(t *testing.T) {
 	assert.Equal(t, customerID, result.Customer.ID)
 	assert.Equal(t, "John Doe", result.Customer.Name)
 	assert.Len(t, result.OrderItems, 1)
-	assert.Equal(t, 200.0, result.OrderItems[0].SubTotal)
+	assert.Equal(t, 200.0, result.OrderItems[0].Amount)
 }
 
 func TestOrderUsecase_GetDetail_OrderNotFound(t *testing.T) {
@@ -834,9 +834,9 @@ func TestOrderUsecase_GetDetail_CustomerNotFound(t *testing.T) {
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockOrder := &order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -878,9 +878,9 @@ func TestOrderUsecase_GetDetail_CustomerRepoError(t *testing.T) {
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockOrder := &order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -922,9 +922,9 @@ func TestOrderUsecase_GetDetail_OrderItemRepoError(t *testing.T) {
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
 	mockOrder := &order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 

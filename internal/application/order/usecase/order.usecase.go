@@ -78,16 +78,17 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		productMap[p.ID] = p
 	}
 
-	var totalAmount float64
+	var total float64
 	var orderItems []order.OrderItem
 
 	for _, item := range req.OrderItems {
 		p := productMap[item.ProductID]
-		totalAmount += p.Price * float64(item.Quantity)
+		total += p.Price * float64(item.Quantity)
 		orderItems = append(orderItems, order.OrderItem{
 			ProductID: p.ID,
 			Quantity:  item.Quantity,
 			Price:     p.Price,
+			Amount:    p.Price * float64(item.Quantity),
 		})
 	}
 
@@ -106,8 +107,9 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 	}()
 
 	createdOrder, err := u.orderRepo.Insert(ctx, order.Order{
+		OrderNumber: fmt.Sprintf("ORD-%d", time.Now().Unix()),
 		CustomerID:  req.CustomerID,
-		TotalAmount: totalAmount,
+		Total:       total,
 		Status:      "paid",
 	}, trx)
 	if err != nil {
@@ -128,11 +130,22 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 		Subject:  "Thank You for Your Purchase!",
 		Template: "order_created.html",
 		Data: map[string]any{
-			"Name":        customer.Name,
-			"OrderItems":  orderItems,
-			"TotalAmount": totalAmount,
-			"InvoiceURL":  fmt.Sprintf("%s/file/order/receipt/%s", config.Application.URL, createdOrder.ID.String()),
-			"YearNow":     time.Now().Year(),
+			"Name": customer.Name,
+			"OrderItems": func(oi []order.OrderItem) []map[string]any {
+				var orderItems []map[string]any
+				for _, item := range oi {
+					orderItems = append(orderItems, map[string]any{
+						"ProductName": productMap[item.ProductID].Name,
+						"Quantity":    item.Quantity,
+						"Price":       item.Price,
+						"Amount":      item.Amount,
+					})
+				}
+				return orderItems
+			}(orderItems),
+			"Total":      total,
+			"InvoiceURL": fmt.Sprintf("%s/file/order/%s/receipt", config.Application.URL, createdOrder.ID.String()),
+			"YearNow":    time.Now().Year(),
 		},
 	})
 	if err != nil {
@@ -141,8 +154,9 @@ func (u *orderUsecase) Create(ctx context.Context, req order.CreateOrderRequest)
 
 	return &order.CreateOrderResponse{
 		ID:          createdOrder.ID,
+		OrderNumber: createdOrder.OrderNumber,
 		CustomerID:  createdOrder.CustomerID,
-		TotalAmount: createdOrder.TotalAmount,
+		Total:       createdOrder.Total,
 		Status:      createdOrder.Status,
 	}, nil
 }
@@ -179,7 +193,8 @@ func (u *orderUsecase) GetDetail(ctx context.Context, id uuid.UUID) (res *order.
 	}
 
 	return &order.DetailOrderResponse{
-		ID: foundOrder.ID,
+		ID:          foundOrder.ID,
+		OrderNumber: foundOrder.OrderNumber,
 		Customer: order.DetailOrderCustomer{
 			ID:    customer.ID,
 			Name:  customer.Name,
@@ -193,12 +208,13 @@ func (u *orderUsecase) GetDetail(ctx context.Context, id uuid.UUID) (res *order.
 					ProductName: item.ProductName,
 					Quantity:    item.Quantity,
 					Price:       item.Price,
-					SubTotal:    float64(item.Quantity) * item.Price,
+					Amount:      item.Amount,
 				})
 			}
 			return detailOrderItems
 		}(orderItems),
-		TotalAmount: foundOrder.TotalAmount,
-		Status:      foundOrder.Status,
+		Total:     foundOrder.Total,
+		CreatedAt: *foundOrder.CreatedAt,
+		Status:    foundOrder.Status,
 	}, nil
 }

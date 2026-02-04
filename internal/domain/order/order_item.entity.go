@@ -11,6 +11,7 @@ type OrderItem struct {
 	ProductID                      uuid.UUID `json:"product_id" bson:"product_id"`
 	Quantity                       int       `json:"quantity" bson:"quantity"`
 	Price                          float64   `json:"price" bson:"price"`
+	Amount                         float64   `json:"amount" bson:"amount"`
 }
 
 func (OrderItem) TableName() string {

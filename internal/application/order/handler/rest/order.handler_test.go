@@ -53,10 +53,10 @@ func TestOrderHandler_Create_Success(t *testing.T) {
 	}
 
 	expectedResponse := &order.CreateOrderResponse{
-		ID:          orderID,
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		ID:         orderID,
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 
 	mockUsecase.On("Create", mock.Anything, mock.AnythingOfType("order.CreateOrderRequest")).Return(expectedResponse, nil)
@@ -194,8 +194,8 @@ func TestOrderHandler_GetDetail_Success(t *testing.T) {
 			ID:   customerID,
 			Name: "John Doe",
 		},
-		TotalAmount: 200.0,
-		Status:      "paid",
+		Total:  200.0,
+		Status: "paid",
 	}
 
 	mockUsecase.On("GetDetail", mock.Anything, orderID).Return(expectedResponse, nil)
