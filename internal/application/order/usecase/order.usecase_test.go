@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
 	customermock "github.com/goodone-dev/go-boilerplate/internal/domain/customer/mocks"
@@ -14,6 +15,7 @@ import (
 	ordermock "github.com/goodone-dev/go-boilerplate/internal/domain/order/mocks"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	productmock "github.com/goodone-dev/go-boilerplate/internal/domain/product/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
@@ -701,9 +703,13 @@ func TestOrderUsecase_GetDetail_Success(t *testing.T) {
 	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
 	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
 
+	createdAt := time.Now()
 	mockOrder := &order.Order{
+		BaseEntity: database.BaseEntity[uuid.UUID]{
+			CreatedAt: &createdAt,
+		},
 		CustomerID: customerID,
-		Total:      200.0,
+		Total:      300.0,
 		Status:     "paid",
 	}
 	mockOrder.ID = orderID
@@ -719,7 +725,8 @@ func TestOrderUsecase_GetDetail_Success(t *testing.T) {
 			ProductID:   productID,
 			ProductName: "Product 1",
 			Quantity:    2,
-			Price:       100.0,
+			Price:       150.0,
+			Amount:      300.0,
 		},
 	}
 
@@ -746,7 +753,7 @@ func TestOrderUsecase_GetDetail_Success(t *testing.T) {
 	assert.Equal(t, customerID, result.Customer.ID)
 	assert.Equal(t, "John Doe", result.Customer.Name)
 	assert.Len(t, result.OrderItems, 1)
-	assert.Equal(t, 200.0, result.OrderItems[0].Amount)
+	assert.Equal(t, 300.0, result.OrderItems[0].Amount)
 }
 
 func TestOrderUsecase_GetDetail_OrderNotFound(t *testing.T) {
