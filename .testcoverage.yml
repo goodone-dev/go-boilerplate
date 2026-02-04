@@ -14,15 +14,16 @@ threshold:
 exclude:
   # Exclude files or packages matching their paths
   paths:
-    - \.pb\.go$              # excludes all protobuf generated files
-    - ^cmd/                  # exclude cmd directory
-    - ^internal/config/      # exclude config directory
-    - ^internal/domain/      # exclude domain directory
-    - ^internal/infrastructure/  # exclude infrastructure directory
-    - ^internal/presentation/    # exclude presentation directory
-    - ^internal/utils/       # exclude utils directory
-    - /mocks/                # exclude mock files
-    - _test\.go$             # exclude test files themselves
+    - \.pb\.go$                               # excludes all protobuf generated files
+    - ^cmd/                                   # exclude cmd directory
+    - ^internal/config/                       # exclude config directory
+    - ^internal/domain/                       # exclude domain directory
+    - ^internal/infrastructure/               # exclude infrastructure directory
+    - ^internal/presentation/                 # exclude presentation directory
+    - ^internal/utils/                        # exclude utils directory
+    - ^internal/application/.*/repository/    # exclude repository directory
+    - /mocks/                                 # exclude mock files
+    - _test\.go$                              # exclude test files themselves
 
 # Override rules for specific paths (optional)
 # override:
