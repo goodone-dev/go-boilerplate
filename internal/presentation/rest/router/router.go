@@ -84,9 +84,9 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		}
 	}
 
-	files := router.Group("/file")
+	files := router.Group("/files")
 	{
-		files.GET("/order/:id/receipt", orderHandler.GetReceipt)
+		files.GET("/orders/:id/receipt", orderHandler.GetReceipt)
 	}
 
 	return router
