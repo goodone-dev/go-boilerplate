@@ -41,7 +41,7 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// Internal Middleware
-	router.Use(middleware.ContextTimeoutHandler())
+	router.Use(middleware.TimeoutHandler())
 	router.Use(middleware.RequestIdHandler())
 	router.Use(middleware.IdempotencyHandler(cacheClient, config.IdempotencyDuration))
 	router.Use(middleware.ErrorHandler())
