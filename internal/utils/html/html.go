@@ -18,8 +18,10 @@ func init() {
 	var err error
 
 	tmpl, err = template.New("baseTemplate").Funcs(template.FuncMap{
-		"FormatNumber": formatNumber,
-		"FormatDate":   formatDate,
+		"FormatNumber":   formatNumber,
+		"FormatCurrency": formatCurrency,
+		"FormatDate":     formatDate,
+		"FormatDateTime": formatDateTime,
 	}).ParseFS(templates.FS, "email/*.html", "pdf/*.html")
 	if err != nil {
 		logger.Fatal(context.Background(), err, "❌ Failed to parse templates").Write()
@@ -56,6 +58,25 @@ func formatNumber(amount float64) string {
 	return sign + strings.Join(formatted, ".")
 }
 
+func formatCurrency(amount float64) string {
+	rounded := fmt.Sprintf("%.2f", amount)
+
+	var formatted []string
+	for i := len(rounded); i > 0; i -= 3 {
+		if i-3 > 0 {
+			formatted = append([]string{rounded[i-3 : i]}, formatted...)
+		} else {
+			formatted = append([]string{rounded[:i]}, formatted...)
+		}
+	}
+
+	return strings.Join(formatted[:len(formatted)-1], ",") + formatted[len(formatted)-1]
+}
+
 func formatDate(date time.Time) string {
 	return date.Format("02 January 2006")
+}
+
+func formatDateTime(date time.Time) string {
+	return date.Format("02 January 2006 15:04:05")
 }

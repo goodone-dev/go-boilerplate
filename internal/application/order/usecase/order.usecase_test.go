@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/goodone-dev/go-boilerplate/internal/domain/customer"
 	customermock "github.com/goodone-dev/go-boilerplate/internal/domain/customer/mocks"
@@ -14,6 +15,7 @@ import (
 	ordermock "github.com/goodone-dev/go-boilerplate/internal/domain/order/mocks"
 	"github.com/goodone-dev/go-boilerplate/internal/domain/product"
 	productmock "github.com/goodone-dev/go-boilerplate/internal/domain/product/mocks"
+	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/database"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/logger"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq"
 	"github.com/goodone-dev/go-boilerplate/internal/infrastructure/messaging/rabbitmq/direct"
@@ -92,9 +94,9 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockProducts[1].ID = productID2
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 500.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      500.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -119,7 +121,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	mockProductRepo.EXPECT().FindByIds(ctx, []uuid.UUID{productID1, productID2}).Return(mockProducts, nil)
 	mockOrderRepo.EXPECT().Begin(ctx).Return(mockTrx, nil)
 	mockOrderRepo.EXPECT().Insert(ctx, mock.MatchedBy(func(o order.Order) bool {
-		return o.CustomerID == customerID && o.TotalAmount == 400.0 && o.Status == "paid"
+		return o.CustomerID == customerID && o.Total == 400.0 && o.Status == "paid"
 	}), mockTrx).Return(mockOrder, nil)
 	mockOrderItemRepo.EXPECT().InsertMany(ctx, mock.MatchedBy(func(items []order.OrderItem) bool {
 		return len(items) == 2 && items[0].OrderID == orderID && items[1].OrderID == orderID
@@ -151,7 +153,7 @@ func TestOrderUsecase_Create_Success(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Equal(t, orderID, result.ID)
 	assert.Equal(t, customerID, result.CustomerID)
-	assert.Equal(t, 500.0, result.TotalAmount)
+	assert.Equal(t, 500.0, result.Total)
 	assert.Equal(t, "paid", result.Status)
 }
 
@@ -527,9 +529,9 @@ func TestOrderUsecase_Create_InsertOrderItemsError(t *testing.T) {
 	mockProducts[0].ID = productID
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 200.0,
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -614,9 +616,9 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockProducts[2].ID = productID3
 
 	mockOrder := order.Order{
-		CustomerID:  customerID,
-		TotalAmount: 421.25, // (50*3) + (75.5*2) + (120.25*1) = 150 + 151 + 120.25
-		Status:      "paid",
+		CustomerID: customerID,
+		Total:      421.25, // (50*3) + (75.5*2) + (120.25*1) = 150 + 151 + 120.25
+		Status:     "paid",
 	}
 	mockOrder.ID = orderID
 
@@ -646,14 +648,16 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	mockOrderRepo.EXPECT().Begin(ctx).Return(mockTrx, nil)
 	mockOrderRepo.EXPECT().Insert(ctx, mock.MatchedBy(func(o order.Order) bool {
 		// Verify total amount calculation: (50*3) + (75.5*2) + (120.25*1) = 421.25
-		return o.TotalAmount == 421.25
+		return o.Total == 421.25
 	}), mockTrx).Return(mockOrder, nil)
 	mockOrderItemRepo.EXPECT().InsertMany(ctx, mock.MatchedBy(func(items []order.OrderItem) bool {
 		if len(items) != 3 {
 			return false
 		}
 		// Verify individual item totals
-		return items[0].Total == 150.0 && items[1].Total == 151.0 && items[2].Total == 120.25
+		return items[0].Price == 50.0 && items[0].Quantity == 3 &&
+			items[1].Price == 75.5 && items[1].Quantity == 2 &&
+			items[2].Price == 120.25 && items[2].Quantity == 1
 	}), mockTrx).Return([]order.OrderItem{}, nil)
 	mockOrderRepo.EXPECT().Commit(mockTrx).Return(mockTrx)
 
@@ -680,5 +684,281 @@ func TestOrderUsecase_Create_CalculatesTotalAmountCorrectly(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, 421.25, result.TotalAmount)
+	assert.Equal(t, 421.25, result.Total)
+}
+
+func TestOrderUsecase_GetDetail_Success(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+	customerID := uuid.New()
+	productID := uuid.New()
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	createdAt := time.Now()
+	mockOrder := &order.Order{
+		BaseEntity: database.BaseEntity[uuid.UUID]{
+			CreatedAt: &createdAt,
+		},
+		CustomerID: customerID,
+		Total:      300.0,
+		Status:     "paid",
+	}
+	mockOrder.ID = orderID
+
+	mockCustomer := &customer.Customer{
+		Name:  "John Doe",
+		Email: "john@example.com",
+	}
+	mockCustomer.ID = customerID
+
+	mockOrderItems := []order.DetailOrderItem{
+		{
+			ProductID:   productID,
+			ProductName: "Product 1",
+			Quantity:    2,
+			Price:       150.0,
+			Amount:      300.0,
+		},
+	}
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(mockOrder, nil)
+	mockCustomerRepo.EXPECT().FindById(ctx, customerID).Return(mockCustomer, nil)
+	mockOrderItemRepo.EXPECT().FindByOrderID(ctx, orderID).Return(mockOrderItems, nil)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, orderID, result.ID)
+	assert.Equal(t, customerID, result.Customer.ID)
+	assert.Equal(t, "John Doe", result.Customer.Name)
+	assert.Len(t, result.OrderItems, 1)
+	assert.Equal(t, 300.0, result.OrderItems[0].Amount)
+}
+
+func TestOrderUsecase_GetDetail_OrderNotFound(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(nil, nil)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "order with the provided ID was not found")
+}
+
+func TestOrderUsecase_GetDetail_OrderRepoError(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+	expectedError := errors.New("db error")
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(nil, expectedError)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, expectedError, err)
+}
+
+func TestOrderUsecase_GetDetail_CustomerNotFound(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+	customerID := uuid.New()
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	mockOrder := &order.Order{
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
+	}
+	mockOrder.ID = orderID
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(mockOrder, nil)
+	mockCustomerRepo.EXPECT().FindById(ctx, customerID).Return(nil, nil)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "customer with the provided ID was not found")
+}
+
+func TestOrderUsecase_GetDetail_CustomerRepoError(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+	customerID := uuid.New()
+	expectedError := errors.New("customer db error")
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	mockOrder := &order.Order{
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
+	}
+	mockOrder.ID = orderID
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(mockOrder, nil)
+	mockCustomerRepo.EXPECT().FindById(ctx, customerID).Return(nil, expectedError)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, expectedError, err)
+}
+
+func TestOrderUsecase_GetDetail_OrderItemRepoError(t *testing.T) {
+	// Setup
+	ctx := context.Background()
+	orderID := uuid.New()
+	customerID := uuid.New()
+	expectedError := errors.New("item db error")
+
+	mockCustomerRepo := customermock.NewCustomerRepositoryMock(t)
+	mockProductRepo := productmock.NewProductRepositoryMock(t)
+	mockOrderRepo := ordermock.NewOrderRepositoryMock(t)
+	mockOrderItemRepo := ordermock.NewOrderItemRepositoryMock(t)
+
+	mockRmqClient := rabbitmqmock.NewClientMock(t)
+	mockRmqClient.On("DeclareExchange", mock.Anything).Return(nil)
+	directPub := direct.NewPublisher(ctx, mockRmqClient, "test.exchange")
+
+	mockOrder := &order.Order{
+		CustomerID: customerID,
+		Total:      200.0,
+		Status:     "paid",
+	}
+	mockOrder.ID = orderID
+
+	mockCustomer := &customer.Customer{
+		Name:  "John Doe",
+		Email: "john@example.com",
+	}
+	mockCustomer.ID = customerID
+
+	// Mock expectations
+	mockOrderRepo.EXPECT().FindById(ctx, orderID).Return(mockOrder, nil)
+	mockCustomerRepo.EXPECT().FindById(ctx, customerID).Return(mockCustomer, nil)
+	mockOrderItemRepo.EXPECT().FindByOrderID(ctx, orderID).Return(nil, expectedError)
+
+	// Execute
+	usecase := NewOrderUsecase(
+		mockCustomerRepo,
+		mockProductRepo,
+		mockOrderRepo,
+		mockOrderItemRepo,
+		directPub,
+	)
+
+	result, err := usecase.GetDetail(ctx, orderID)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, expectedError, err)
 }

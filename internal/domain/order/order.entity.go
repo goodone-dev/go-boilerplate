@@ -7,8 +7,9 @@ import (
 
 type Order struct {
 	database.BaseEntity[uuid.UUID] `bson:",inline"`
+	OrderNumber                    string    `json:"order_number" bson:"order_number"`
 	CustomerID                     uuid.UUID `json:"customer_id" bson:"customer_id"`
-	TotalAmount                    float64   `json:"total_amount" bson:"total_amount"`
+	Total                          float64   `json:"total" bson:"total"`
 	Status                         string    `json:"status" bson:"status"`
 }
 

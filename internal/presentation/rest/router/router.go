@@ -30,6 +30,7 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 		secureConfig.STSSeconds = 0
 		secureConfig.STSIncludeSubdomains = false
 	}
+	secureConfig.ContentSecurityPolicy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
 
 	// ========== Initialize Router ==========
 	router := gin.New()
@@ -78,7 +79,14 @@ func NewRouter(healthHandler health.HealthHandler, orderHandler order.OrderHandl
 				}),
 				orderHandler.Create,
 			)
+
+			orders.GET("/:id", orderHandler.GetDetail)
 		}
+	}
+
+	files := router.Group("/files")
+	{
+		files.GET("/orders/:id/receipt", orderHandler.GetReceipt)
 	}
 
 	return router

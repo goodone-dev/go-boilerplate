@@ -1,6 +1,10 @@
 package order
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type CreateOrderRequest struct {
 	CustomerID uuid.UUID          `json:"customer_id" validate:"required"`
@@ -14,7 +18,32 @@ type OrderItemRequest struct {
 
 type CreateOrderResponse struct {
 	ID          uuid.UUID `json:"id"`
+	OrderNumber string    `json:"order_number"`
 	CustomerID  uuid.UUID `json:"customer_id"`
-	TotalAmount float64   `json:"total_amount"`
+	Total       float64   `json:"total"`
 	Status      string    `json:"status"`
+}
+
+type DetailOrderResponse struct {
+	ID          uuid.UUID           `json:"id"`
+	OrderNumber string              `json:"order_number"`
+	Customer    DetailOrderCustomer `json:"customer"`
+	OrderItems  []DetailOrderItem   `json:"order_items"`
+	Total       float64             `json:"total"`
+	CreatedAt   time.Time           `json:"created_at"`
+	Status      string              `json:"status"`
+}
+
+type DetailOrderItem struct {
+	ProductID   uuid.UUID `json:"product_id"`
+	ProductName string    `json:"product_name"`
+	Quantity    int       `json:"quantity"`
+	Price       float64   `json:"price"`
+	Amount      float64   `json:"amount"`
+}
+
+type DetailOrderCustomer struct {
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
 }
